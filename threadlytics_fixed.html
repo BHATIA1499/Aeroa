@@ -671,10 +671,10 @@ footer { background: #0A0A12; padding: 60px 52px 36px; border-top: 1px solid rgb
 <!-- STATS -->
 <section style="padding:80px 52px">
   <div class="stats-row sr">
-    <div class="stat"><div class="stat-v"><span class="t">500</span>+</div><div class="stat-l">SKUs analysed instantly</div></div>
-    <div class="stat"><div class="stat-v"><span class="e">55</span></div><div class="stat-l">Data points tracked per SKU</div></div>
-    <div class="stat"><div class="stat-v">&lt;<span class="v">60</span>s</div><div class="stat-l">From upload to full insight</div></div>
-    <div class="stat"><div class="stat-v"><span class="a">24</span>/7</div><div class="stat-l">AI analyst on call</div></div>
+    <div class="stat"><div class="stat-v"><span class="t counter" data-target="500" data-suffix="+">0</span></div><div class="stat-l">SKUs analysed instantly</div></div>
+    <div class="stat"><div class="stat-v"><span class="e counter" data-target="55">0</span></div><div class="stat-l">Data points tracked per SKU</div></div>
+    <div class="stat"><div class="stat-v">&lt;<span class="v counter" data-target="60" data-suffix="s">0</span></div><div class="stat-l">From upload to full insight</div></div>
+    <div class="stat"><div class="stat-v"><span class="a counter" data-target="24" data-suffix="/7">0</span></div><div class="stat-l">AI analyst on call</div></div>
   </div>
 </section>
 
@@ -707,43 +707,57 @@ footer { background: #0A0A12; padding: 60px 52px 36px; border-top: 1px solid rgb
 </section>
 
 <!-- SETUP GUIDE -->
-<section class="setup" id="setup">
-  <div class="setup-grid">
+<section class="setup" id="setup" style="background:#0D0D14;border-top:none">
+  <div style="max-width:1100px;margin:0 auto;width:100%;text-align:center">
     <div class="sr">
-      <div class="section-tag">Get started</div>
-      <h2>Up and running<br>in <span class="hl">2 minutes</span></h2>
-      <p class="sub">Threadlytics is a fully hosted web app — no installs, no API keys, no local setup. Just sign up and start uploading your data.</p>
-      <div class="setup-steps" style="margin-top:32px">
-        <div class="ss"><div class="ss-num">Step 1</div><div class="ss-title">Create your account</div><div class="ss-desc">Visit <a href="https://threadlytics.ai/signup" style="color:var(--teal)">threadlytics.ai</a> and sign up — your 14-day free trial starts immediately, no credit card required</div></div>
-        <div class="ss"><div class="ss-num">Step 2</div><div class="ss-title">Upload your trading data</div><div class="ss-desc">Drag in any CSV or Excel file exported from your ERP, Shopify, or retail system — Threadlytics auto-detects the columns</div></div>
-        <div class="ss"><div class="ss-num">Step 3</div><div class="ss-title">Explore your dashboard</div><div class="ss-desc">Sell-through, reorder alerts, and markdown risk populate instantly across every SKU and category in your range</div></div>
-        <div class="ss"><div class="ss-num">Step 4</div><div class="ss-title">Ask the AI anything</div><div class="ss-desc">Type a question about your range in plain English — the AI answers with your actual SKU numbers, not generic advice</div></div>
+      <div class="section-tag" style="background:rgba(14,165,233,0.12);color:var(--teal);border-color:rgba(14,165,233,0.2)">Get started</div>
+      <h2 style="color:#FFFFFF;margin-top:12px">Three steps to smarter<br><span class="hl">merchandising decisions</span></h2>
+      <p class="sub" style="color:rgba(255,255,255,0.5);max-width:520px;margin:12px auto 0">No installs. No setup calls. No spreadsheets. Just upload your data and go.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:52px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.06)">
+      <div class="sr d1" style="background:#161628;padding:40px 32px;text-align:left;position:relative">
+        <div style="font-family:var(--serif);font-size:72px;font-weight:800;color:rgba(14,165,233,0.08);line-height:1;position:absolute;top:16px;right:24px">01</div>
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(14,165,233,0.12);border:1px solid rgba(14,165,233,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:10px">Upload your data</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7">Drag in any CSV, Excel, or Numbers file from your ERP, Shopify, or retail system. Any column layout — we detect it automatically.</div>
+        <div style="margin-top:20px;display:flex;gap:6px;flex-wrap:wrap">
+          <span style="font-size:10px;padding:3px 8px;border-radius:99px;background:rgba(14,165,233,0.1);color:var(--teal);border:1px solid rgba(14,165,233,0.2)">CSV</span>
+          <span style="font-size:10px;padding:3px 8px;border-radius:99px;background:rgba(14,165,233,0.1);color:var(--teal);border:1px solid rgba(14,165,233,0.2)">XLSX</span>
+          <span style="font-size:10px;padding:3px 8px;border-radius:99px;background:rgba(14,165,233,0.1);color:var(--teal);border:1px solid rgba(14,165,233,0.2)">.numbers</span>
+          <span style="font-size:10px;padding:3px 8px;border-radius:99px;background:rgba(14,165,233,0.1);color:var(--teal);border:1px solid rgba(14,165,233,0.2)">ODS</span>
+        </div>
+      </div>
+      <div class="sr d2" style="background:#161628;padding:40px 32px;text-align:left;position:relative;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06)">
+        <div style="font-family:var(--serif);font-size:72px;font-weight:800;color:rgba(79,70,229,0.1);line-height:1;position:absolute;top:16px;right:24px">02</div>
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(79,70,229,0.12);border:1px solid rgba(79,70,229,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:10px">Instant intelligence</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7">Sell-through, reorder alerts, markdown risk, category scorecard — calculated across every SKU in under 60 seconds. No configuration.</div>
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.4)"><span style="color:#EF4444;font-size:10px">●</span> CRITICAL reorder flags by revenue</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.4)"><span style="color:#F59E0B;font-size:10px">●</span> Markdown depth recommendations</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.4)"><span style="color:#10B981;font-size:10px">●</span> Category health scoring</div>
+        </div>
+      </div>
+      <div class="sr d3" style="background:#161628;padding:40px 32px;text-align:left;position:relative">
+        <div style="font-family:var(--serif);font-size:72px;font-weight:800;color:rgba(124,58,237,0.1);line-height:1;position:absolute;top:16px;right:24px">03</div>
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:700;color:#FFFFFF;margin-bottom:10px">Ask the AI anything</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.7">Your AI merchandising analyst answers in plain English — grounded in your actual SKU numbers, not generic advice. Available 24/7.</div>
+        <div style="margin-top:20px;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:8px;border:1px solid rgba(255,255,255,0.07)">
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:6px;font-family:var(--mono)">example prompt</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5">"Which SKUs should I reorder before end of week?"</div>
+        </div>
       </div>
     </div>
-    <div class="sr d1">
-      <div style="background:#FFFFFF;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.06)">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:16px">Start in 2 minutes</div>
-        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
-            <div style="font-size:14px;color:var(--text1);font-weight:500">Visit <strong>threadlytics.ai</strong> and create your free account</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-            <div style="font-size:14px;color:var(--text1);font-weight:500">Upload your CSV or Excel — columns auto-detected</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-            <div style="font-size:14px;color:var(--text1);font-weight:500">Your dashboard populates instantly — ask the AI anything</div>
-          </div>
-        </div>
-        <a href="/signup" style="display:block;text-align:center;padding:14px;background:var(--teal);color:#fff;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;transition:opacity 0.2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Start free trial →</a>
-        <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--text2)">14 days free · no credit card · cancel any time</div>
-      </div>
-      <div style="margin-top:14px;padding:14px 16px;background:#FFFFFF;border:1px solid rgba(14,165,233,0.18);border-left:3px solid var(--teal);border-radius:var(--r2)">
-        <div style="font-size:12px;color:var(--teal);font-weight:600;margin-bottom:4px">Supported data formats</div>
-        <div style="font-size:12px;color:var(--text2)">CSV · XLSX · XLS · Any column layout that includes SKU, UnitsSold, Revenue, StockOnHand</div>
-      </div>
+    <div class="sr d4" style="margin-top:40px">
+      <a href="/signup" style="display:inline-flex;align-items:center;gap:10px;padding:16px 36px;background:var(--teal);color:#fff;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;transition:all 0.2s;box-shadow:0 0 32px rgba(14,165,233,0.25)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(14,165,233,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 0 32px rgba(14,165,233,0.25)'">Start your free trial <span style="opacity:0.8">→</span></a>
+      <div style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.3)">14 days free · no credit card · cancel any time</div>
     </div>
   </div>
 </section>
@@ -962,6 +976,44 @@ const obs = new IntersectionObserver(entries => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });
 }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
 document.querySelectorAll('.sr').forEach(el => obs.observe(el));
+
+// ── ANIMATED COUNTERS ──
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const duration = 1600;
+  const steps = 60;
+  const increment = target / steps;
+  let current = 0;
+  const timer = setInterval(() => {
+    current = Math.min(current + increment, target);
+    el.textContent = Math.floor(current) + suffix;
+    if (current >= target) clearInterval(timer);
+  }, duration / steps);
+}
+const counterObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCounter(e.target);
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter').forEach(el => counterObs.observe(el));
+
+// ── SUBTLE CARD TILT ON HOVER ──
+document.querySelectorAll('.feat-card, .plan').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    card.style.transform = `perspective(600px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg) translateY(-2px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform 0.4s ease';
+  });
+});
 </script>
 </body>
 </html>
