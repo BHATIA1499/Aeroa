@@ -244,7 +244,7 @@ tr:hover td{background:#FAFAFE}
       </button>
     </div>
   </div>
-  <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this)">
+  <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.numbers,.ods,.tsv,.txt" onchange="handleFileSelect(this)">
 
   <!-- CONTENT -->
   <div id="content">
@@ -258,7 +258,7 @@ tr:hover td{background:#FAFAFE}
            ondragover="doDragOver(event)" ondragleave="doDragLeave(event)" ondrop="doDrop(event)"
            onclick="document.getElementById('file-input').click()">
         <div class="drop-zone-title">Drag & drop your file here</div>
-        <div class="drop-zone-sub">CSV, XLSX or XLS · up to 32 MB</div>
+        <div class="drop-zone-sub">CSV · XLSX · XLS · Numbers · ODS · up to 32 MB</div>
       </div>
       <div class="upload-progress" id="upload-progress">⏳ Analysing your data…</div>
     </div>
