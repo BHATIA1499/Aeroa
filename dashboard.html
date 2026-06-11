@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Threadlytics</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234F46E5'/><circle cx='16' cy='16' r='6' fill='%230EA5E9'/></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F7FA;--surface:#FFFFFF;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#0D0D14;--text2:#5E5E72;--text3:#9B9BB0;
+  --electric:#4F46E5;--electric2:#6366F1;--teal:#0EA5E9;--teal2:#38BDF8;
+  --amber:#F59E0B;--red:#EF4444;--green:#16A34A;
+  --serif:'Syne',sans-serif;--body:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --nav-w:220px;
+}
+body{font-family:var(--body);background:var(--bg);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--nav-w);flex-shrink:0;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
+}
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;text-decoration:none}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+.sb-logo-text{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text)}
+.sb-logo-text span{color:var(--teal)}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s;text-decoration:none;margin-bottom:1px}
+.nav-item:hover{background:rgba(79,70,229,0.06);color:var(--text)}
+.nav-item.active{background:rgba(79,70,229,0.10);color:var(--electric);font-weight:600}
+.nav-item .icon{width:16px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-bottom{padding:14px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:var(--bg)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--electric);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-plan{font-size:10px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.06em}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;transition:color 0.15s;background:none;border:none;font-family:inherit}
+.logout-btn:hover{color:var(--red)}
+
+/* ── MAIN ── */
+#main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.topbar-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.upload-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;background:var(--electric);color:white;
+  border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.upload-btn:hover{background:#4338CA;transform:translateY(-1px)}
+.plan-chip{padding:4px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+.plan-trial  {background:rgba(245,158,11,0.1);color:#B45309;border:1px solid rgba(245,158,11,0.2)}
+.plan-starter{background:rgba(79,70,229,0.08);color:var(--electric);border:1px solid rgba(79,70,229,0.15)}
+.plan-growth {background:rgba(14,165,233,0.1);color:#0369A1;border:1px solid rgba(14,165,233,0.2)}
+.plan-studio {background:rgba(124,58,237,0.08);color:#7C3AED;border:1px solid rgba(124,58,237,0.15)}
+
+/* ── CONTENT ── */
+#content{flex:1;padding:28px}
+
+/* ── EMPTY STATE ── */
+#empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
+.empty-icon{font-size:48px;margin-bottom:16px}
+.empty-title{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--text);margin-bottom:8px}
+.empty-sub{font-size:15px;color:var(--text2);margin-bottom:28px;max-width:400px;line-height:1.6;font-weight:300}
+.drop-zone{border:2px dashed rgba(79,70,229,0.25);border-radius:14px;padding:40px 48px;cursor:pointer;
+  transition:all 0.2s;background:white;max-width:440px;width:100%}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--electric);background:rgba(79,70,229,0.03)}
+.drop-zone-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.drop-zone-sub{font-size:12px;color:var(--text3)}
+.upload-progress{font-size:13px;color:var(--electric2);margin-top:10px;display:none}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;
+  border-top:3px solid transparent;transition:box-shadow 0.2s}
+.kpi:nth-child(1){border-top-color:var(--teal)}
+.kpi:nth-child(2){border-top-color:var(--electric)}
+.kpi:nth-child(3){border-top-color:var(--amber)}
+.kpi:nth-child(4){border-top-color:var(--red)}
+.kpi:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+.kpi-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.kpi-value{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:12px;color:var(--text2)}
+
+/* ── CHARTS ROW ── */
+.charts-row{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;margin-bottom:20px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px}
+
+/* ── TABLE ── */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden;margin-bottom:14px}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-header h3{font-size:13px;font-weight:700;color:var(--text)}
+.badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-red   {background:rgba(239,68,68,0.1);color:var(--red)}
+.badge-amber {background:rgba(245,158,11,0.1);color:#B45309}
+.badge-teal  {background:rgba(14,165,233,0.1);color:#0369A1}
+.badge-green {background:rgba(22,163,74,0.1);color:var(--green)}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 20px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;text-align:left;background:#FAFAFA;border-bottom:1px solid var(--border)}
+td{padding:11px 20px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(0,0,0,0.04)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAFE}
+.urg{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.urg-CRITICAL{background:rgba(239,68,68,0.1);color:var(--red)}
+.urg-URGENT  {background:rgba(245,158,11,0.1);color:#B45309}
+.urg-REORDER {background:rgba(79,70,229,0.08);color:var(--electric)}
+.sev-CLEARANCE{background:rgba(239,68,68,0.1);color:var(--red);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.sev-DEEP    {background:rgba(245,158,11,0.1);color:#B45309;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.sev-TACTICAL{background:rgba(79,70,229,0.08);color:var(--electric);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
+
+/* ── AI CHAT ── */
+#chat-panel{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--surface);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:60;
+  transform:translateX(100%);transition:transform 0.3s ease}
+#chat-panel.open{transform:translateX(0)}
+.chat-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.chat-hd-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal)}
+.chat-hd-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.chat-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:2px}
+.chat-close:hover{color:var(--text)}
+.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.cmsg{display:flex;gap:8px;align-items:flex-start}
+.cmsg.usr{flex-direction:row-reverse}
+.cav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.cmsg.ai .cav{background:rgba(14,165,233,0.12);color:var(--teal)}
+.cmsg.usr .cav{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.cbub{padding:10px 13px;border-radius:10px;font-size:12px;line-height:1.6;max-width:85%}
+.cmsg.ai .cbub{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.cmsg.usr .cbub{background:var(--electric);color:white}
+.cbub strong{font-weight:600;color:var(--teal)}
+.cmsg.usr .cbub strong{color:rgba(255,255,255,0.9)}
+.chat-inp-row{padding:14px;border-top:1px solid var(--border);display:flex;gap:8px}
+.chat-input{flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;
+  font-family:var(--body);font-size:13px;color:var(--text);outline:none;background:var(--bg);transition:border-color 0.2s}
+.chat-input:focus{border-color:var(--electric);background:white}
+.chat-send{width:34px;height:34px;background:var(--electric);border:none;border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
+.chat-send:hover{background:#4338CA}
+.chat-send:disabled{opacity:0.4;cursor:not-allowed}
+.chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;background:var(--electric);
+  border:none;border-radius:50%;box-shadow:0 4px 20px rgba(79,70,229,0.35);cursor:pointer;
+  font-size:20px;display:flex;align-items:center;justify-content:center;z-index:55;
+  transition:all 0.2s;color:white}
+.chat-fab:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(79,70,229,0.45)}
+.typing-dots{display:flex;align-items:center;gap:4px;padding:2px 0}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--text3);display:block;
+  animation:bounce 1.2s ease infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
+.chip{padding:5px 12px;border-radius:99px;border:1px solid rgba(79,70,229,0.2);
+  background:#fff;color:var(--electric2);font-size:11px;font-weight:500;cursor:pointer;
+  font-family:var(--body);transition:all 0.15s}
+.chip:hover{background:rgba(79,70,229,0.06);border-color:var(--electric)}
+
+/* ── HIDDEN VIEWS ── */
+.view{display:none}
+.view.active{display:block}
+
+/* ── UPLOAD HIDDEN FILE INPUT ── */
+#file-input{display:none}
+
+/* ── INSIGHTS BAR ── */
+.insights-bar{background:linear-gradient(135deg,rgba(79,70,229,0.06),rgba(14,165,233,0.04));
+  border:1px solid rgba(79,70,229,0.12);border-radius:12px;padding:16px 20px;margin-bottom:20px}
+.insights-title{font-size:11px;font-weight:700;color:var(--electric2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.insights-list{display:flex;flex-direction:column;gap:6px}
+.insight-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);line-height:1.5}
+.insight-bullet{color:var(--electric);font-size:16px;flex-shrink:0;line-height:1.2}
+
+@media(max-width:900px){
+  #sidebar{display:none}
+  #main{margin-left:0}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .charts-row{grid-template-columns:1fr}
+  #chat-panel{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <a href="/" class="sb-logo">
+    <div class="sb-logo-dot"></div>
+    <div class="sb-logo-text">Thread<span>lytics</span></div>
+  </a>
+  <div class="sb-nav">
+    <div class="nav-section">Analytics</div>
+    <a class="nav-item active" data-view="overview" onclick="showView('overview',this)">
+      <span class="icon">📊</span>Overview
+    </a>
+    <a class="nav-item" data-view="bestsellers" onclick="showView('bestsellers',this)">
+      <span class="icon">⭐</span>Best Sellers
+    </a>
+    <a class="nav-item" data-view="reorders" onclick="showView('reorders',this)">
+      <span class="icon">📦</span>Reorder Alerts
+    </a>
+    <a class="nav-item" data-view="markdowns" onclick="showView('markdowns',this)">
+      <span class="icon">📉</span>Markdown Risk
+    </a>
+    <a class="nav-item" data-view="categories" onclick="showView('categories',this)">
+      <span class="icon">🗂️</span>Categories
+    </a>
+    <div class="nav-section" style="margin-top:8px">AI</div>
+    <a class="nav-item" onclick="openChat()">
+      <span class="icon">💬</span>Ask AI
+    </a>
+  </div>
+  <div class="sb-bottom">
+    <div class="user-card">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sb-name">Loading…</div>
+        <div class="user-plan" id="sb-plan">trial</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;text-align:center">
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <span class="plan-chip plan-trial" id="plan-chip">Trial</span>
+      <button class="upload-btn" onclick="document.getElementById('file-input').click()">
+        ＋ Upload file
+      </button>
+    </div>
+  </div>
+  <input type="file" id="file-input" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this)">
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- EMPTY STATE -->
+    <div id="empty-state">
+      <div class="empty-icon">📂</div>
+      <div class="empty-title">Upload your trading file</div>
+      <div class="empty-sub">Drop your CSV or Excel file to get instant sell-through analysis, reorder alerts, markdown risk, and an AI analyst ready to answer questions about your range.</div>
+      <div class="drop-zone" id="drop-zone"
+           ondragover="doDragOver(event)" ondragleave="doDragLeave(event)" ondrop="doDrop(event)"
+           onclick="document.getElementById('file-input').click()">
+        <div class="drop-zone-title">Drag & drop your file here</div>
+        <div class="drop-zone-sub">CSV, XLSX or XLS · up to 32 MB</div>
+      </div>
+      <div class="upload-progress" id="upload-progress">⏳ Analysing your data…</div>
+    </div>
+
+    <!-- DASHBOARD VIEWS (hidden until data loaded) -->
+    <div id="dashboard-views" style="display:none">
+
+      <!-- AI Insights bar -->
+      <div class="insights-bar" id="insights-bar">
+        <div class="insights-title">⚡ AI Quick Insights</div>
+        <div class="insights-list" id="insights-list">
+          <div class="insight-item"><span class="insight-bullet">→</span>Loading insights…</div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW VIEW -->
+      <div class="view active" id="view-overview">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kpi-rev">—</div><div class="kpi-sub" id="kpi-rev-sub">12-week period</div></div>
+          <div class="kpi"><div class="kpi-label">Sell-Through</div><div class="kpi-value" id="kpi-st">—</div><div class="kpi-sub" id="kpi-st-sub">avg across all SKUs</div></div>
+          <div class="kpi"><div class="kpi-label">Reorder Alerts</div><div class="kpi-value" id="kpi-ro">—</div><div class="kpi-sub" id="kpi-ro-sub">SKUs need action</div></div>
+          <div class="kpi"><div class="kpi-label">Markdown Risk</div><div class="kpi-value" id="kpi-md">—</div><div class="kpi-sub" id="kpi-md-sub">SKUs flagged</div></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <div class="card-title">Weekly Revenue Trend</div>
+            <canvas id="revenue-chart" height="160"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="card-title">Category Performance</div>
+            <canvas id="category-chart" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- BEST SELLERS VIEW -->
+      <div class="view" id="view-bestsellers">
+        <div class="table-card">
+          <div class="table-header"><h3>Best Sellers</h3><span class="badge badge-teal" id="bs-count">0 SKUs</span></div>
+          <table><thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Revenue</th><th>Units</th><th>Sell-Through</th><th>Margin</th></tr></thead>
+          <tbody id="bs-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- REORDERS VIEW -->
+      <div class="view" id="view-reorders">
+        <div class="table-card">
+          <div class="table-header"><h3>Reorder Alerts</h3><span class="badge badge-red" id="ro-count">0 alerts</span></div>
+          <table><thead><tr><th>Urgency</th><th>SKU</th><th>Name</th><th>Category</th><th>Stock</th><th>Cover Wks</th><th>Sell-Through</th><th>Revenue</th></tr></thead>
+          <tbody id="ro-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- MARKDOWNS VIEW -->
+      <div class="view" id="view-markdowns">
+        <div class="table-card">
+          <div class="table-header"><h3>Markdown Risk</h3><span class="badge badge-amber" id="md-count">0 SKUs</span></div>
+          <table><thead><tr><th>Severity</th><th>SKU</th><th>Name</th><th>Category</th><th>Sell-Through</th><th>Recommended Depth</th><th>Revenue at Risk</th></tr></thead>
+          <tbody id="md-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- CATEGORIES VIEW -->
+      <div class="view" id="view-categories">
+        <div class="table-card">
+          <div class="table-header"><h3>Category Scorecard</h3></div>
+          <table><thead><tr><th>Category</th><th>Health</th><th>Revenue</th><th>SKUs</th><th>Avg Sell-Through</th><th>Avg Margin</th></tr></thead>
+          <tbody id="cat-tbody"></tbody></table>
+        </div>
+      </div>
+
+    </div><!-- /dashboard-views -->
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- AI CHAT PANEL -->
+<div id="chat-panel">
+  <div class="chat-hd">
+    <div class="chat-hd-dot"></div>
+    <div class="chat-hd-title">AI Merchandising Agent</div>
+    <button class="chat-close" onclick="closeChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div class="cmsg ai">
+      <div class="cav">T</div>
+      <div class="cbub">Hi! I'm your AI merchandising analyst. Upload a trading file and I'll answer any question about your range — reorders, markdowns, best sellers, category health — grounded in your actual numbers.</div>
+    </div>
+  </div>
+  <div class="chips" id="chat-chips" style="display:none">
+    <button class="chip" onclick="sendChip(this)">What should I reorder this week?</button>
+    <button class="chip" onclick="sendChip(this)">Which categories should I cut?</button>
+    <button class="chip" onclick="sendChip(this)">What's my biggest markdown risk?</button>
+    <button class="chip" onclick="sendChip(this)">Show me my top 5 best sellers</button>
+  </div>
+  <div class="chat-inp-row">
+    <input type="text" class="chat-input" id="chat-input" placeholder="Ask about your range…" disabled onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" id="chat-send" disabled onclick="sendChat()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Ask AI">💬</button>
+
+<script>
+// ── State ─────────────────────────────────────────────────────
+let analysisData  = null;
+let chatReady     = false;
+let chatBusy      = false;
+let currentUploadId = null;
+let revenueChart  = null;
+let catChart      = null;
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUser();
+  await loadLatestAnalysis();
+});
+
+async function loadUser() {
+  try {
+    const res  = await fetch('/auth/me', { credentials: 'include' });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    const user = await res.json();
+    const initials = (user.full_name || user.email || '?').charAt(0).toUpperCase();
+    document.getElementById('sb-avatar').textContent = initials;
+    document.getElementById('sb-name').textContent   = user.full_name || user.email;
+    document.getElementById('sb-plan').textContent   = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+    const chip = document.getElementById('plan-chip');
+    chip.textContent = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
+    chip.className = `plan-chip plan-${user.plan}`;
+  } catch (e) { console.error('loadUser:', e); }
+}
+
+async function loadLatestAnalysis() {
+  try {
+    const res = await fetch('/api/analysis', { credentials: 'include' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.kpis) { populateDashboard(data); }
+    }
+  } catch (e) { /* no data yet */ }
+}
+
+async function logout() {
+  await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+  window.location.href = '/login';
+}
+
+// ── View switching ────────────────────────────────────────────
+function showView(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {overview:'Dashboard',bestsellers:'Best Sellers',reorders:'Reorder Alerts',markdowns:'Markdown Risk',categories:'Categories'};
+  document.getElementById('topbar-title').textContent = titles[name] || 'Dashboard';
+}
+
+// ── File upload ───────────────────────────────────────────────
+function doDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function doDragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function doDrop(e)      { e.preventDefault(); doDragLeave(); const f = e.dataTransfer.files[0]; if(f) doUpload(f); }
+function handleFileSelect(inp) { if(inp.files[0]) doUpload(inp.files[0]); }
+
+async function doUpload(file) {
+  const prog = document.getElementById('upload-progress');
+  prog.style.display = 'block';
+  prog.textContent = '⏳ Analysing your data…';
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: form });
+    const data = await res.json();
+    if (!res.ok) {
+      prog.textContent = '⚠ ' + (data.error || 'Upload failed');
+      return;
+    }
+    currentUploadId = data.upload_id;
+    prog.style.display = 'none';
+    // Reload full analysis
+    const aRes = await fetch(`/api/analysis?upload_id=${currentUploadId}`, { credentials: 'include' });
+    const analysis = await aRes.json();
+    populateDashboard(analysis);
+    loadInsights();
+  } catch (err) {
+    prog.textContent = '⚠ ' + err.message;
+  }
+}
+
+// ── Populate dashboard ────────────────────────────────────────
+function populateDashboard(data) {
+  analysisData = data;
+  document.getElementById('empty-state').style.display   = 'none';
+  document.getElementById('dashboard-views').style.display = 'block';
+
+  const k = data.kpis || {};
+  document.getElementById('kpi-rev').textContent    = '£' + fmt(k.total_revenue);
+  document.getElementById('kpi-rev-sub').textContent = `Gross profit £${fmt(k.gross_profit)} · ${k.avg_margin_pct?.toFixed(1)}% margin`;
+  document.getElementById('kpi-st').textContent     = (k.avg_sell_through||0).toFixed(1) + '%';
+  document.getElementById('kpi-st-sub').textContent  = `${k.avg_cover_weeks?.toFixed(1)} wks avg cover`;
+  document.getElementById('kpi-ro').textContent     = k.reorder_count || 0;
+  document.getElementById('kpi-ro-sub').textContent  = `${k.critical_oos_count || 0} CRITICAL / OOS`;
+  document.getElementById('kpi-md').textContent     = k.markdown_risk_count || 0;
+  document.getElementById('kpi-md-sub').textContent  = 'units at risk';
+
+  buildRevenueChart(data.weekly_trend || []);
+  buildCategoryChart(data.category_scorecard || []);
+  buildBestSellers(data.best_sellers || []);
+  buildReorders(data.reorder_alerts || []);
+  buildMarkdowns(data.markdown_risk || []);
+  buildCategories(data.category_scorecard || []);
+
+  // Enable chat
+  chatReady = true;
+  document.getElementById('chat-input').disabled  = false;
+  document.getElementById('chat-send').disabled   = false;
+  document.getElementById('chat-input').placeholder = 'Ask anything about your range…';
+  document.getElementById('chat-chips').style.display = 'flex';
+}
+
+// ── Charts ────────────────────────────────────────────────────
+function buildRevenueChart(trend) {
+  if (revenueChart) revenueChart.destroy();
+  const ctx = document.getElementById('revenue-chart').getContext('2d');
+  revenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: trend.map(t => t.week),
+      datasets: [{
+        data: trend.map(t => t.revenue),
+        backgroundColor: trend.map((_, i) => i === trend.length-1 ? '#0EA5E9' : 'rgba(79,70,229,0.15)'),
+        borderRadius: 4, borderSkipped: false,
+      }]
+    },
+    options: { responsive:true, plugins:{legend:{display:false}}, scales:{
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#9B9BB0'}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#9B9BB0',callback:v=>'£'+fmtK(v)}}
+    }}
+  });
+}
+
+function buildCategoryChart(cats) {
+  if (catChart) catChart.destroy();
+  const top = cats.slice(0,6);
+  const ctx  = document.getElementById('category-chart').getContext('2d');
+  catChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: top.map(c => c.category),
+      datasets: [{
+        data: top.map(c => c.revenue),
+        backgroundColor: ['#4F46E5','#0EA5E9','#7C3AED','#F59E0B','#16A34A','#EF4444'].map(c=>c+'CC'),
+        borderRadius: 4, borderSkipped: false,
+      }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{
+      x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#9B9BB0',callback:v=>'£'+fmtK(v)}},
+      y:{grid:{display:false},ticks:{font:{size:10},color:'#5E5E72'}}
+    }}
+  });
+}
+
+// ── Tables ────────────────────────────────────────────────────
+function buildBestSellers(items) {
+  document.getElementById('bs-count').textContent = items.length + ' SKUs';
+  document.getElementById('bs-tbody').innerHTML = items.map(r => `
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
+      <td>${esc(r.name||'—')}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td><strong>£${fmt(r.revenue)}</strong></td>
+      <td>${Math.round(r.units||0).toLocaleString()}</td>
+      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
+      <td>${r.margin_pct!=null?r.margin_pct.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+}
+
+function buildReorders(items) {
+  document.getElementById('ro-count').textContent = items.length + ' alerts';
+  document.getElementById('ro-tbody').innerHTML = items.map(r => `
+    <tr>
+      <td><span class="urg urg-${r.urgency}">${r.urgency}</span></td>
+      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
+      <td>${esc(r.name||'—')}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${r.stock!=null?r.stock.toLocaleString():'OOS'}</td>
+      <td>${r.cover_weeks!=null?r.cover_weeks+'w':'—'}</td>
+      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
+      <td>£${fmt(r.revenue)}</td>
+    </tr>`).join('');
+}
+
+function buildMarkdowns(items) {
+  document.getElementById('md-count').textContent = items.length + ' SKUs';
+  document.getElementById('md-tbody').innerHTML = items.map(r => `
+    <tr>
+      <td><span class="sev-${r.severity}">${r.severity}</span></td>
+      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
+      <td>${esc(r.name||'—')}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${r.sell_through.toFixed(1)}%</td>
+      <td>${esc(r.recommended_depth)}</td>
+      <td>£${fmt(r.revenue)}</td>
+    </tr>`).join('');
+}
+
+function buildCategories(items) {
+  const colours = {STRONG:'badge-green',HEALTHY:'badge-teal','AT RISK':'badge-amber',CRITICAL:'badge-red',UNKNOWN:'badge-teal'};
+  document.getElementById('cat-tbody').innerHTML = items.map(c => `
+    <tr>
+      <td><strong>${esc(c.category)}</strong></td>
+      <td><span class="badge ${colours[c.health]||'badge-teal'}">${c.health}</span></td>
+      <td>£${fmt(c.revenue)}</td>
+      <td>${c.sku_count}</td>
+      <td>${c.avg_sell_through!=null?c.avg_sell_through.toFixed(1)+'%':'—'}</td>
+      <td>${c.avg_margin_pct!=null?c.avg_margin_pct.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+}
+
+// ── AI Insights ───────────────────────────────────────────────
+async function loadInsights() {
+  try {
+    const res = await fetch('/api/quick-insights', { credentials: 'include' });
+    const data = await res.json();
+    const list = document.getElementById('insights-list');
+    list.innerHTML = (data.insights || []).map(i =>
+      `<div class="insight-item"><span class="insight-bullet">→</span>${esc(i)}</div>`
+    ).join('');
+  } catch {}
+}
+
+// ── AI Chat ───────────────────────────────────────────────────
+function openChat()  { document.getElementById('chat-panel').classList.add('open'); document.getElementById('chat-fab').style.display='none'; }
+function closeChat() { document.getElementById('chat-panel').classList.remove('open'); document.getElementById('chat-fab').style.display='flex'; }
+function sendChip(btn) { document.getElementById('chat-input').value = btn.textContent; sendChat(); }
+
+async function sendChat() {
+  if (!chatReady || chatBusy) return;
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  appendBubble('usr', esc(msg));
+  input.value = '';
+  chatBusy = true;
+  document.getElementById('chat-send').disabled = true;
+
+  const typingId = showTyping();
+
+  try {
+    const res = await fetch('/api/chat/stream', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: msg, upload_id: currentUploadId }),
+    });
+
+    removeTyping(typingId);
+    if (!res.ok) { appendBubble('ai', '⚠ ' + ((await res.json()).error || 'Error')); return; }
+
+    const bub    = appendBubble('ai', '');
+    const reader = res.body.getReader();
+    const dec    = new TextDecoder();
+    let buf = '', full = '';
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const p = JSON.parse(line.slice(6));
+          if (p.delta) { full += p.delta; bub.innerHTML = fmtReply(full); scrollChat(); }
+          if (p.error) { bub.textContent = '⚠ ' + p.error; }
+        } catch {}
+      }
+    }
+  } catch (err) {
+    removeTyping(typingId);
+    appendBubble('ai', '⚠ ' + err.message);
+  } finally {
+    chatBusy = false;
+    document.getElementById('chat-send').disabled = false;
+    input.focus();
+  }
+}
+
+function appendBubble(role, html) {
+  const msgs = document.getElementById('chat-msgs');
+  const wrap = document.createElement('div'); wrap.className = 'cmsg ' + role;
+  const av   = document.createElement('div'); av.className = 'cav'; av.textContent = role==='usr'?'U':'T';
+  const bub  = document.createElement('div'); bub.className = 'cbub'; bub.innerHTML = html;
+  wrap.appendChild(av); wrap.appendChild(bub);
+  msgs.appendChild(wrap); scrollChat();
+  return bub;
+}
+
+function showTyping() {
+  const id = 'ty-'+Date.now();
+  const msgs = document.getElementById('chat-msgs');
+  const wrap = document.createElement('div'); wrap.className='cmsg ai'; wrap.id=id;
+  wrap.innerHTML='<div class="cav">T</div><div class="cbub"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(wrap); scrollChat();
+  return id;
+}
+function removeTyping(id) { document.getElementById(id)?.remove(); }
+function scrollChat() { const m=document.getElementById('chat-msgs'); m.scrollTop=m.scrollHeight; }
+
+// ── Helpers ───────────────────────────────────────────────────
+function esc(t='') { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtReply(t) { return esc(t).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
+function fmt(n)  { if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(2)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return Math.round(n).toLocaleString(); }
+function fmtK(n) { if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(0)+'K'; return n; }
+</script>
+</body>
+</html>

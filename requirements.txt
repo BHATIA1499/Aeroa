@@ -1,0 +1,11 @@
+anthropic>=0.40.0
+flask>=3.0.0
+flask-cors>=4.0.0
+pandas>=2.0.0
+openpyxl>=3.1.0
+xlrd>=2.0.1
+odfpy>=1.4.1
+python-dotenv>=1.0.0
+gunicorn>=21.0.0
+supabase>=2.4.0
+stripe>=8.0.0
