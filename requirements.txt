@@ -5,6 +5,7 @@ pandas>=2.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.1
 odfpy>=1.4.1
+numbers-parser>=4.0.0
 python-dotenv>=1.0.0
 gunicorn>=21.0.0
 supabase>=2.4.0

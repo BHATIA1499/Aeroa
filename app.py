@@ -240,10 +240,43 @@ def _best_sheet(file_obj, filename):
             continue
     return xl.parse(best_sheet)
 
+def _parse_numbers(file_obj):
+    """Parse Apple Numbers .numbers file into a DataFrame."""
+    import tempfile, os
+    from numbers_parser import Document
+    raw = file_obj.read() if hasattr(file_obj, "read") else file_obj
+    with tempfile.NamedTemporaryFile(suffix=".numbers", delete=False) as tmp:
+        tmp.write(raw)
+        tmp_path = tmp.name
+    try:
+        doc = Document(tmp_path)
+        # Find the sheet/table with the most recognisable columns
+        KEY_COLS = {"sku","productcode","revenue","sales","unitssold","units","qty","stockonhand"}
+        best_df, best_score = None, -1
+        for sheet in doc.sheets:
+            for table in sheet.tables:
+                rows = list(table.iter_rows())
+                if len(rows) < 2:
+                    continue
+                headers = [str(c.value) if c.value is not None else "" for c in rows[0]]
+                norm = {h.lower().replace(" ","").replace("_","") for h in headers}
+                score = len(norm & KEY_COLS)
+                if score > best_score:
+                    best_score = score
+                    data = [[c.value for c in row] for row in rows[1:]]
+                    best_df = pd.DataFrame(data, columns=headers)
+        if best_df is None:
+            raise ValueError("No data table found in Numbers file.")
+        return best_df
+    finally:
+        os.unlink(tmp_path)
+
+
 def parse_upload(file_obj, filename):
     """
     Universal file parser — handles every format users actually export:
       Excel   .xlsx / .xls   (from Excel, Google Sheets, Numbers)
+      Numbers .numbers        (Apple Numbers native format)
       ODS     .ods            (LibreOffice / OpenOffice)
       CSV     .csv            (any app, any delimiter, with/without BOM)
       TSV     .tsv / .txt     (tab-delimited from reporting tools)
@@ -256,7 +289,10 @@ def parse_upload(file_obj, filename):
     """
     ext = filename.rsplit(".", 1)[-1].lower()
 
-    if ext in ("xlsx", "xls"):
+    if ext == "numbers":
+        df = _parse_numbers(file_obj)
+
+    elif ext in ("xlsx", "xls"):
         # Read bytes for multi-sheet detection
         raw = file_obj.read() if hasattr(file_obj, "read") else file_obj
         df = _best_sheet(io.BytesIO(raw), filename)
@@ -643,8 +679,8 @@ def upload(user):
         return jsonify({"error": "Empty filename"}), 400
 
     ext = f.filename.rsplit(".", 1)[-1].lower()
-    if ext not in ("csv", "xlsx", "xls"):
-        return jsonify({"error": "Unsupported format. Please upload CSV, XLSX, or XLS."}), 400
+    if ext not in ("csv", "xlsx", "xls", "numbers", "ods", "tsv", "txt"):
+        return jsonify({"error": "Unsupported format. Please upload CSV, Excel (.xlsx/.xls), Numbers, ODS, or TSV."}), 400
 
     try:
         file_bytes = f.read()
