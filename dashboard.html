@@ -256,29 +256,30 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 /* ══════════════════════════════════
    DIRECTOR VIEW
 ══════════════════════════════════ */
-.exec-header{background:linear-gradient(135deg,#1E1E2A,#2E3040);border-radius:20px;padding:28px 32px;
-  margin-bottom:16px;position:relative;overflow:hidden}
+.exec-header{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);
+  box-shadow:var(--shadow);border-radius:20px;padding:28px 32px;
+  margin-bottom:16px;position:relative;overflow:hidden;border-top:3px solid rgba(125,170,117,0.4)}
 .exec-header::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;
-  border-radius:50%;background:rgba(184,153,106,0.08);pointer-events:none}
+  border-radius:50%;background:rgba(125,170,117,0.05);pointer-events:none}
 .exec-header::after{content:'';position:absolute;bottom:-60px;left:-20px;width:150px;height:150px;
-  border-radius:50%;background:rgba(138,157,216,0.06);pointer-events:none}
-.exec-label{font-size:11px;font-weight:700;color:rgba(184,153,106,0.7);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px}
+  border-radius:50%;background:rgba(138,157,216,0.04);pointer-events:none}
+.exec-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px}
 .exec-content{display:flex;align-items:center;gap:40px}
 .health-gauge-wrap{position:relative;flex-shrink:0}
 .health-gauge{width:110px;height:55px;position:relative}
 .health-arc{width:110px;height:55px;border-radius:55px 55px 0 0;overflow:hidden}
 .health-arc-track{width:110px;height:110px;border-radius:50%;background:conic-gradient(from 180deg,transparent 0deg,transparent 180deg);
-  border:12px solid rgba(255,255,255,0.08);position:absolute;bottom:0}
+  border:12px solid rgba(0,0,0,0.06);position:absolute;bottom:0}
 .health-arc-fill{width:110px;height:110px;border-radius:50%;position:absolute;bottom:0;transition:background 1s ease}
-.health-score-num{font-family:var(--serif);font-size:42px;font-weight:900;color:white;line-height:1;margin-bottom:4px}
+.health-score-num{font-family:var(--serif);font-size:42px;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px}
 .health-descriptor{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
-.health-STRONG-text   {color:#7DAA75}
-.health-HEALTHY-text  {color:#A8C5A0}
-.health-AT-RISK-text  {color:#F0C4A0}
-.health-CRITICAL-text {color:#E3A08E}
+.health-STRONG-text   {color:#3A7032}
+.health-HEALTHY-text  {color:#5A8A52}
+.health-AT-RISK-text  {color:#9A5020}
+.health-CRITICAL-text {color:#A0503C}
 .exec-meta{margin-left:auto;text-align:right}
-.exec-updated{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:4px}
-.exec-sku-count{font-size:13px;color:rgba(255,255,255,0.55);font-weight:600}
+.exec-updated{font-size:11px;color:var(--text3);margin-bottom:4px}
+.exec-sku-count{font-size:13px;color:var(--text2);font-weight:600}
 
 .vs-plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
 .vs-card{padding:20px 22px;position:relative}
@@ -312,6 +313,22 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
   line-height:0.6;float:left;margin-right:8px;margin-top:10px}
 .ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
   color:rgba(184,153,106,0.8);border:1px solid rgba(184,153,106,0.25);padding:3px 10px;border-radius:5px;letter-spacing:0.06em}
+
+/* ── KPI ACCORDION ── */
+.kpi-accordion{margin-bottom:18px}
+.kpi-accordion-header{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;
+  background:rgba(125,170,117,0.08);border:1px solid rgba(125,170,117,0.20);cursor:pointer;
+  font-family:var(--serif);font-size:12px;font-weight:700;color:var(--mint-d);
+  user-select:none;transition:background 0.15s;margin-bottom:0}
+.kpi-accordion-header:hover{background:rgba(125,170,117,0.14)}
+.kpi-accordion-arrow{margin-left:auto;font-size:10px;transition:transform 0.2s;display:inline-block}
+.kpi-accordion-body{overflow:hidden;max-height:0;transition:max-height 0.3s ease;margin-top:0}
+.kpi-accordion-body.open{max-height:600px;margin-top:10px}
+
+/* ── CHART EMPTY STATE ── */
+.chart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;min-height:120px;color:var(--text3);font-size:11px;text-align:center;gap:6px}
+.chart-empty-icon{font-size:24px;opacity:0.5}
 
 /* ── FILE INPUT ── */
 #file-input{display:none}
@@ -420,6 +437,12 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
       <!-- ══════════════ MA VIEW ══════════════ -->
       <div class="role-view" id="view-ma">
+        <!-- KPI Accordion -->
+        <div class="kpi-accordion" id="ma-kpi-accordion">
+          <div class="kpi-accordion-header" onclick="toggleKPI('ma')">
+            <span>📊</span> KPIs <span class="kpi-accordion-arrow" id="ma-kpi-arrow">▼</span>
+          </div>
+          <div class="kpi-accordion-body open" id="ma-kpi-body">
         <div id="ma-sec-overview">
           <!-- Row 1: Operational KPIs -->
           <div class="kpi-grid kpi-grid-6" style="margin-bottom:12px">
@@ -449,6 +472,8 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
             </div>
           </div>
         </div>
+          </div><!-- /ma-kpi-body -->
+        </div><!-- /ma-kpi-accordion -->
 
         <div class="two-col" id="ma-sec-alerts">
           <div class="glass table-card">
@@ -486,6 +511,20 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
       <!-- ══════════════ AM VIEW ══════════════ -->
       <div class="role-view" id="view-am">
+        <!-- KPI Accordion -->
+        <div class="kpi-accordion" id="am-kpi-accordion">
+          <div class="kpi-accordion-header" onclick="toggleKPI('am')">
+            <span>📊</span> KPIs <span class="kpi-accordion-arrow" id="am-kpi-arrow">▼</span>
+          </div>
+          <div class="kpi-accordion-body open" id="am-kpi-body">
+            <div class="kpi-grid kpi-grid-4" style="margin-bottom:8px">
+              <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="am-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
+              <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="am-kpi-margin2">—</div><div class="kpi-sub">avg across range</div></div>
+              <div class="kpi glass" style="border-top-color:#F4C0A8"><div class="kpi-label">Markdown Candidates</div><div class="kpi-value" id="am-kpi-md">—</div><div class="kpi-sub" id="am-kpi-md-sub">at risk</div></div>
+              <div class="kpi glass" style="border-top-color:#B8C4E8"><div class="kpi-label">Reorder Alerts</div><div class="kpi-value" id="am-kpi-ro">—</div><div class="kpi-sub">need action</div></div>
+            </div>
+          </div>
+        </div>
         <div class="kpi-grid kpi-grid-4" id="am-sec-overview">
           <div class="kpi glass">
             <div class="kpi-label">Sell-Through %</div>
@@ -549,12 +588,20 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
       <!-- ══════════════ MERCHANDISER VIEW ══════════════ -->
       <div class="role-view" id="view-merch">
-        <div class="kpi-grid kpi-grid-5" id="mc-sec-overview">
+        <!-- KPI Accordion -->
+        <div class="kpi-accordion" id="mc-kpi-accordion">
+          <div class="kpi-accordion-header" onclick="toggleKPI('mc')">
+            <span>📊</span> KPIs <span class="kpi-accordion-arrow" id="mc-kpi-arrow">▼</span>
+          </div>
+          <div class="kpi-accordion-body open" id="mc-kpi-body">
+            <div class="kpi-grid kpi-grid-5" id="mc-sec-overview">
           <div class="kpi glass"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="mc-rev">—</div><div class="kpi-sub">trading period</div></div>
           <div class="kpi glass"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="mc-margin">—</div><div class="kpi-sub">avg across range</div></div>
           <div class="kpi glass"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="mc-st">—</div><div class="kpi-sub">all SKUs</div></div>
           <div class="kpi glass"><div class="kpi-label">OTB Utilised</div><div class="kpi-value" id="mc-otb">—</div><div class="kpi-sub">of budget</div></div>
           <div class="kpi glass"><div class="kpi-label">Forecast Margin</div><div class="kpi-value" id="mc-fmargin">—</div><div class="kpi-sub">projected</div></div>
+        </div>
+          </div>
         </div>
 
         <div class="three-col" id="mc-sec-scatter">
@@ -606,6 +653,20 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
       <!-- ══════════════ DIRECTOR VIEW ══════════════ -->
       <div class="role-view" id="view-dir">
+        <!-- KPI Accordion -->
+        <div class="kpi-accordion" id="dir-kpi-accordion">
+          <div class="kpi-accordion-header" onclick="toggleKPI('dir')">
+            <span>📊</span> KPIs <span class="kpi-accordion-arrow" id="dir-kpi-arrow">▼</span>
+          </div>
+          <div class="kpi-accordion-body open" id="dir-kpi-body">
+            <div class="kpi-grid kpi-grid-4" style="margin-bottom:8px">
+              <div class="kpi glass" style="border-top-color:#7DAA75"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="dir-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
+              <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="dir-kpi-margin">—</div><div class="kpi-sub">avg across range</div></div>
+              <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="dir-kpi-st">—</div><div class="kpi-sub">all SKUs</div></div>
+              <div class="kpi glass" style="border-top-color:#E3A08E"><div class="kpi-label">Business Health</div><div class="kpi-value" id="dir-kpi-health">—</div><div class="kpi-sub">0–100 score</div></div>
+            </div>
+          </div>
+        </div>
         <!-- Executive header -->
         <div class="exec-header" id="dir-sec-health">
           <div class="exec-label">Executive Dashboard</div>
@@ -616,13 +677,13 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
             </div>
             <!-- CSS-only semicircle gauge -->
             <div style="position:relative;width:120px;height:60px;flex-shrink:0">
-              <div id="dir-gauge" style="width:120px;height:120px;border-radius:50%;border:14px solid rgba(255,255,255,0.08);
+              <div id="dir-gauge" style="width:120px;height:120px;border-radius:50%;border:14px solid rgba(0,0,0,0.07);
                 position:absolute;bottom:0;overflow:hidden;background:conic-gradient(from 180deg,#7DAA75 0deg,transparent 0deg)">
               </div>
             </div>
             <div style="flex:1">
-              <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px">Business Health Score</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.35)">0 = Critical — 100 = Outstanding</div>
+              <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Business Health Score</div>
+              <div style="font-size:12px;color:var(--text3)">0 = Critical — 100 = Outstanding</div>
             </div>
             <div class="exec-meta">
               <div class="exec-updated" id="dir-updated">Last updated —</div>
@@ -787,6 +848,47 @@ async function switchRole(role) {
   if (analysisData) showRoleView();
 }
 
+// ── KPI Accordion ─────────────────────────────────────────────
+function toggleKPI(prefix) {
+  const body  = document.getElementById(prefix+'-kpi-body');
+  const arrow = document.getElementById(prefix+'-kpi-arrow');
+  if (!body) return;
+  body.classList.toggle('open');
+  arrow.style.transform = body.classList.contains('open') ? '' : 'rotate(-90deg)';
+}
+
+// ── Category data helper ───────────────────────────────────────
+function deriveCats() {
+  if (analysisData.category_scorecard && analysisData.category_scorecard.length) {
+    return analysisData.category_scorecard;
+  }
+  // Fallback: group best_sellers by category field
+  const bs = analysisData.best_sellers || [];
+  if (!bs.length || !bs[0].category) return [];
+  const map = {};
+  bs.forEach(s => {
+    const c = s.category || 'Other';
+    if (!map[c]) map[c] = {category:c, revenue:0, units:0, sku_count:0, st_sum:0, st_n:0};
+    map[c].revenue += s.revenue||0;
+    map[c].units   += s.units||0;
+    map[c].sku_count++;
+    if (s.sell_through != null) { map[c].st_sum += s.sell_through; map[c].st_n++; }
+  });
+  return Object.values(map).map(c => {
+    const st = c.st_n ? c.st_sum/c.st_n : null;
+    return {...c, avg_sell_through: st ? Math.round(st*10)/10 : null,
+      health: st ? (st>=40?'STRONG':st>=25?'HEALTHY':st>=15?'AT RISK':'CRITICAL') : 'UNKNOWN'};
+  }).sort((a,b) => b.revenue-a.revenue);
+}
+
+function renderEmptyChart(canvasId, message) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  canvas.style.display = 'none';
+  parent.innerHTML = `<div class="chart-empty"><div class="chart-empty-icon">📊</div><div>${message}</div></div>`;
+}
+
 function navClick(btn, anchor) {
   btn.parentNode.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   btn.classList.add('active');
@@ -885,7 +987,7 @@ function renderMA() {
   }, 100);
 
   // Overview Charts
-  const cats = analysisData.category_scorecard || [];
+  const cats = deriveCats();
   if (cats.length) {
     const barCtx = document.getElementById('ma-cat-bar-chart').getContext('2d');
     charts.maCatBar = new Chart(barCtx, {
@@ -923,6 +1025,9 @@ function renderMA() {
         },
         cutout:'58%'}
     });
+  } else {
+    renderEmptyChart('ma-cat-bar-chart', 'Add a Category column to your file to see this chart');
+    renderEmptyChart('ma-cat-pie-chart', 'No category data detected');
   }
 
   // Reorder alerts table
@@ -1013,6 +1118,15 @@ function renderAM() {
   const stockVal = (rd.total_stock_value||0) || totalRev*0.4;
   const stockTurn = stockVal > 0 ? (totalRev/stockVal).toFixed(1) : '—';
 
+  // Populate KPI accordion
+  const mdCount = (analysisData.markdown_risk||[]).length;
+  const roCount = (analysisData.reorder_alerts||[]).length;
+  document.getElementById('am-kpi-revenue').textContent  = fmtCurr(totalRev);
+  document.getElementById('am-kpi-margin2').textContent  = avgMg.toFixed(1)+'%';
+  document.getElementById('am-kpi-md').textContent       = mdCount;
+  document.getElementById('am-kpi-md-sub').textContent   = mdCount > 0 ? `${mdCount} SKU${mdCount>1?'s':''} at risk` : 'No markdown risk';
+  document.getElementById('am-kpi-ro').textContent       = roCount;
+
   document.getElementById('am-st').textContent     = avgST.toFixed(1)+'%';
   document.getElementById('am-cover').textContent  = avgCv.toFixed(1)+'w';
   document.getElementById('am-margin').textContent = avgMg.toFixed(1)+'%';
@@ -1027,41 +1141,49 @@ function renderAM() {
   }, 100);
 
   // Category performance chart
-  const cats = analysisData.category_scorecard || [];
-  const catColors = cats.map(c => c.health==='STRONG'?'#7DAA75':c.health==='HEALTHY'?'#A8C5A0':c.health==='AT RISK'?'#F0C4A0':'#E3A08E');
-  const amCatCtx = document.getElementById('am-cat-chart').getContext('2d');
-  charts.amCat = new Chart(amCatCtx, {
-    type:'bar',
-    data:{
-      labels: cats.map(c=>c.category),
-      datasets:[{data:cats.map(c=>c.revenue), backgroundColor:catColors, borderRadius:4, borderSkipped:false}]
-    },
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
-        y:{grid:{display:false},ticks:{font:{size:9},color:'#4A4A5A'}}
-      }}
-  });
+  const cats = deriveCats();
+  if (cats.length) {
+    const catColors = cats.map(c => c.health==='STRONG'?'#7DAA75':c.health==='HEALTHY'?'#A8C5A0':c.health==='AT RISK'?'#F0C4A0':'#E3A08E');
+    const amCatCtx = document.getElementById('am-cat-chart').getContext('2d');
+    charts.amCat = new Chart(amCatCtx, {
+      type:'bar',
+      data:{
+        labels: cats.map(c=>c.category),
+        datasets:[{data:cats.map(c=>c.revenue), backgroundColor:catColors, borderRadius:4, borderSkipped:false}]
+      },
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+          y:{grid:{display:false},ticks:{font:{size:9},color:'#4A4A5A'}}
+        }}
+    });
+  } else {
+    renderEmptyChart('am-cat-chart', 'Add a Category column to your file to see category performance');
+  }
 
   // Weekly trend chart
   const sparkline = rd.weekly_sparkline || [];
-  const trendLabels = sparkline.map((_,i)=>`W${i+1}`);
-  const amTrendCtx = document.getElementById('am-trend-chart').getContext('2d');
-  charts.amTrend = new Chart(amTrendCtx, {
-    type:'line',
-    data:{
-      labels:trendLabels,
-      datasets:[{data:sparkline, borderColor:'#8A9DD8', backgroundColor:'rgba(138,157,216,0.08)',
-        fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#8A9DD8', borderWidth:2}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
-        y:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
-      }}
-  });
+  if (sparkline.length) {
+    const trendLabels = sparkline.map((_,i)=>`W${i+1}`);
+    const amTrendCtx = document.getElementById('am-trend-chart').getContext('2d');
+    charts.amTrend = new Chart(amTrendCtx, {
+      type:'line',
+      data:{
+        labels:trendLabels,
+        datasets:[{data:sparkline, borderColor:'#8A9DD8', backgroundColor:'rgba(138,157,216,0.08)',
+          fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#8A9DD8', borderWidth:2}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+          y:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
+  } else {
+    renderEmptyChart('am-trend-chart', 'Weekly trend data not available in this file');
+  }
 
   // AI Insights
   const insights = generateAMInsights(analysisData, roleData);
@@ -1103,7 +1225,7 @@ function renderAM() {
 
 function generateAMInsights(analysis, rd) {
   const k = analysis.kpis || {};
-  const cats = analysis.category_scorecard || [];
+  const cats = deriveCats();
   const reorders = analysis.reorder_alerts || [];
   const markdowns = analysis.markdown_risk || [];
   const topCat = cats[0];
@@ -1175,7 +1297,7 @@ function generateAMInsights(analysis, rd) {
 function renderMerch() {
   const k = analysisData.kpis || {};
   const rd = roleData || {};
-  const cats = analysisData.category_scorecard || [];
+  const cats = deriveCats();
 
   const totalRev = k.total_revenue||0;
   const avgMg = k.avg_margin_pct||0;
@@ -1191,6 +1313,7 @@ function renderMerch() {
   document.getElementById('mc-fmargin').textContent= (avgMg*1.02).toFixed(1)+'%';
 
   // Scatter chart (Category Matrix)
+
   const scatterData = cats.map((c,i) => ({
     x: c.avg_sell_through||0,
     y: c.avg_margin_pct||0,
@@ -1198,61 +1321,69 @@ function renderMerch() {
     label: c.category,
     color: ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#B8C4E8','#C8DFBF','#D4DCEF'][i%8]
   }));
-  const scatterCtx = document.getElementById('mc-scatter-chart').getContext('2d');
-  charts.mcScatter = new Chart(scatterCtx, {
-    type:'bubble',
-    data:{
-      datasets: scatterData.map(p => ({
-        label: p.label,
-        data:[{x:p.x, y:p.y, r:p.r}],
-        backgroundColor: p.color+'88',
-        borderColor: p.color,
-        borderWidth:1.5
-      }))
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ST ${ctx.parsed.x.toFixed(0)}% | Margin ${ctx.parsed.y.toFixed(0)}%`}}
+  if (cats.length) {
+    const scatterCtx = document.getElementById('mc-scatter-chart').getContext('2d');
+    charts.mcScatter = new Chart(scatterCtx, {
+      type:'bubble',
+      data:{
+        datasets: scatterData.map(p => ({
+          label: p.label, data:[{x:p.x, y:p.y, r:p.r}],
+          backgroundColor: p.color+'88', borderColor: p.color, borderWidth:1.5
+        }))
       },
-      scales:{
-        x:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Sell-Through %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}},
-        y:{grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Margin %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}}
-      }}
-  });
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ST ${ctx.parsed.x.toFixed(0)}% | Margin ${ctx.parsed.y.toFixed(0)}%`}}
+        },
+        scales:{
+          x:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Sell-Through %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}},
+          y:{grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Margin %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}}
+        }}
+    });
+  } else {
+    renderEmptyChart('mc-scatter-chart', 'Add a Category column to your file to see the category matrix');
+  }
 
   // Trend chart
   const sparkline = rd.weekly_sparkline||[];
-  const mcTrendCtx = document.getElementById('mc-trend-chart').getContext('2d');
-  charts.mcTrend = new Chart(mcTrendCtx, {
-    type:'line',
-    data:{
-      labels:sparkline.map((_,i)=>`W${i+1}`),
-      datasets:[{data:sparkline, borderColor:'#E3A08E', backgroundColor:'rgba(227,160,142,0.12)',
-        fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#E3A08E', borderWidth:2}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
-        y:{grid:{color:'rgba(227,160,142,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
-      }}
-  });
+  if (sparkline.length) {
+    const mcTrendCtx = document.getElementById('mc-trend-chart').getContext('2d');
+    charts.mcTrend = new Chart(mcTrendCtx, {
+      type:'line',
+      data:{
+        labels:sparkline.map((_,i)=>`W${i+1}`),
+        datasets:[{data:sparkline, borderColor:'#E3A08E', backgroundColor:'rgba(227,160,142,0.12)',
+          fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#E3A08E', borderWidth:2}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+          y:{grid:{color:'rgba(227,160,142,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
+  } else {
+    renderEmptyChart('mc-trend-chart', 'Weekly trend data not available');
+  }
 
   // Donut chart
-  const donutCtx = document.getElementById('mc-donut-chart').getContext('2d');
-  charts.mcDonut = new Chart(donutCtx, {
-    type:'doughnut',
-    data:{
-      labels:cats.map(c=>c.category),
-      datasets:[{data:cats.map(c=>c.revenue),
-        backgroundColor:['#A8C5A0','#B8C4E8','#F4C0A8','#F0C4A0','#E3A08E','#C8DFBF','#D4DCEF','#E8D4C0'],
-        borderWidth:1, borderColor:'rgba(255,255,255,0.5)'}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed)}`}}},
-      cutout:'60%'}
-  });
+  if (cats.length) {
+    const donutCtx = document.getElementById('mc-donut-chart').getContext('2d');
+    charts.mcDonut = new Chart(donutCtx, {
+      type:'doughnut',
+      data:{
+        labels:cats.map(c=>c.category),
+        datasets:[{data:cats.map(c=>c.revenue),
+          backgroundColor:['#A8C5A0','#B8C4E8','#F4C0A8','#F0C4A0','#E3A08E','#C8DFBF','#D4DCEF','#E8D4C0'],
+          borderWidth:1, borderColor:'rgba(255,255,255,0.5)'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed)}`}}},
+        cutout:'60%'}
+    });
+  } else {
+    renderEmptyChart('mc-donut-chart', 'No category data');
+  }
 
   // AI Actions
   const actions = rd.ai_actions || [];
@@ -1311,6 +1442,12 @@ function renderDirector() {
   const k = analysisData.kpis || {};
   const rd = roleData || {};
   const meta = analysisData.meta || {};
+
+  // KPI accordion
+  document.getElementById('dir-kpi-revenue').textContent = fmtCurr(k.total_revenue||0);
+  document.getElementById('dir-kpi-margin').textContent  = (k.avg_margin_pct||0).toFixed(1)+'%';
+  document.getElementById('dir-kpi-st').textContent      = (k.avg_sell_through||0).toFixed(1)+'%';
+  document.getElementById('dir-kpi-health').textContent  = rd.health_score||'—';
 
   const health = rd.health_score||0;
   const healthDesc = health>=75?'STRONG':health>=55?'HEALTHY':health>=35?'AT RISK':'CRITICAL';
