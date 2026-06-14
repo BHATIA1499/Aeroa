@@ -1,12 +1,36 @@
+# ── Core framework ─────────────────────────────────────────────────────────────
 anthropic>=0.40.0
 flask>=3.0.0
 flask-cors>=4.0.0
+
+# ── Data processing ────────────────────────────────────────────────────────────
 pandas>=2.0.0
 openpyxl>=3.1.0
 xlrd>=2.0.1
 odfpy>=1.4.1
 numbers-parser>=4.0.0
+
+# ── Infrastructure ─────────────────────────────────────────────────────────────
 python-dotenv>=1.0.0
 gunicorn>=21.0.0
 supabase>=2.4.0
 stripe>=8.0.0
+
+# ── Export formats ─────────────────────────────────────────────────────────────
+python-pptx>=0.6.21
+
+# ── SECURITY — Encryption ──────────────────────────────────────────────────────
+# AES-256-GCM file encryption and key derivation
+cryptography>=42.0.0
+
+# ── SECURITY — Rate limiting ───────────────────────────────────────────────────
+# Per-endpoint rate limiting (swap storage_uri to Redis for multi-process)
+flask-limiter>=3.5.0
+
+# ── SECURITY — Background scheduler ────────────────────────────────────────────
+# Automatic file expiry / data retention enforcement
+APScheduler>=3.10.0
+
+# ── SECURITY — Input sanitisation ──────────────────────────────────────────────
+# HTML escaping (belt-and-suspenders alongside stdlib html.escape)
+bleach>=6.1.0

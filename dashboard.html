@@ -4,187 +4,334 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Threadlytics</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234F46E5'/><circle cx='16' cy='16' r='6' fill='%230EA5E9'/></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%237DAA75'/><circle cx='16' cy='16' r='6' fill='%23A8C5A0'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F7F7FA;--surface:#FFFFFF;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
-  --text:#0D0D14;--text2:#5E5E72;--text3:#9B9BB0;
-  --electric:#4F46E5;--electric2:#6366F1;--teal:#0EA5E9;--teal2:#38BDF8;
-  --amber:#F59E0B;--red:#EF4444;--green:#16A34A;
-  --serif:'Syne',sans-serif;--body:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --mint:#A8C5A0;--mint-d:#7DAA75;--blush:#F4C0A8;--peri:#B8C4E8;--peach:#F0C4A0;
+  --bg-grad:linear-gradient(150deg,#F0F5FF 0%,#FFF0F5 35%,#EEF7EE 65%,#F3F0FF 100%);
+  --glass:rgba(255,255,255,0.80);--glass-border:rgba(255,255,255,0.90);
+  --shadow:0 4px 20px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95);
+  --text:#1E1E2A;--text2:#4A4A5A;--text3:#8A8A9A;--border:rgba(0,0,0,0.07);
+  --serif:'Montserrat',sans-serif;--body:'Inter',system-ui,sans-serif;
   --nav-w:220px;
+  --role-accent:#7DAA75;
 }
-body{font-family:var(--body);background:var(--bg);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body);background:var(--bg-grad);background-attachment:fixed;color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
 
 /* ── SIDEBAR ── */
-#sidebar{
-  width:var(--nav-w);flex-shrink:0;background:var(--surface);
-  border-right:1px solid var(--border);display:flex;flex-direction:column;
-  position:fixed;top:0;left:0;bottom:0;z-index:50;
-}
-.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:8px;text-decoration:none}
-.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+#sidebar{width:var(--nav-w);flex-shrink:0;background:rgba(255,255,255,0.82);backdrop-filter:blur(20px);
+  border-right:1px solid rgba(168,197,160,0.20);display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform 0.3s}
+.sb-logo{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;text-decoration:none}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--role-accent);box-shadow:0 0 8px rgba(125,170,117,0.5);transition:background 0.3s}
 .sb-logo-text{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text)}
-.sb-logo-text span{color:var(--teal)}
-.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
-.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 10px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
-  font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s;text-decoration:none;margin-bottom:1px}
-.nav-item:hover{background:rgba(79,70,229,0.06);color:var(--text)}
-.nav-item.active{background:rgba(79,70,229,0.10);color:var(--electric);font-weight:600}
+.sb-logo-text span{color:var(--role-accent);transition:color 0.3s}
+.sb-nav{flex:1;padding:10px 10px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:10px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s;text-decoration:none;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;font-family:var(--body)}
+.nav-item:hover{background:rgba(125,170,117,0.08);color:var(--text)}
+.nav-item.active{background:rgba(125,170,117,0.14);color:var(--mint-d);font-weight:600}
 .nav-item .icon{width:16px;text-align:center;font-size:14px;flex-shrink:0}
-.sb-bottom{padding:14px;border-top:1px solid var(--border)}
-.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:var(--bg)}
-.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--electric);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+
+/* Role switcher */
+.role-switcher{padding:12px 14px;border-top:1px solid var(--border)}
+.role-sw-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.role-sw-select{width:100%;padding:7px 10px;border:1px solid rgba(168,197,160,0.30);border-radius:7px;
+  background:rgba(255,255,255,0.7);font-family:var(--body);font-size:12px;font-weight:600;
+  color:var(--text);cursor:pointer;outline:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8A9A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:28px}
+.role-sw-select:focus{border-color:var(--role-accent)}
+
+.sb-bottom{padding:12px 14px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:rgba(243,246,244,0.8)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7DAA75,#A8C5A0);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0}
 .user-info{flex:1;min-width:0}
-.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-plan{font-size:10px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.06em}
-.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;transition:color 0.15s;background:none;border:none;font-family:inherit}
-.logout-btn:hover{color:var(--red)}
+.user-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-plan{font-size:10px;font-weight:600;color:var(--mint-d);text-transform:uppercase;letter-spacing:0.06em}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;transition:color 0.15s;background:none;border:none;font-family:inherit;margin-top:6px;display:block;text-align:center;width:100%}
+.logout-btn:hover{color:#E05050}
 
 /* ── MAIN ── */
 #main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 
 /* ── TOPBAR ── */
-#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:58px;
-  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
-.topbar-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:12px}
-.upload-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;background:var(--electric);color:white;
-  border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.upload-btn:hover{background:#4338CA;transform:translateY(-1px)}
-.plan-chip{padding:4px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
-.plan-trial  {background:rgba(245,158,11,0.1);color:#B45309;border:1px solid rgba(245,158,11,0.2)}
-.plan-starter{background:rgba(79,70,229,0.08);color:var(--electric);border:1px solid rgba(79,70,229,0.15)}
-.plan-growth {background:rgba(14,165,233,0.1);color:#0369A1;border:1px solid rgba(14,165,233,0.2)}
-.plan-studio {background:rgba(124,58,237,0.08);color:#7C3AED;border:1px solid rgba(124,58,237,0.15)}
+#topbar{background:rgba(255,255,255,0.80);backdrop-filter:blur(16px);border-bottom:1px solid rgba(168,197,160,0.18);
+  padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--text)}
+.role-badge{padding:3px 11px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border:1.5px solid}
+.role-badge.MA{background:rgba(125,170,117,0.12);color:#4A7A42;border-color:rgba(125,170,117,0.35)}
+.role-badge.AM{background:rgba(138,157,216,0.12);color:#4A5A9A;border-color:rgba(138,157,216,0.35)}
+.role-badge.Merchandiser{background:rgba(227,160,142,0.12);color:#9A4A3A;border-color:rgba(227,160,142,0.35)}
+.role-badge.Director{background:rgba(184,153,106,0.12);color:#7A5A20;border-color:rgba(184,153,106,0.35)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.upload-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;background:linear-gradient(135deg,var(--mint-d),var(--mint));
+  box-shadow:0 4px 16px rgba(125,170,117,0.30);color:white;border:none;border-radius:7px;
+  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.upload-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(125,170,117,0.40)}
+.notif-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:white;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.15s}
+.notif-btn:hover{background:rgba(168,197,160,0.1)}
 
 /* ── CONTENT ── */
-#content{flex:1;padding:28px}
+#content{flex:1;padding:24px;scroll-behavior:smooth}
+[id^="ma-sec-"],[id^="am-sec-"],[id^="mc-sec-"],[id^="dir-sec-"]{scroll-margin-top:72px}
+
+/* ── SKELETON LOADING ── */
+.skeleton{background:linear-gradient(90deg,rgba(168,197,160,0.15) 25%,rgba(168,197,160,0.25) 50%,rgba(168,197,160,0.15) 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* ── EMPTY STATE ── */
-#empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center}
-.empty-icon{font-size:48px;margin-bottom:16px}
-.empty-title{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--text);margin-bottom:8px}
-.empty-sub{font-size:15px;color:var(--text2);margin-bottom:28px;max-width:400px;line-height:1.6;font-weight:300}
-.drop-zone{border:2px dashed rgba(79,70,229,0.25);border-radius:14px;padding:40px 48px;cursor:pointer;
-  transition:all 0.2s;background:white;max-width:440px;width:100%}
-.drop-zone:hover,.drop-zone.drag-over{border-color:var(--electric);background:rgba(79,70,229,0.03)}
+#empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;text-align:center}
+.empty-icon{font-size:52px;margin-bottom:16px}
+.empty-title{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--text2);margin-bottom:28px;max-width:420px;line-height:1.7;font-weight:300}
+.drop-zone{border:2px dashed rgba(125,170,117,0.30);border-radius:16px;padding:40px 52px;cursor:pointer;
+  transition:all 0.2s;background:rgba(255,255,255,0.8);max-width:460px;width:100%}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--mint-d);background:rgba(125,170,117,0.04);transform:translateY(-2px)}
+.drop-zone-icon{font-size:32px;margin-bottom:10px}
 .drop-zone-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
 .drop-zone-sub{font-size:12px;color:var(--text3)}
-.upload-progress{font-size:13px;color:var(--electric2);margin-top:10px;display:none}
+.upload-progress{font-size:13px;color:var(--mint-d);margin-top:12px;display:none}
+
+/* ── GLASS CARD ── */
+.glass{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow)}
 
 /* ── KPI CARDS ── */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;
-  border-top:3px solid transparent;transition:box-shadow 0.2s}
-.kpi:nth-child(1){border-top-color:var(--teal)}
-.kpi:nth-child(2){border-top-color:var(--electric)}
-.kpi:nth-child(3){border-top-color:var(--amber)}
-.kpi:nth-child(4){border-top-color:var(--red)}
-.kpi:hover{box-shadow:0 4px 20px rgba(0,0,0,0.06)}
-.kpi-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
-.kpi-value{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px}
-.kpi-sub{font-size:12px;color:var(--text2)}
+.kpi-grid{display:grid;gap:12px;margin-bottom:18px}
+.kpi-grid-3{grid-template-columns:repeat(3,1fr)}
+.kpi-grid-4{grid-template-columns:repeat(4,1fr)}
+.kpi-grid-5{grid-template-columns:repeat(5,1fr)}
+.kpi-grid-6{grid-template-columns:repeat(3,1fr)}
+.kpi{padding:16px 18px;border-top:3px solid transparent;transition:box-shadow 0.2s,transform 0.2s}
+.kpi:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,0,0,0.08)}
+.kpi-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:7px}
+.kpi-value{font-family:var(--serif);font-size:26px;font-weight:800;color:var(--text);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--text2);line-height:1.4}
+.kpi-bar{height:4px;border-radius:2px;margin-top:8px;background:rgba(0,0,0,0.06);overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;background:var(--mint-d);transition:width 0.8s ease}
 
-/* ── CHARTS ROW ── */
-.charts-row{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;margin-bottom:20px}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px}
-
-/* ── TABLE ── */
-.table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden;margin-bottom:14px}
-.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.table-header h3{font-size:13px;font-weight:700;color:var(--text)}
-.badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700}
-.badge-red   {background:rgba(239,68,68,0.1);color:var(--red)}
-.badge-amber {background:rgba(245,158,11,0.1);color:#B45309}
-.badge-teal  {background:rgba(14,165,233,0.1);color:#0369A1}
-.badge-green {background:rgba(22,163,74,0.1);color:var(--green)}
+/* ── TABLES ── */
+.table-card{overflow:hidden;margin-bottom:14px}
+.table-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-header h3{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--text)}
 table{width:100%;border-collapse:collapse}
-th{padding:10px 20px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;text-align:left;background:#FAFAFA;border-bottom:1px solid var(--border)}
-td{padding:11px 20px;font-size:13px;color:var(--text2);border-bottom:1px solid rgba(0,0,0,0.04)}
+th{padding:9px 16px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;text-align:left;background:rgba(168,197,160,0.06);border-bottom:1px solid var(--border)}
+td{padding:10px 16px;font-size:12px;color:var(--text2);border-bottom:1px solid rgba(0,0,0,0.035)}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#FAFAFE}
-.urg{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
-.urg-CRITICAL{background:rgba(239,68,68,0.1);color:var(--red)}
-.urg-URGENT  {background:rgba(245,158,11,0.1);color:#B45309}
-.urg-REORDER {background:rgba(79,70,229,0.08);color:var(--electric)}
-.sev-CLEARANCE{background:rgba(239,68,68,0.1);color:var(--red);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
-.sev-DEEP    {background:rgba(245,158,11,0.1);color:#B45309;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
-.sev-TACTICAL{background:rgba(79,70,229,0.08);color:var(--electric);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono)}
+tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
-/* ── AI CHAT ── */
-#chat-panel{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--surface);
-  border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:60;
-  transform:translateX(100%);transition:transform 0.3s ease}
-#chat-panel.open{transform:translateX(0)}
-.chat-hd{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.chat-hd-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal)}
-.chat-hd-title{font-size:13px;font-weight:700;color:var(--text);flex:1}
-.chat-close{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1;padding:2px}
-.chat-close:hover{color:var(--text)}
-.chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.cmsg{display:flex;gap:8px;align-items:flex-start}
-.cmsg.usr{flex-direction:row-reverse}
-.cav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-.cmsg.ai .cav{background:rgba(14,165,233,0.12);color:var(--teal)}
-.cmsg.usr .cav{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
-.cbub{padding:10px 13px;border-radius:10px;font-size:12px;line-height:1.6;max-width:85%}
-.cmsg.ai .cbub{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
-.cmsg.usr .cbub{background:var(--electric);color:white}
-.cbub strong{font-weight:600;color:var(--teal)}
-.cmsg.usr .cbub strong{color:rgba(255,255,255,0.9)}
-.chat-inp-row{padding:14px;border-top:1px solid var(--border);display:flex;gap:8px}
-.chat-input{flex:1;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;
-  font-family:var(--body);font-size:13px;color:var(--text);outline:none;background:var(--bg);transition:border-color 0.2s}
-.chat-input:focus{border-color:var(--electric);background:white}
-.chat-send{width:34px;height:34px;background:var(--electric);border:none;border-radius:8px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
-.chat-send:hover{background:#4338CA}
-.chat-send:disabled{opacity:0.4;cursor:not-allowed}
-.chat-fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;background:var(--electric);
-  border:none;border-radius:50%;box-shadow:0 4px 20px rgba(79,70,229,0.35);cursor:pointer;
-  font-size:20px;display:flex;align-items:center;justify-content:center;z-index:55;
-  transition:all 0.2s;color:white}
-.chat-fab:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(79,70,229,0.45)}
-.typing-dots{display:flex;align-items:center;gap:4px;padding:2px 0}
-.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--text3);display:block;
-  animation:bounce 1.2s ease infinite}
-.typing-dots span:nth-child(2){animation-delay:.15s}
-.typing-dots span:nth-child(3){animation-delay:.3s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
-.chip{padding:5px 12px;border-radius:99px;border:1px solid rgba(79,70,229,0.2);
-  background:#fff;color:var(--electric2);font-size:11px;font-weight:500;cursor:pointer;
-  font-family:var(--body);transition:all 0.15s}
-.chip:hover{background:rgba(79,70,229,0.06);border-color:var(--electric)}
+/* ── BADGES ── */
+.badge{padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;display:inline-block}
+.badge-red   {background:rgba(227,160,142,0.18);color:#A0503C}
+.badge-amber {background:rgba(240,196,160,0.20);color:#9A5020}
+.badge-teal  {background:rgba(184,196,232,0.18);color:#4050A0}
+.badge-green {background:rgba(168,197,160,0.20);color:#3A7032}
+.badge-gold  {background:rgba(184,153,106,0.15);color:#7A5020}
+.urg{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--serif)}
+.urg-CRITICAL{background:rgba(220,60,50,0.12);color:#9A2020}
+.urg-URGENT  {background:rgba(240,160,60,0.15);color:#8A5010}
+.urg-REORDER {background:rgba(184,196,232,0.18);color:#4050A0}
+.sev-CLEARANCE{background:rgba(220,60,50,0.12);color:#9A2020;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.sev-DEEP    {background:rgba(240,160,60,0.15);color:#8A5010;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.sev-TACTICAL{background:rgba(184,196,232,0.18);color:#4050A0;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.health-STRONG  {background:rgba(125,170,117,0.18);color:#3A7032;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.health-HEALTHY {background:rgba(168,197,160,0.20);color:#5A8A52;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.health-AT-RISK {background:rgba(240,196,160,0.22);color:#9A5020;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.health-CRITICAL{background:rgba(227,160,142,0.20);color:#A0503C;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
 
-/* ── HIDDEN VIEWS ── */
-.view{display:none}
-.view.active{display:block}
+/* ── ROLE VIEWS ── */
+.role-view{display:none;opacity:0;transition:opacity 0.3s}
+.role-view.active{display:block;opacity:1}
 
-/* ── UPLOAD HIDDEN FILE INPUT ── */
+/* ── GRID LAYOUTS ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.two-col-60{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-wrap{height:180px;position:relative}
+.chart-wrap-sm{height:140px;position:relative}
+
+/* ── CARD TITLE ── */
+.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:14px}
+.card-title-lg{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+
+/* ── ACTION BUTTON ── */
+.act-btn{padding:4px 10px;border:1.5px solid rgba(125,170,117,0.35);border-radius:5px;background:rgba(125,170,117,0.08);
+  color:var(--mint-d);font-size:10px;font-weight:600;cursor:pointer;font-family:var(--body);transition:all 0.15s}
+.act-btn:hover{background:rgba(125,170,117,0.18);border-color:var(--mint-d)}
+
+/* ══════════════════════════════════
+   MA VIEW
+══════════════════════════════════ */
+#view-ma .kpi{border-top-color:var(--mint-d)}
+#view-ma .kpi:nth-child(2){border-top-color:var(--peri)}
+#view-ma .kpi:nth-child(3){border-top-color:var(--peach)}
+#view-ma .kpi:nth-child(4){border-top-color:#E3A08E}
+#view-ma .kpi:nth-child(5){border-top-color:#9A6AB8}
+#view-ma .kpi:nth-child(6){border-top-color:#6AB8B0}
+.data-quality-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dq-good{background:#7DAA75}
+.dq-warn{background:#F0C4A0}
+.dq-bad {background:#E3A08E}
+
+/* ══════════════════════════════════
+   AM VIEW
+══════════════════════════════════ */
+#view-am .kpi{border-top-color:#8A9DD8}
+#view-am .kpi:nth-child(2){border-top-color:#A8C5A0}
+#view-am .kpi:nth-child(3){border-top-color:#F4C0A8}
+#view-am .kpi:nth-child(4){border-top-color:#B8C4E8}
+.insight-card{background:linear-gradient(135deg,rgba(138,157,216,0.08),rgba(184,196,232,0.05));
+  border:1px solid rgba(138,157,216,0.20);border-radius:16px;padding:18px}
+.insight-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.insight-pulse{width:8px;height:8px;border-radius:50%;background:#7DAA75;
+  animation:pulse-green 2s infinite;flex-shrink:0}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(125,170,117,0.4)}50%{box-shadow:0 0 0 6px rgba(125,170,117,0)}}
+.insight-hd-title{font-family:var(--serif);font-size:13px;font-weight:700;color:#4A5A9A}
+.insight-item{display:flex;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:6px;
+  background:rgba(255,255,255,0.6);border:1px solid rgba(138,157,216,0.12)}
+.insight-num{width:20px;height:20px;border-radius:50%;background:rgba(138,157,216,0.20);color:#4A5A9A;
+  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.insight-text{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.insight-chip{padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700;margin-top:4px;display:inline-block}
+.chip-reorder{background:rgba(168,197,160,0.25);color:#3A7032}
+.chip-markdown{background:rgba(227,160,142,0.20);color:#9A3030}
+.chip-intake  {background:rgba(138,157,216,0.20);color:#3A4A9A}
+.chip-monitor {background:rgba(184,153,106,0.20);color:#7A5020}
+.chip-otb     {background:rgba(184,196,232,0.22);color:#4050A0}
+
+/* ══════════════════════════════════
+   MERCHANDISER VIEW
+══════════════════════════════════ */
+#view-merch .kpi{border-top-color:#E3A08E}
+#view-merch .kpi:nth-child(2){border-top-color:#A8C5A0}
+#view-merch .kpi:nth-child(3){border-top-color:#B8C4E8}
+#view-merch .kpi:nth-child(4){border-top-color:#F4C0A8}
+#view-merch .kpi:nth-child(5){border-top-color:#C8DFBF}
+.ai-action-card{background:rgba(255,255,255,0.7);border:1px solid rgba(227,160,142,0.18);border-radius:12px;
+  padding:12px 14px;margin-bottom:8px;transition:all 0.15s}
+.ai-action-card:hover{transform:translateX(2px);border-color:rgba(227,160,142,0.35);background:rgba(255,255,255,0.9)}
+.ai-action-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.rank-badge{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#E3A08E,#F4C0A8);
+  color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.priority-chip{padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
+.priority-Critical{background:rgba(220,60,50,0.12);color:#9A2020}
+.priority-Urgent  {background:rgba(240,160,60,0.15);color:#8A5010}
+.priority-Recommended{background:rgba(138,157,216,0.18);color:#3A4A9A}
+.action-type{font-size:11px;font-weight:600;color:var(--text2)}
+.action-sku{font-family:var(--serif);font-size:12px;font-weight:700;color:var(--text)}
+.action-desc{font-size:11px;color:var(--text2);line-height:1.4;margin-bottom:8px}
+.action-metrics{display:flex;gap:8px;margin-bottom:8px}
+.metric-bar-wrap{flex:1}
+.metric-bar-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.metric-bar-val{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px}
+.metric-bar-track{height:3px;background:rgba(0,0,0,0.08);border-radius:2px;overflow:hidden}
+.metric-bar-fill-rev{background:linear-gradient(90deg,#A8C5A0,#7DAA75);height:100%;border-radius:2px}
+.metric-bar-fill-conf{background:linear-gradient(90deg,#B8C4E8,#8A9DD8);height:100%;border-radius:2px}
+.metric-bar-fill-mg-pos{background:linear-gradient(90deg,#C8DFBF,#7DAA75);height:100%;border-radius:2px}
+.metric-bar-fill-mg-neg{background:linear-gradient(90deg,#F4C0A8,#E3A08E);height:100%;border-radius:2px}
+.take-action-btn{font-size:10px;font-weight:600;color:#9A4A3A;background:rgba(227,160,142,0.12);
+  border:1px solid rgba(227,160,142,0.30);border-radius:5px;padding:3px 9px;cursor:pointer;font-family:var(--body);transition:all 0.15s}
+.take-action-btn:hover{background:rgba(227,160,142,0.25)}
+.otb-card{padding:20px}
+.otb-progress-track{height:10px;background:rgba(0,0,0,0.07);border-radius:5px;overflow:hidden;margin:12px 0 6px}
+.otb-progress-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#E3A08E,#F4C0A8);transition:width 1s ease}
+.otb-warn{color:#8A5010;font-size:11px;font-weight:600;margin-top:6px}
+.otb-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.otb-metric-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
+.otb-metric-val{font-family:var(--serif);font-size:18px;font-weight:800;color:var(--text)}
+
+/* Quadrant chart labels */
+.scatter-quadrants{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.q-label{position:absolute;font-size:9px;font-weight:700;color:rgba(100,100,120,0.45);text-transform:uppercase;letter-spacing:0.07em}
+
+/* ══════════════════════════════════
+   DIRECTOR VIEW
+══════════════════════════════════ */
+.exec-header{background:linear-gradient(135deg,#1E1E2A,#2E3040);border-radius:20px;padding:28px 32px;
+  margin-bottom:16px;position:relative;overflow:hidden}
+.exec-header::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+  border-radius:50%;background:rgba(184,153,106,0.08);pointer-events:none}
+.exec-header::after{content:'';position:absolute;bottom:-60px;left:-20px;width:150px;height:150px;
+  border-radius:50%;background:rgba(138,157,216,0.06);pointer-events:none}
+.exec-label{font-size:11px;font-weight:700;color:rgba(184,153,106,0.7);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px}
+.exec-content{display:flex;align-items:center;gap:40px}
+.health-gauge-wrap{position:relative;flex-shrink:0}
+.health-gauge{width:110px;height:55px;position:relative}
+.health-arc{width:110px;height:55px;border-radius:55px 55px 0 0;overflow:hidden}
+.health-arc-track{width:110px;height:110px;border-radius:50%;background:conic-gradient(from 180deg,transparent 0deg,transparent 180deg);
+  border:12px solid rgba(255,255,255,0.08);position:absolute;bottom:0}
+.health-arc-fill{width:110px;height:110px;border-radius:50%;position:absolute;bottom:0;transition:background 1s ease}
+.health-score-num{font-family:var(--serif);font-size:42px;font-weight:900;color:white;line-height:1;margin-bottom:4px}
+.health-descriptor{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase}
+.health-STRONG-text   {color:#7DAA75}
+.health-HEALTHY-text  {color:#A8C5A0}
+.health-AT-RISK-text  {color:#F0C4A0}
+.health-CRITICAL-text {color:#E3A08E}
+.exec-meta{margin-left:auto;text-align:right}
+.exec-updated{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:4px}
+.exec-sku-count{font-size:13px;color:rgba(255,255,255,0.55);font-weight:600}
+
+.vs-plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.vs-card{padding:20px 22px;position:relative}
+.vs-card-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px}
+.vs-actual{font-family:var(--serif);font-size:28px;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px}
+.vs-plan-ref{font-size:12px;color:var(--text3);margin-bottom:10px}
+.vs-pct{font-size:13px;font-weight:700;padding:2px 10px;border-radius:6px;display:inline-block}
+.vs-above{background:rgba(125,170,117,0.14);color:#3A7032}
+.vs-below{background:rgba(227,160,142,0.14);color:#9A3030}
+.vs-warn {background:rgba(240,196,160,0.18);color:#9A5020}
+
+.risk-opp-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.risk-item{display:flex;gap:12px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.5);
+  border:1px solid rgba(227,160,142,0.15);margin-bottom:8px;align-items:flex-start}
+.risk-dot{width:8px;height:8px;border-radius:50%;background:#E3A08E;flex-shrink:0;margin-top:4px}
+.risk-text{font-size:12px;color:var(--text2);line-height:1.5}
+.opp-item{display:flex;gap:12px;padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.5);
+  border:1px solid rgba(125,170,117,0.15);margin-bottom:8px;align-items:flex-start}
+.opp-dot{width:8px;height:8px;border-radius:50%;background:#7DAA75;flex-shrink:0;margin-top:4px}
+.opp-text{font-size:12px;color:var(--text2);line-height:1.5}
+.cash-card{padding:20px 24px;margin-bottom:14px}
+.cash-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px}
+.cash-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px}
+.cash-val{font-family:var(--serif);font-size:22px;font-weight:800;color:var(--text)}
+.exec-summary-card{border:1.5px solid rgba(184,153,106,0.30);padding:28px 32px;position:relative;overflow:hidden}
+.exec-summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,rgba(184,153,106,0.4),rgba(184,153,106,0.1),transparent)}
+.exec-summary-quote{font-size:15px;color:var(--text);line-height:1.75;font-weight:400;
+  font-style:italic;letter-spacing:0.01em;margin-bottom:16px}
+.exec-summary-quote::before{content:'"';font-size:48px;color:rgba(184,153,106,0.25);font-family:Georgia,serif;
+  line-height:0.6;float:left;margin-right:8px;margin-top:10px}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
+  color:rgba(184,153,106,0.8);border:1px solid rgba(184,153,106,0.25);padding:3px 10px;border-radius:5px;letter-spacing:0.06em}
+
+/* ── FILE INPUT ── */
 #file-input{display:none}
 
-/* ── INSIGHTS BAR ── */
-.insights-bar{background:linear-gradient(135deg,rgba(79,70,229,0.06),rgba(14,165,233,0.04));
-  border:1px solid rgba(79,70,229,0.12);border-radius:12px;padding:16px 20px;margin-bottom:20px}
-.insights-title{font-size:11px;font-weight:700;color:var(--electric2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
-.insights-list{display:flex;flex-direction:column;gap:6px}
-.insight-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);line-height:1.5}
-.insight-bullet{color:var(--electric);font-size:16px;flex-shrink:0;line-height:1.2}
-
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  .three-col{grid-template-columns:1fr 1fr}
+  .kpi-grid-5{grid-template-columns:repeat(3,1fr)}
+}
 @media(max-width:900px){
-  #sidebar{display:none}
+  #sidebar{transform:translateX(-100%)}
   #main{margin-left:0}
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  .charts-row{grid-template-columns:1fr}
-  #chat-panel{width:100%}
+  .kpi-grid-3,.kpi-grid-4,.kpi-grid-5,.kpi-grid-6{grid-template-columns:1fr 1fr}
+  .two-col,.two-col-60,.three-col,.vs-plan-cards,.risk-opp-wrap{grid-template-columns:1fr}
+  .exec-content{flex-direction:column;gap:20px}
+  .exec-meta{text-align:left}
+}
+@media(max-width:600px){
+  .kpi-grid-3,.kpi-grid-4,.kpi-grid-5,.kpi-grid-6{grid-template-columns:1fr}
+  #content{padding:14px}
 }
 </style>
 </head>
@@ -196,26 +343,28 @@ tr:hover td{background:#FAFAFE}
     <div class="sb-logo-dot"></div>
     <div class="sb-logo-text">Thread<span>lytics</span></div>
   </a>
-  <div class="sb-nav">
-    <div class="nav-section">Analytics</div>
-    <a class="nav-item active" data-view="overview" onclick="showView('overview',this)">
-      <span class="icon">📊</span>Overview
-    </a>
-    <a class="nav-item" data-view="bestsellers" onclick="showView('bestsellers',this)">
-      <span class="icon">⭐</span>Best Sellers
-    </a>
-    <a class="nav-item" data-view="reorders" onclick="showView('reorders',this)">
-      <span class="icon">📦</span>Reorder Alerts
-    </a>
-    <a class="nav-item" data-view="markdowns" onclick="showView('markdowns',this)">
-      <span class="icon">📉</span>Markdown Risk
-    </a>
-    <a class="nav-item" data-view="categories" onclick="showView('categories',this)">
-      <span class="icon">🗂️</span>Categories
-    </a>
-    <div class="nav-section" style="margin-top:8px">AI</div>
-    <a class="nav-item" onclick="openChat()">
-      <span class="icon">💬</span>Ask AI
+
+  <div class="sb-nav" id="sb-nav">
+    <!-- Injected by JS per role -->
+  </div>
+
+  <!-- Role Switcher -->
+  <div class="role-switcher">
+    <div class="role-sw-label">Switch Role</div>
+    <select class="role-sw-select" id="role-switcher" onchange="switchRole(this.value)">
+      <option value="MA">MA — Merchandising Admin</option>
+      <option value="AM">AM — Assistant Merchandiser</option>
+      <option value="Merchandiser">Merchandiser</option>
+      <option value="Director">Director</option>
+    </select>
+  </div>
+
+  <div style="padding:8px 10px;border-top:1px solid rgba(0,0,0,0.06)">
+    <a href="/action-centre" style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:600;color:#E05A4A;text-decoration:none;background:rgba(224,90,74,0.06);border:1px solid rgba(224,90,74,0.14);transition:all 0.15s"
+       onmouseover="this.style.background='rgba(224,90,74,0.12)'" onmouseout="this.style.background='rgba(224,90,74,0.06)'">
+      <span style="font-size:15px">⚡</span>
+      AI Action Centre
+      <span style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;background:rgba(224,90,74,0.15);color:#C03828">NEW</span>
     </a>
   </div>
   <div class="sb-bottom">
@@ -226,9 +375,7 @@ tr:hover td{background:#FAFAFE}
         <div class="user-plan" id="sb-plan">trial</div>
       </div>
     </div>
-    <div style="margin-top:8px;text-align:center">
-      <button class="logout-btn" onclick="logout()">Log out</button>
-    </div>
+    <button class="logout-btn" onclick="logout()">Log out</button>
   </div>
 </nav>
 
@@ -236,11 +383,15 @@ tr:hover td{background:#FAFAFE}
 <div id="main">
   <!-- TOPBAR -->
   <div id="topbar">
-    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="role-badge AM" id="role-badge">AM</div>
+    </div>
     <div class="topbar-right">
-      <span class="plan-chip plan-trial" id="plan-chip">Trial</span>
+      <button class="notif-btn" title="Notifications">🔔</button>
       <button class="upload-btn" onclick="document.getElementById('file-input').click()">
-        ＋ Upload file
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Upload data
       </button>
     </div>
   </div>
@@ -253,430 +404,1134 @@ tr:hover td{background:#FAFAFE}
     <div id="empty-state">
       <div class="empty-icon">📂</div>
       <div class="empty-title">Upload your trading file</div>
-      <div class="empty-sub">Drop your CSV or Excel file to get instant sell-through analysis, reorder alerts, markdown risk, and an AI analyst ready to answer questions about your range.</div>
-      <div class="drop-zone" id="drop-zone"
+      <div class="empty-sub">Drop your CSV or Excel file to unlock instant sell-through analysis, reorder alerts, markdown risk scoring, and role-based insights for your entire team.</div>
+      <div class="drop-zone glass" id="drop-zone"
            ondragover="doDragOver(event)" ondragleave="doDragLeave(event)" ondrop="doDrop(event)"
            onclick="document.getElementById('file-input').click()">
+        <div class="drop-zone-icon">☁️</div>
         <div class="drop-zone-title">Drag & drop your file here</div>
         <div class="drop-zone-sub">CSV · XLSX · XLS · Numbers · ODS · up to 32 MB</div>
       </div>
-      <div class="upload-progress" id="upload-progress">⏳ Analysing your data…</div>
+      <div class="upload-progress" id="upload-progress">Analysing your data…</div>
     </div>
 
-    <!-- DASHBOARD VIEWS (hidden until data loaded) -->
-    <div id="dashboard-views" style="display:none">
+    <!-- ROLE VIEWS -->
+    <div id="role-views" style="display:none">
 
-      <!-- AI Insights bar -->
-      <div class="insights-bar" id="insights-bar">
-        <div class="insights-title">⚡ AI Quick Insights</div>
-        <div class="insights-list" id="insights-list">
-          <div class="insight-item"><span class="insight-bullet">→</span>Loading insights…</div>
-        </div>
-      </div>
-
-      <!-- OVERVIEW VIEW -->
-      <div class="view active" id="view-overview">
-        <div class="kpi-grid">
-          <div class="kpi"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kpi-rev">—</div><div class="kpi-sub" id="kpi-rev-sub">12-week period</div></div>
-          <div class="kpi"><div class="kpi-label">Sell-Through</div><div class="kpi-value" id="kpi-st">—</div><div class="kpi-sub" id="kpi-st-sub">avg across all SKUs</div></div>
-          <div class="kpi"><div class="kpi-label">Reorder Alerts</div><div class="kpi-value" id="kpi-ro">—</div><div class="kpi-sub" id="kpi-ro-sub">SKUs need action</div></div>
-          <div class="kpi"><div class="kpi-label">Markdown Risk</div><div class="kpi-value" id="kpi-md">—</div><div class="kpi-sub" id="kpi-md-sub">SKUs flagged</div></div>
-        </div>
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="card-title">Weekly Revenue Trend</div>
-            <canvas id="revenue-chart" height="160"></canvas>
+      <!-- ══════════════ MA VIEW ══════════════ -->
+      <div class="role-view" id="view-ma">
+        <div id="ma-sec-overview">
+          <!-- Row 1: Operational KPIs -->
+          <div class="kpi-grid kpi-grid-6" style="margin-bottom:12px">
+            <div class="kpi glass" id="ma-kpi-1"><div class="kpi-label">Today's Sales Est.</div><div class="kpi-value" id="ma-sales">—</div><div class="kpi-sub">weekly run-rate</div></div>
+            <div class="kpi glass" id="ma-kpi-2"><div class="kpi-label">Units Sold</div><div class="kpi-value" id="ma-units">—</div><div class="kpi-sub">total range</div></div>
+            <div class="kpi glass" id="ma-kpi-3"><div class="kpi-label">Stock On Hand</div><div class="kpi-value" id="ma-stock">—</div><div class="kpi-sub">units across range</div></div>
+            <div class="kpi glass" id="ma-kpi-4"><div class="kpi-label">Open POs</div><div class="kpi-value" id="ma-po">—</div><div class="kpi-sub">critical / urgent</div></div>
+            <div class="kpi glass" id="ma-kpi-5"><div class="kpi-label">Missing Data</div><div class="kpi-value" id="ma-missing">—</div><div class="kpi-sub" id="ma-missing-sub">SKUs incomplete</div></div>
+            <div class="kpi glass" id="ma-kpi-6"><div class="kpi-label">Low Stock</div><div class="kpi-value" id="ma-low-stock">—</div><div class="kpi-sub">SKUs need action</div></div>
           </div>
-          <div class="chart-card">
-            <div class="card-title">Category Performance</div>
-            <canvas id="category-chart" height="160"></canvas>
+          <!-- Row 2: Commercial KPIs -->
+          <div class="kpi-grid kpi-grid-4" style="margin-bottom:18px">
+            <div class="kpi glass" style="border-top-color:#7DAA75"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ma-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
+            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="ma-kpi-margin">—</div><div class="kpi-sub">avg across range</div><div class="kpi-bar"><div class="kpi-bar-fill" id="ma-margin-bar" style="width:0%"></div></div></div>
+            <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="ma-kpi-st">—</div><div class="kpi-sub">all SKUs</div><div class="kpi-bar"><div class="kpi-bar-fill" id="ma-st-bar" style="width:0%;background:#8A9DD8"></div></div></div>
+            <div class="kpi glass" style="border-top-color:#E3A08E"><div class="kpi-label">Markdown Candidates</div><div class="kpi-value" id="ma-kpi-markdowns">—</div><div class="kpi-sub" id="ma-kpi-md-sub">at risk</div></div>
+          </div>
+          <!-- Overview Charts -->
+          <div class="two-col" style="margin-bottom:14px">
+            <div class="glass" style="padding:18px">
+              <div class="card-title">Revenue by Category</div>
+              <div class="chart-wrap"><canvas id="ma-cat-bar-chart"></canvas></div>
+            </div>
+            <div class="glass" style="padding:18px">
+              <div class="card-title">Category Revenue Mix</div>
+              <div style="height:180px;position:relative"><canvas id="ma-cat-pie-chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col" id="ma-sec-alerts">
+          <div class="glass table-card">
+            <div class="table-header"><h3>Low Stock Alerts</h3><span class="badge badge-red" id="ma-ro-badge">0</span></div>
+            <table><thead><tr><th>SKU</th><th>Category</th><th>Stock</th><th>Cover Wks</th><th>Urgency</th><th>Status</th></tr></thead>
+            <tbody id="ma-ro-tbody"></tbody></table>
+          </div>
+          <div class="glass table-card">
+            <div class="table-header"><h3>Missing Data Alerts</h3><span class="badge badge-amber" id="ma-dq-badge">0</span></div>
+            <table><thead><tr><th>Data Field</th><th>Missing</th><th>% Complete</th><th>Status</th></tr></thead>
+            <tbody id="ma-dq-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <div class="two-col" id="ma-sec-top">
+          <div class="glass table-card" id="ma-sec-stock">
+            <div class="table-header"><h3>Top 10 SKUs</h3><span class="badge badge-green">by revenue</span></div>
+            <table><thead><tr><th>#</th><th>SKU</th><th>Name</th><th>Units</th><th>Revenue</th><th>ST%</th></tr></thead>
+            <tbody id="ma-top-tbody"></tbody></table>
+          </div>
+          <div class="glass table-card" id="ma-sec-bot">
+            <div class="table-header"><h3>Bottom 10 SKUs</h3><span class="badge badge-red">low volume</span></div>
+            <table><thead><tr><th>#</th><th>SKU</th><th>Name</th><th>Units</th><th>Revenue</th><th>ST%</th></tr></thead>
+            <tbody id="ma-bot-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <div class="glass" id="ma-sec-pos" style="padding:20px;margin-bottom:14px">
+          <div class="card-title-lg">Open Purchase Orders</div>
+          <div id="ma-po-summary" style="font-size:13px;color:var(--text2);margin-bottom:14px"></div>
+          <table><thead><tr><th>SKU</th><th>Priority</th><th>Recommended Action</th><th>Est. Value</th></tr></thead>
+          <tbody id="ma-po-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ══════════════ AM VIEW ══════════════ -->
+      <div class="role-view" id="view-am">
+        <div class="kpi-grid kpi-grid-4" id="am-sec-overview">
+          <div class="kpi glass">
+            <div class="kpi-label">Sell-Through %</div>
+            <div class="kpi-value" id="am-st">—</div>
+            <div class="kpi-sub">avg across all SKUs</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" id="am-st-bar" style="width:0%;background:#8A9DD8"></div></div>
+          </div>
+          <div class="kpi glass">
+            <div class="kpi-label">Weeks Cover</div>
+            <div class="kpi-value" id="am-cover">—</div>
+            <div class="kpi-sub" id="am-cover-sub">target: 4–8 weeks</div>
+          </div>
+          <div class="kpi glass">
+            <div class="kpi-label">Gross Margin %</div>
+            <div class="kpi-value" id="am-margin">—</div>
+            <div class="kpi-sub">avg margin</div>
+            <div class="kpi-bar"><div class="kpi-bar-fill" id="am-margin-bar" style="width:0%;background:#F4C0A8"></div></div>
+          </div>
+          <div class="kpi glass">
+            <div class="kpi-label">Stock Turn</div>
+            <div class="kpi-value" id="am-turn">—</div>
+            <div class="kpi-sub">annualised</div>
+          </div>
+        </div>
+
+        <div class="two-col-60" id="am-sec-st">
+          <div>
+            <div class="glass" id="am-sec-cat" style="padding:18px;margin-bottom:14px">
+              <div class="card-title">Category Performance</div>
+              <div class="chart-wrap"><canvas id="am-cat-chart"></canvas></div>
+            </div>
+            <div class="glass" style="padding:18px;margin-bottom:14px">
+              <div class="card-title">Weekly Sell-Through Trend</div>
+              <div class="chart-wrap-sm"><canvas id="am-trend-chart"></canvas></div>
+            </div>
+          </div>
+          <div id="am-sec-insights">
+            <div class="insight-card">
+              <div class="insight-hd">
+                <div class="insight-pulse"></div>
+                <div class="insight-hd-title">AI Insights — Top 5 Actions</div>
+              </div>
+              <div id="am-insights-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="glass table-card" id="am-sec-md">
+            <div class="table-header"><h3>Markdown Candidates</h3><span class="badge badge-red" id="am-md-badge">0</span></div>
+            <table><thead><tr><th>SKU</th><th>Category</th><th>ST%</th><th>Severity</th><th>Depth</th><th>Action</th></tr></thead>
+            <tbody id="am-md-tbody"></tbody></table>
+          </div>
+          <div class="glass table-card" id="am-sec-ro">
+            <div class="table-header"><h3>Reorder Opportunities</h3><span class="badge badge-amber" id="am-ro-badge">0</span></div>
+            <table><thead><tr><th>SKU</th><th>Category</th><th>Stock</th><th>Cover</th><th>Urgency</th><th>Action</th></tr></thead>
+            <tbody id="am-ro-tbody"></tbody></table>
           </div>
         </div>
       </div>
 
-      <!-- BEST SELLERS VIEW -->
-      <div class="view" id="view-bestsellers">
-        <div class="table-card">
-          <div class="table-header"><h3>Best Sellers</h3><span class="badge badge-teal" id="bs-count">0 SKUs</span></div>
-          <table><thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Revenue</th><th>Units</th><th>Sell-Through</th><th>Margin</th></tr></thead>
-          <tbody id="bs-tbody"></tbody></table>
+      <!-- ══════════════ MERCHANDISER VIEW ══════════════ -->
+      <div class="role-view" id="view-merch">
+        <div class="kpi-grid kpi-grid-5" id="mc-sec-overview">
+          <div class="kpi glass"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="mc-rev">—</div><div class="kpi-sub">trading period</div></div>
+          <div class="kpi glass"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="mc-margin">—</div><div class="kpi-sub">avg across range</div></div>
+          <div class="kpi glass"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="mc-st">—</div><div class="kpi-sub">all SKUs</div></div>
+          <div class="kpi glass"><div class="kpi-label">OTB Utilised</div><div class="kpi-value" id="mc-otb">—</div><div class="kpi-sub">of budget</div></div>
+          <div class="kpi glass"><div class="kpi-label">Forecast Margin</div><div class="kpi-value" id="mc-fmargin">—</div><div class="kpi-sub">projected</div></div>
+        </div>
+
+        <div class="three-col" id="mc-sec-scatter">
+          <!-- LEFT: Scatter matrix -->
+          <div class="glass" style="padding:18px">
+            <div class="card-title">Category Performance Matrix</div>
+            <div style="position:relative;height:220px">
+              <canvas id="mc-scatter-chart"></canvas>
+              <div class="scatter-quadrants">
+                <div class="q-label" style="top:6px;right:8px">STAR</div>
+                <div class="q-label" style="top:6px;left:8px">CASH COW</div>
+                <div class="q-label" style="bottom:6px;right:8px">GROWTH</div>
+                <div class="q-label" style="bottom:6px;left:8px">PROBLEM</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CENTRE: Trend + donut -->
+          <div id="mc-sec-trend">
+            <div class="glass" style="padding:16px;margin-bottom:12px">
+              <div class="card-title">Sell-Through Trend</div>
+              <div class="chart-wrap-sm"><canvas id="mc-trend-chart"></canvas></div>
+            </div>
+            <div class="glass" style="padding:16px">
+              <div class="card-title">Category Revenue Mix</div>
+              <div style="height:130px;position:relative"><canvas id="mc-donut-chart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: AI Action Centre -->
+          <div class="glass" id="mc-sec-actions" style="padding:18px">
+            <div class="card-title" style="color:#9A4A3A">AI Action Centre</div>
+            <div id="mc-actions-list"></div>
+          </div>
+        </div>
+
+        <!-- OTB wide card -->
+        <div class="glass otb-card" id="mc-sec-otb">
+          <div class="card-title-lg">OTB Utilisation</div>
+          <div class="otb-progress-track"><div class="otb-progress-fill" id="mc-otb-fill" style="width:0%"></div></div>
+          <div id="mc-otb-warn" class="otb-warn"></div>
+          <div class="otb-metrics">
+            <div><div class="otb-metric-label">OTB Budget</div><div class="otb-metric-val" id="mc-otb-budget">—</div></div>
+            <div><div class="otb-metric-label">Spent (Open POs)</div><div class="otb-metric-val" id="mc-otb-spent">—</div></div>
+            <div><div class="otb-metric-label">Remaining</div><div class="otb-metric-val" id="mc-otb-remain">—</div></div>
+          </div>
         </div>
       </div>
 
-      <!-- REORDERS VIEW -->
-      <div class="view" id="view-reorders">
-        <div class="table-card">
-          <div class="table-header"><h3>Reorder Alerts</h3><span class="badge badge-red" id="ro-count">0 alerts</span></div>
-          <table><thead><tr><th>Urgency</th><th>SKU</th><th>Name</th><th>Category</th><th>Stock</th><th>Cover Wks</th><th>Sell-Through</th><th>Revenue</th></tr></thead>
-          <tbody id="ro-tbody"></tbody></table>
+      <!-- ══════════════ DIRECTOR VIEW ══════════════ -->
+      <div class="role-view" id="view-dir">
+        <!-- Executive header -->
+        <div class="exec-header" id="dir-sec-health">
+          <div class="exec-label">Executive Dashboard</div>
+          <div class="exec-content">
+            <div>
+              <div class="health-score-num" id="dir-health-num">—</div>
+              <div class="health-descriptor" id="dir-health-desc">LOADING</div>
+            </div>
+            <!-- CSS-only semicircle gauge -->
+            <div style="position:relative;width:120px;height:60px;flex-shrink:0">
+              <div id="dir-gauge" style="width:120px;height:120px;border-radius:50%;border:14px solid rgba(255,255,255,0.08);
+                position:absolute;bottom:0;overflow:hidden;background:conic-gradient(from 180deg,#7DAA75 0deg,transparent 0deg)">
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px">Business Health Score</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.35)">0 = Critical — 100 = Outstanding</div>
+            </div>
+            <div class="exec-meta">
+              <div class="exec-updated" id="dir-updated">Last updated —</div>
+              <div class="exec-sku-count" id="dir-sku-count">— SKUs analysed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vs plan cards -->
+        <div class="vs-plan-cards" id="dir-sec-vsplan">
+          <div class="glass vs-card">
+            <div class="vs-card-label">Revenue vs Plan</div>
+            <div class="vs-actual" id="dir-rev-actual">—</div>
+            <div class="vs-plan-ref" id="dir-rev-plan">Plan: —</div>
+            <span class="vs-pct" id="dir-rev-pct">—</span>
+          </div>
+          <div class="glass vs-card">
+            <div class="vs-card-label">Margin vs Plan</div>
+            <div class="vs-actual" id="dir-mg-actual">—</div>
+            <div class="vs-plan-ref" id="dir-mg-plan">Plan: —</div>
+            <span class="vs-pct" id="dir-mg-pct">—</span>
+          </div>
+          <div class="glass vs-card">
+            <div class="vs-card-label">Stock vs Plan</div>
+            <div class="vs-actual" id="dir-st-actual">—</div>
+            <div class="vs-plan-ref" id="dir-st-plan">Plan: —</div>
+            <span class="vs-pct" id="dir-st-pct">—</span>
+          </div>
+        </div>
+
+        <!-- Risks + Opportunities -->
+        <div class="risk-opp-wrap" id="dir-sec-risk">
+          <div class="glass" style="padding:18px">
+            <div class="card-title-lg" style="color:#9A3030">Top Risks</div>
+            <div id="dir-risks"></div>
+          </div>
+          <div class="glass" style="padding:18px">
+            <div class="card-title-lg" style="color:#3A7032">Top Opportunities</div>
+            <div id="dir-opps"></div>
+          </div>
+        </div>
+
+        <!-- Cash position -->
+        <div class="glass cash-card">
+          <div class="card-title-lg">Cash Position</div>
+          <div class="cash-metrics">
+            <div><div class="cash-label">Cash Trapped in Stock</div><div class="cash-val" id="dir-cash-trapped">—</div></div>
+            <div><div class="cash-label">Target Markdown Release</div><div class="cash-val" id="dir-md-release">—</div></div>
+            <div><div class="cash-label">Projected Cash Release</div><div class="cash-val" id="dir-cash-release">—</div></div>
+          </div>
+        </div>
+
+        <!-- AI Executive Summary -->
+        <div class="glass exec-summary-card" id="dir-sec-summary">
+          <div class="card-title" style="color:rgba(184,153,106,0.8);margin-bottom:16px">AI Executive Summary</div>
+          <div class="exec-summary-quote" id="dir-summary">Loading executive summary…</div>
+          <div class="ai-badge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            Generated by Threadlytics AI
+          </div>
         </div>
       </div>
 
-      <!-- MARKDOWNS VIEW -->
-      <div class="view" id="view-markdowns">
-        <div class="table-card">
-          <div class="table-header"><h3>Markdown Risk</h3><span class="badge badge-amber" id="md-count">0 SKUs</span></div>
-          <table><thead><tr><th>Severity</th><th>SKU</th><th>Name</th><th>Category</th><th>Sell-Through</th><th>Recommended Depth</th><th>Revenue at Risk</th></tr></thead>
-          <tbody id="md-tbody"></tbody></table>
-        </div>
-      </div>
-
-      <!-- CATEGORIES VIEW -->
-      <div class="view" id="view-categories">
-        <div class="table-card">
-          <div class="table-header"><h3>Category Scorecard</h3></div>
-          <table><thead><tr><th>Category</th><th>Health</th><th>Revenue</th><th>SKUs</th><th>Avg Sell-Through</th><th>Avg Margin</th></tr></thead>
-          <tbody id="cat-tbody"></tbody></table>
-        </div>
-      </div>
-
-    </div><!-- /dashboard-views -->
+    </div><!-- /role-views -->
   </div><!-- /content -->
 </div><!-- /main -->
 
-<!-- AI CHAT PANEL -->
-<div id="chat-panel">
-  <div class="chat-hd">
-    <div class="chat-hd-dot"></div>
-    <div class="chat-hd-title">AI Merchandising Agent</div>
-    <button class="chat-close" onclick="closeChat()">✕</button>
-  </div>
-  <div class="chat-msgs" id="chat-msgs">
-    <div class="cmsg ai">
-      <div class="cav">T</div>
-      <div class="cbub">Hi! I'm your AI merchandising analyst. Upload a trading file and I'll answer any question about your range — reorders, markdowns, best sellers, category health — grounded in your actual numbers.</div>
-    </div>
-  </div>
-  <div class="chips" id="chat-chips" style="display:none">
-    <button class="chip" onclick="sendChip(this)">What should I reorder this week?</button>
-    <button class="chip" onclick="sendChip(this)">Which categories should I cut?</button>
-    <button class="chip" onclick="sendChip(this)">What's my biggest markdown risk?</button>
-    <button class="chip" onclick="sendChip(this)">Show me my top 5 best sellers</button>
-  </div>
-  <div class="chat-inp-row">
-    <input type="text" class="chat-input" id="chat-input" placeholder="Ask about your range…" disabled onkeydown="if(event.key==='Enter')sendChat()">
-    <button class="chat-send" id="chat-send" disabled onclick="sendChat()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- FAB -->
-<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Ask AI">💬</button>
-
 <script>
 // ── State ─────────────────────────────────────────────────────
-let analysisData  = null;
-let chatReady     = false;
-let chatBusy      = false;
-let currentUploadId = null;
-let revenueChart  = null;
-let catChart      = null;
+let currentRole = 'AM';
+let analysisData = null;
+let roleData = null;
+let charts = {};
+
+// ── Nav configs per role ──────────────────────────────────────
+const NAV = {
+  MA: [
+    {icon:'📊',label:'Overview',anchor:'ma-sec-overview'},
+    {icon:'📈',label:'Daily Sales',anchor:'ma-sec-overview'},
+    {icon:'📦',label:'Stock Monitor',anchor:'ma-sec-alerts'},
+    {icon:'🔔',label:'Alerts',anchor:'ma-sec-alerts'},
+    {icon:'📋',label:'Open POs',anchor:'ma-sec-pos'},
+    {icon:'⭐',label:'Top SKUs',anchor:'ma-sec-top'},
+    {icon:'📉',label:'Bottom SKUs',anchor:'ma-sec-bot'},
+  ],
+  AM: [
+    {icon:'📊',label:'Trading Overview',anchor:'am-sec-overview'},
+    {icon:'📈',label:'Sell-Through',anchor:'am-sec-st'},
+    {icon:'🗂️',label:'Category Mix',anchor:'am-sec-cat'},
+    {icon:'📉',label:'Markdown Risk',anchor:'am-sec-md'},
+    {icon:'📦',label:'Reorders',anchor:'am-sec-ro'},
+    {icon:'💡',label:'AI Insights',anchor:'am-sec-insights'},
+  ],
+  Merchandiser: [
+    {icon:'🎯',label:'Command Centre',anchor:'mc-sec-overview'},
+    {icon:'🗂️',label:'Category Matrix',anchor:'mc-sec-scatter'},
+    {icon:'💰',label:'Margin',anchor:'mc-sec-trend'},
+    {icon:'📅',label:'Forecasts',anchor:'mc-sec-trend'},
+    {icon:'🛒',label:'OTB',anchor:'mc-sec-otb'},
+    {icon:'🤖',label:'AI Actions',anchor:'mc-sec-actions'},
+  ],
+  Director: [
+    {icon:'📋',label:'Executive Summary',anchor:'dir-sec-summary'},
+    {icon:'❤️',label:'Business Health',anchor:'dir-sec-health'},
+    {icon:'💷',label:'Revenue',anchor:'dir-sec-vsplan'},
+    {icon:'💰',label:'Margin',anchor:'dir-sec-vsplan'},
+    {icon:'⚠️',label:'Risk & Opportunity',anchor:'dir-sec-risk'},
+  ],
+};
+
+const ROLE_TITLES = {MA:'MA Dashboard',AM:'Trading Overview',Merchandiser:'Command Centre',Director:'Executive Dashboard'};
 
 // ── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUser();
-  await loadLatestAnalysis();
+  try {
+    const res = await fetch('/api/analysis', {credentials:'include'});
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.kpis) {
+        analysisData = data;
+        await loadRoleData();
+        showRoleView();
+      }
+    }
+  } catch {}
 });
 
 async function loadUser() {
   try {
-    const res  = await fetch('/auth/me', { credentials: 'include' });
-    if (res.status === 401) { window.location.href = '/login'; return; }
+    const res = await fetch('/auth/me', {credentials:'include'});
+    if (res.status === 401) { window.location.href='/login'; return; }
     const user = await res.json();
     const initials = (user.full_name || user.email || '?').charAt(0).toUpperCase();
     document.getElementById('sb-avatar').textContent = initials;
     document.getElementById('sb-name').textContent   = user.full_name || user.email;
-    document.getElementById('sb-plan').textContent   = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
-    const chip = document.getElementById('plan-chip');
-    chip.textContent = user.plan.charAt(0).toUpperCase() + user.plan.slice(1);
-    chip.className = `plan-chip plan-${user.plan}`;
-  } catch (e) { console.error('loadUser:', e); }
+    document.getElementById('sb-plan').textContent   = (user.plan||'trial').charAt(0).toUpperCase()+(user.plan||'trial').slice(1);
+    currentRole = user.role || 'AM';
+    document.getElementById('role-switcher').value = currentRole;
+    updateRoleStyling();
+  } catch(e){console.error(e)}
 }
 
-async function loadLatestAnalysis() {
+async function loadRoleData() {
   try {
-    const res = await fetch('/api/analysis', { credentials: 'include' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.kpis) { populateDashboard(data); }
+    const res = await fetch('/api/analysis/role', {credentials:'include'});
+    if (res.ok) { roleData = await res.json(); }
+  } catch {}
+}
+
+// ── Role switching ────────────────────────────────────────────
+async function switchRole(role) {
+  currentRole = role;
+  try {
+    await fetch('/api/user/role', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({role})
+    });
+  } catch {}
+  updateRoleStyling();
+  if (analysisData) showRoleView();
+}
+
+function navClick(btn, anchor) {
+  btn.parentNode.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  btn.classList.add('active');
+  if (anchor) {
+    const el = document.getElementById(anchor);
+    if (el) {
+      // Scroll the window, not a nested container, accounting for sticky topbar
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
     }
-  } catch (e) { /* no data yet */ }
+  }
 }
 
-async function logout() {
-  await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
-  window.location.href = '/login';
+function updateRoleStyling() {
+  // Update sidebar nav
+  const nav = document.getElementById('sb-nav');
+  const items = NAV[currentRole] || NAV.AM;
+  const sectionLabel = currentRole === 'MA' ? 'Operations' : currentRole === 'AM' ? 'Analytics' : currentRole === 'Merchandiser' ? 'Strategy' : 'Executive';
+  nav.innerHTML = `<div class="nav-section">${sectionLabel}</div>` +
+    items.map((item, i) =>
+      `<button class="nav-item${i===0?' active':''}" onclick="navClick(this,'${item.anchor||''}')">
+        <span class="icon">${item.icon}</span>${item.label}
+      </button>`
+    ).join('');
+
+  // Update topbar
+  document.getElementById('topbar-title').textContent = ROLE_TITLES[currentRole] || 'Dashboard';
+  const badge = document.getElementById('role-badge');
+  badge.textContent = currentRole;
+  badge.className = `role-badge ${currentRole}`;
+
+  // Logo always stays Threadlytics green — only role badge changes per role
+  document.documentElement.style.setProperty('--role-accent', '#7DAA75');
+  document.querySelector('.sb-logo-text span').style.color = '#7DAA75';
+  document.querySelector('.sb-logo-dot').style.background = '#7DAA75';
 }
 
-// ── View switching ────────────────────────────────────────────
-function showView(name, el) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + name)?.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (el) el.classList.add('active');
-  const titles = {overview:'Dashboard',bestsellers:'Best Sellers',reorders:'Reorder Alerts',markdowns:'Markdown Risk',categories:'Categories'};
-  document.getElementById('topbar-title').textContent = titles[name] || 'Dashboard';
+function showRoleView() {
+  if (!analysisData) return;
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('role-views').style.display = 'block';
+
+  // Hide all views
+  document.querySelectorAll('.role-view').forEach(v => {
+    v.classList.remove('active');
+    v.style.display = 'none';
+  });
+
+  const viewMap = {MA:'view-ma', AM:'view-am', Merchandiser:'view-merch', Director:'view-dir'};
+  const viewId = viewMap[currentRole];
+  const view = document.getElementById(viewId);
+  if (!view) return;
+  view.style.display = 'block';
+  requestAnimationFrame(() => view.classList.add('active'));
+
+  // Destroy existing charts
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch {} });
+  charts = {};
+
+  // Render
+  if (currentRole === 'MA')          renderMA();
+  else if (currentRole === 'AM')     renderAM();
+  else if (currentRole === 'Merchandiser') renderMerch();
+  else if (currentRole === 'Director')    renderDirector();
+}
+
+// ═══════════════════════════════════════
+// MA RENDER
+// ═══════════════════════════════════════
+function renderMA() {
+  const k = analysisData.kpis || {};
+  const rd = roleData || {};
+  const sparkline = rd.weekly_sparkline || [];
+
+  const todaySales = sparkline.length ? sparkline[sparkline.length-1]/7 : (k.total_revenue||0)/365;
+  document.getElementById('ma-sales').textContent  = fmtCurr(todaySales);
+  document.getElementById('ma-units').textContent  = fmtNum(k.total_units||0);
+  document.getElementById('ma-stock').textContent  = fmtNum(rd.total_stock_units||0);
+  document.getElementById('ma-po').textContent     = rd.open_po_count||0;
+  document.getElementById('ma-missing').textContent= rd.missing_data_count||0;
+  document.getElementById('ma-missing-sub').textContent = `${rd.data_quality_pct||0}% data complete`;
+  document.getElementById('ma-low-stock').textContent   = k.reorder_count||0;
+
+  // Commercial KPIs (Row 2)
+  const avgST  = k.avg_sell_through||0;
+  const avgMg  = k.avg_margin_pct||0;
+  const mdCount = (analysisData.markdown_risk||[]).length;
+  document.getElementById('ma-kpi-revenue').textContent   = fmtCurr(k.total_revenue||0);
+  document.getElementById('ma-kpi-margin').textContent    = avgMg.toFixed(1)+'%';
+  document.getElementById('ma-kpi-st').textContent        = avgST.toFixed(1)+'%';
+  document.getElementById('ma-kpi-markdowns').textContent = mdCount;
+  document.getElementById('ma-kpi-md-sub').textContent    = mdCount > 0 ? `${mdCount} SKU${mdCount>1?'s':''} at risk` : 'No markdown risk';
+  setTimeout(() => {
+    document.getElementById('ma-margin-bar').style.width = Math.min(avgMg,100)+'%';
+    document.getElementById('ma-st-bar').style.width    = Math.min(avgST,100)+'%';
+  }, 100);
+
+  // Overview Charts
+  const cats = analysisData.category_scorecard || [];
+  if (cats.length) {
+    const barCtx = document.getElementById('ma-cat-bar-chart').getContext('2d');
+    charts.maCatBar = new Chart(barCtx, {
+      type:'bar',
+      data:{
+        labels: cats.map(c=>c.category),
+        datasets:[{
+          data: cats.map(c=>c.revenue),
+          backgroundColor: cats.map(c => c.health==='STRONG'?'rgba(125,170,117,0.75)':c.health==='HEALTHY'?'rgba(168,197,160,0.75)':c.health==='AT RISK'?'rgba(240,196,160,0.8)':'rgba(227,160,142,0.8)'),
+          borderRadius:5, borderSkipped:false
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed.y)}`}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+          y:{grid:{color:'rgba(168,197,160,0.15)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
+    const pieCtx = document.getElementById('ma-cat-pie-chart').getContext('2d');
+    charts.maCatPie = new Chart(pieCtx, {
+      type:'doughnut',
+      data:{
+        labels: cats.map(c=>c.category),
+        datasets:[{
+          data: cats.map(c=>c.revenue),
+          backgroundColor:['#A8C5A0','#B8C4E8','#F4C0A8','#F0C4A0','#E3A08E','#C8DFBF','#D4DCEF','#E8D4C0'],
+          borderWidth:2, borderColor:'rgba(255,255,255,0.8)'
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
+          tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed)}`}}
+        },
+        cutout:'58%'}
+    });
+  }
+
+  // Reorder alerts table
+  const reorders = analysisData.reorder_alerts || [];
+  document.getElementById('ma-ro-badge').textContent = reorders.length;
+  document.getElementById('ma-ro-tbody').innerHTML = reorders.slice(0,8).map(r => `
+    <tr>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${r.stock!=null?fmtNum(r.stock):'OOS'}</td>
+      <td>${r.cover_weeks!=null?r.cover_weeks+'w':'—'}</td>
+      <td><span class="urg urg-${r.urgency}">${r.urgency}</span></td>
+      <td style="font-size:10px;color:var(--text3)">${r.urgency==='CRITICAL'?'Out of stock':r.urgency==='URGENT'?'Reorder now':'Monitor'}</td>
+    </tr>`).join('');
+
+  // Data quality table
+  const totalSKUs = (analysisData.meta||{}).sku_count || 1;
+  const bs = analysisData.best_sellers || [];
+  const missingStock  = bs.filter(s => !s.stock || s.stock===0).length;
+  const missingMargin = bs.filter(s => !s.margin_pct).length;
+  const missingST     = bs.filter(s => !s.sell_through).length;
+  document.getElementById('ma-dq-badge').textContent = rd.missing_data_count||0;
+  document.getElementById('ma-dq-tbody').innerHTML = [
+    {field:'Stock On Hand', missing:missingStock},
+    {field:'Margin %',      missing:missingMargin},
+    {field:'Sell-Through',  missing:missingST},
+    {field:'Cost Price',    missing:Math.round(totalSKUs*0.3)},
+  ].map(row => {
+    const pct = Math.round((1-row.missing/totalSKUs)*100);
+    const cls = pct>=90?'dq-good':pct>=70?'dq-warn':'dq-bad';
+    return `<tr>
+      <td>${row.field}</td>
+      <td>${row.missing}</td>
+      <td>${pct}%</td>
+      <td><span class="data-quality-dot ${cls}"></span>${pct>=90?'Good':pct>=70?'Partial':'Incomplete'}</td>
+    </tr>`;
+  }).join('');
+
+  // Top 10 by revenue
+  const top10 = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,10);
+  document.getElementById('ma-top-tbody').innerHTML = top10.map((r,i) => `
+    <tr>
+      <td style="color:var(--text3);font-weight:700">${i+1}</td>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name||'—')}</td>
+      <td>${fmtNum(r.units||0)}</td>
+      <td><strong>${fmtCurr(r.revenue)}</strong></td>
+      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+
+  // Bottom 10 by units
+  const bot10 = (rd.bottom_sellers||[...analysisData.best_sellers||[]].sort((a,b)=>a.units-b.units)).slice(0,10);
+  document.getElementById('ma-bot-tbody').innerHTML = bot10.map((r,i) => `
+    <tr>
+      <td style="color:var(--text3);font-weight:700">${i+1}</td>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name||'—')}</td>
+      <td style="color:#E3A08E;font-weight:600">${fmtNum(r.units||0)}</td>
+      <td>${fmtCurr(r.revenue)}</td>
+      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
+    </tr>`).join('');
+
+  // Open POs
+  const critical = (analysisData.reorder_alerts||[]).filter(r=>r.urgency==='CRITICAL'||r.urgency==='URGENT');
+  document.getElementById('ma-po-summary').innerHTML = `
+    <strong>${rd.open_po_count||critical.length}</strong> open actions recommended —
+    estimated value <strong>${fmtCurr(rd.open_po_value||0)}</strong> in potential revenue at risk.`;
+  document.getElementById('ma-po-tbody').innerHTML = critical.slice(0,8).map(r => `
+    <tr>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td><span class="urg urg-${r.urgency}">${r.urgency}</span></td>
+      <td>Raise PO — replenish to 6-week cover target</td>
+      <td>${fmtCurr(r.revenue*0.15)}</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:20px">No critical or urgent reorder alerts</td></tr>';
+}
+
+// ═══════════════════════════════════════
+// AM RENDER
+// ═══════════════════════════════════════
+function renderAM() {
+  const k = analysisData.kpis || {};
+  const rd = roleData || {};
+
+  const avgST = k.avg_sell_through||0;
+  const avgMg = k.avg_margin_pct||0;
+  const avgCv = k.avg_cover_weeks||0;
+  const totalRev = k.total_revenue||0;
+  const stockVal = (rd.total_stock_value||0) || totalRev*0.4;
+  const stockTurn = stockVal > 0 ? (totalRev/stockVal).toFixed(1) : '—';
+
+  document.getElementById('am-st').textContent     = avgST.toFixed(1)+'%';
+  document.getElementById('am-cover').textContent  = avgCv.toFixed(1)+'w';
+  document.getElementById('am-margin').textContent = avgMg.toFixed(1)+'%';
+  document.getElementById('am-turn').textContent   = stockTurn+'x';
+
+  const cvSub = avgCv < 4 ? 'Below target — risk stockout' : avgCv > 8 ? 'Above target — overstocked' : 'Within target range';
+  document.getElementById('am-cover-sub').textContent = cvSub;
+
+  setTimeout(() => {
+    document.getElementById('am-st-bar').style.width = Math.min(avgST,100)+'%';
+    document.getElementById('am-margin-bar').style.width = Math.min(avgMg,100)+'%';
+  }, 100);
+
+  // Category performance chart
+  const cats = analysisData.category_scorecard || [];
+  const catColors = cats.map(c => c.health==='STRONG'?'#7DAA75':c.health==='HEALTHY'?'#A8C5A0':c.health==='AT RISK'?'#F0C4A0':'#E3A08E');
+  const amCatCtx = document.getElementById('am-cat-chart').getContext('2d');
+  charts.amCat = new Chart(amCatCtx, {
+    type:'bar',
+    data:{
+      labels: cats.map(c=>c.category),
+      datasets:[{data:cats.map(c=>c.revenue), backgroundColor:catColors, borderRadius:4, borderSkipped:false}]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+        y:{grid:{display:false},ticks:{font:{size:9},color:'#4A4A5A'}}
+      }}
+  });
+
+  // Weekly trend chart
+  const sparkline = rd.weekly_sparkline || [];
+  const trendLabels = sparkline.map((_,i)=>`W${i+1}`);
+  const amTrendCtx = document.getElementById('am-trend-chart').getContext('2d');
+  charts.amTrend = new Chart(amTrendCtx, {
+    type:'line',
+    data:{
+      labels:trendLabels,
+      datasets:[{data:sparkline, borderColor:'#8A9DD8', backgroundColor:'rgba(138,157,216,0.08)',
+        fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#8A9DD8', borderWidth:2}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+        y:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+      }}
+  });
+
+  // AI Insights
+  const insights = generateAMInsights(analysisData, roleData);
+  document.getElementById('am-insights-list').innerHTML = insights.map((ins,i) => `
+    <div class="insight-item">
+      <div class="insight-num">${i+1}</div>
+      <div class="insight-text">
+        ${esc(ins.text)}
+        <br><span class="insight-chip chip-${ins.chipClass}">${ins.type}</span>
+      </div>
+    </div>`).join('');
+
+  // Markdown table
+  const mds = analysisData.markdown_risk || [];
+  document.getElementById('am-md-badge').textContent = mds.length;
+  document.getElementById('am-md-tbody').innerHTML = mds.slice(0,8).map(r => `
+    <tr>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${r.sell_through.toFixed(1)}%</td>
+      <td><span class="sev-${r.severity}">${r.severity}</span></td>
+      <td style="font-size:11px">${esc(r.recommended_depth)}</td>
+      <td><button class="act-btn">Markdown</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:16px">No markdown candidates</td></tr>';
+
+  // Reorder table
+  const ros = analysisData.reorder_alerts || [];
+  document.getElementById('am-ro-badge').textContent = ros.length;
+  document.getElementById('am-ro-tbody').innerHTML = ros.slice(0,8).map(r => `
+    <tr>
+      <td style="font-family:var(--serif);font-size:11px;font-weight:700">${esc(r.sku)}</td>
+      <td>${esc(r.category||'—')}</td>
+      <td>${r.stock!=null?fmtNum(r.stock):'OOS'}</td>
+      <td>${r.cover_weeks!=null?r.cover_weeks+'w':'—'}</td>
+      <td><span class="urg urg-${r.urgency}">${r.urgency}</span></td>
+      <td><button class="act-btn">Reorder</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:16px">No reorder alerts</td></tr>';
+}
+
+function generateAMInsights(analysis, rd) {
+  const k = analysis.kpis || {};
+  const cats = analysis.category_scorecard || [];
+  const reorders = analysis.reorder_alerts || [];
+  const markdowns = analysis.markdown_risk || [];
+  const topCat = cats[0];
+  const weakCat = cats.filter(c=>c.health==='AT RISK'||c.health==='CRITICAL')[0];
+  const criticals = reorders.filter(r=>r.urgency==='CRITICAL');
+
+  const insights = [];
+
+  if (topCat) {
+    insights.push({
+      text:`${topCat.category} is leading performance at £${fmtK(topCat.revenue)} revenue` + (topCat.avg_sell_through ? ` with ${topCat.avg_sell_through.toFixed(0)}% sell-through — consider accelerating intake.` : '.'),
+      type:'ACCELERATE INTAKE', chipClass:'intake'
+    });
+  }
+
+  if (weakCat) {
+    insights.push({
+      text:`${weakCat.category} is ${weakCat.health} with ${weakCat.avg_sell_through?.toFixed(0)||'low'}% sell-through — reduce forward orders and review markdown strategy.`,
+      type:'REDUCE INTAKE', chipClass:'intake'
+    });
+  } else {
+    insights.push({
+      text:`All categories are trading at healthy sell-through levels — maintain current OTB split and review weekly.`,
+      type:'MONITOR', chipClass:'monitor'
+    });
+  }
+
+  if (criticals.length > 0) {
+    insights.push({
+      text:`${criticals.length} SKU${criticals.length>1?'s are':' is'} critically out-of-stock — raise emergency POs immediately. ${criticals[0].sku} is the highest priority.`,
+      type:'REPLENISHMENT', chipClass:'reorder'
+    });
+  } else if (reorders.length > 0) {
+    insights.push({
+      text:`${reorders.length} SKUs flagged for reorder — ${reorders[0].sku} has only ${reorders[0].cover_weeks||'<2'} weeks cover remaining. Action within 48 hours.`,
+      type:'REPLENISHMENT', chipClass:'reorder'
+    });
+  } else {
+    insights.push({
+      text:`Stock cover is healthy across the range — no critical reorder actions required this week. Monitor weekly OTB.`,
+      type:'OTB REVIEW', chipClass:'otb'
+    });
+  }
+
+  if (markdowns.length > 3) {
+    insights.push({
+      text:`${markdowns.length} SKUs at markdown risk — initiate ${markdowns[0].recommended_depth} price reduction on ${markdowns[0].sku} to clear excess stock and protect margin.`,
+      type:'MARKDOWN WATCH', chipClass:'markdown'
+    });
+  } else {
+    insights.push({
+      text:`Markdown risk is contained at ${markdowns.length} SKU${markdowns.length===1?'':'s'} — pricing discipline is strong. Continue monitoring sell-through weekly.`,
+      type:'MARKDOWN WATCH', chipClass:'markdown'
+    });
+  }
+
+  const avgMg = k.avg_margin_pct||0;
+  insights.push({
+    text:`Gross margin is at ${avgMg.toFixed(1)}% — ${avgMg>=45?'above':'below'} the 45% benchmark. ${avgMg>=45?'Explore premium pricing on hero SKUs to maximise contribution.':'Review cost base and markdown depth to protect margin targets.'}`,
+    type:'OTB / BUYING', chipClass:'otb'
+  });
+
+  return insights.slice(0,5);
+}
+
+// ═══════════════════════════════════════
+// MERCHANDISER RENDER
+// ═══════════════════════════════════════
+function renderMerch() {
+  const k = analysisData.kpis || {};
+  const rd = roleData || {};
+  const cats = analysisData.category_scorecard || [];
+
+  const totalRev = k.total_revenue||0;
+  const avgMg = k.avg_margin_pct||0;
+  const avgST = k.avg_sell_through||0;
+  const openPoVal = rd.open_po_value||0;
+  const otbBudget = totalRev*0.15;
+  const otbPct = otbBudget > 0 ? Math.round(openPoVal/otbBudget*100) : 73;
+
+  document.getElementById('mc-rev').textContent    = fmtCurr(totalRev);
+  document.getElementById('mc-margin').textContent = avgMg.toFixed(1)+'%';
+  document.getElementById('mc-st').textContent     = avgST.toFixed(1)+'%';
+  document.getElementById('mc-otb').textContent    = otbPct+'%';
+  document.getElementById('mc-fmargin').textContent= (avgMg*1.02).toFixed(1)+'%';
+
+  // Scatter chart (Category Matrix)
+  const scatterData = cats.map((c,i) => ({
+    x: c.avg_sell_through||0,
+    y: c.avg_margin_pct||0,
+    r: Math.max(4, Math.min(20, (c.revenue/totalRev)*80)),
+    label: c.category,
+    color: ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#B8C4E8','#C8DFBF','#D4DCEF'][i%8]
+  }));
+  const scatterCtx = document.getElementById('mc-scatter-chart').getContext('2d');
+  charts.mcScatter = new Chart(scatterCtx, {
+    type:'bubble',
+    data:{
+      datasets: scatterData.map(p => ({
+        label: p.label,
+        data:[{x:p.x, y:p.y, r:p.r}],
+        backgroundColor: p.color+'88',
+        borderColor: p.color,
+        borderWidth:1.5
+      }))
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ST ${ctx.parsed.x.toFixed(0)}% | Margin ${ctx.parsed.y.toFixed(0)}%`}}
+      },
+      scales:{
+        x:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Sell-Through %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}},
+        y:{grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Margin %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}}
+      }}
+  });
+
+  // Trend chart
+  const sparkline = rd.weekly_sparkline||[];
+  const mcTrendCtx = document.getElementById('mc-trend-chart').getContext('2d');
+  charts.mcTrend = new Chart(mcTrendCtx, {
+    type:'line',
+    data:{
+      labels:sparkline.map((_,i)=>`W${i+1}`),
+      datasets:[{data:sparkline, borderColor:'#E3A08E', backgroundColor:'rgba(227,160,142,0.12)',
+        fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#E3A08E', borderWidth:2}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+        y:{grid:{color:'rgba(227,160,142,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+      }}
+  });
+
+  // Donut chart
+  const donutCtx = document.getElementById('mc-donut-chart').getContext('2d');
+  charts.mcDonut = new Chart(donutCtx, {
+    type:'doughnut',
+    data:{
+      labels:cats.map(c=>c.category),
+      datasets:[{data:cats.map(c=>c.revenue),
+        backgroundColor:['#A8C5A0','#B8C4E8','#F4C0A8','#F0C4A0','#E3A08E','#C8DFBF','#D4DCEF','#E8D4C0'],
+        borderWidth:1, borderColor:'rgba(255,255,255,0.5)'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed)}`}}},
+      cutout:'60%'}
+  });
+
+  // AI Actions
+  const actions = rd.ai_actions || [];
+  document.getElementById('mc-actions-list').innerHTML = actions.map(a => {
+    const revPct = Math.min(Math.abs(a.revenue_impact||0) / (totalRev*0.3||1) * 100, 100);
+    const confPct = a.confidence||70;
+    const mgPos = (a.margin_impact||0) >= 0;
+    const mgPct = Math.min(Math.abs(a.margin_impact||0)*5, 100);
+    return `<div class="ai-action-card">
+      <div class="ai-action-top">
+        <div class="rank-badge">#${a.rank}</div>
+        <span class="priority-chip priority-${a.priority}">${a.priority}</span>
+        <span class="action-type">${esc(a.type)}</span>
+        <span style="margin-left:auto"><button class="take-action-btn">Take Action</button></span>
+      </div>
+      <div class="action-sku">${esc(a.sku)}</div>
+      <div class="action-desc">${esc(a.description)}</div>
+      <div class="action-metrics">
+        <div class="metric-bar-wrap">
+          <div class="metric-bar-label">Revenue Impact</div>
+          <div class="metric-bar-val">${a.revenue_impact>0?'+':''}${fmtCurr(a.revenue_impact||0)}</div>
+          <div class="metric-bar-track"><div class="metric-bar-fill-rev" style="width:${revPct}%"></div></div>
+        </div>
+        <div class="metric-bar-wrap">
+          <div class="metric-bar-label">Margin Impact</div>
+          <div class="metric-bar-val">${mgPos?'+':''}${(a.margin_impact||0).toFixed(1)}%</div>
+          <div class="metric-bar-track"><div class="${mgPos?'metric-bar-fill-mg-pos':'metric-bar-fill-mg-neg'}" style="width:${mgPct}%"></div></div>
+        </div>
+        <div class="metric-bar-wrap">
+          <div class="metric-bar-label">Confidence</div>
+          <div class="metric-bar-val">${confPct}%</div>
+          <div class="metric-bar-track"><div class="metric-bar-fill-conf" style="width:${confPct}%"></div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // OTB
+  const otbRemain = Math.max(0, otbBudget - openPoVal);
+  setTimeout(() => {
+    document.getElementById('mc-otb-fill').style.width = Math.min(otbPct,100)+'%';
+  }, 100);
+  document.getElementById('mc-otb-budget').textContent = fmtCurr(otbBudget);
+  document.getElementById('mc-otb-spent').textContent  = fmtCurr(openPoVal);
+  document.getElementById('mc-otb-remain').textContent = fmtCurr(otbRemain);
+  const otbWarn = document.getElementById('mc-otb-warn');
+  if (otbPct > 90) otbWarn.textContent = 'Warning: OTB almost fully committed — limited flexibility for reactive buying.';
+  else if (otbPct < 50) otbWarn.textContent = 'Note: Significant OTB remaining — consider accelerating key reorders.';
+  else otbWarn.textContent = '';
+}
+
+// ═══════════════════════════════════════
+// DIRECTOR RENDER
+// ═══════════════════════════════════════
+function renderDirector() {
+  const k = analysisData.kpis || {};
+  const rd = roleData || {};
+  const meta = analysisData.meta || {};
+
+  const health = rd.health_score||0;
+  const healthDesc = health>=75?'STRONG':health>=55?'HEALTHY':health>=35?'AT RISK':'CRITICAL';
+  document.getElementById('dir-health-num').textContent = health;
+  const descEl = document.getElementById('dir-health-desc');
+  descEl.textContent = healthDesc;
+  descEl.className = `health-descriptor health-${healthDesc.replace(' ','-')}-text`;
+
+  // Gauge: fill half circle based on score
+  const gauge = document.getElementById('dir-gauge');
+  const healthColor = health>=75?'#7DAA75':health>=55?'#A8C5A0':health>=35?'#F0C4A0':'#E3A08E';
+  const gaugeAngle = (health/100)*180;
+  gauge.style.background = `conic-gradient(from 180deg, ${healthColor} ${gaugeAngle}deg, rgba(255,255,255,0.08) ${gaugeAngle}deg)`;
+
+  // Updated
+  document.getElementById('dir-updated').textContent = `Last updated: ${new Date(meta.analysed_at||Date.now()).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('dir-sku-count').textContent = `${meta.sku_count||0} SKUs analysed`;
+
+  // Vs plan
+  const pd = rd.plan_data||{};
+  const vp = rd.vs_plan||{};
+  const totalRev = k.total_revenue||0;
+  const avgMg = k.avg_margin_pct||0;
+  const totalStock = rd.total_stock_units||0;
+
+  document.getElementById('dir-rev-actual').textContent = fmtCurr(totalRev);
+  document.getElementById('dir-rev-plan').textContent   = `Plan: ${fmtCurr(pd.revenue_plan||0)}`;
+  const revPct = vp.revenue_pct||0;
+  const revEl = document.getElementById('dir-rev-pct');
+  revEl.textContent = (revPct>=100?'+':'')+`${(revPct-100).toFixed(1)}% vs plan`;
+  revEl.className   = `vs-pct ${revPct>=100?'vs-above':'vs-below'}`;
+
+  document.getElementById('dir-mg-actual').textContent = avgMg.toFixed(1)+'%';
+  document.getElementById('dir-mg-plan').textContent   = `Plan: ${(pd.margin_plan||0).toFixed(1)}%`;
+  const mgPct = vp.margin_pct||0;
+  const mgEl = document.getElementById('dir-mg-pct');
+  mgEl.textContent = (mgPct>=100?'+':'')+`${(mgPct-100).toFixed(1)}% vs plan`;
+  mgEl.className   = `vs-pct ${mgPct>=100?'vs-above':'vs-below'}`;
+
+  document.getElementById('dir-st-actual').textContent = fmtNum(totalStock)+' units';
+  document.getElementById('dir-st-plan').textContent   = `Plan: ${fmtNum(pd.stock_plan||0)} units`;
+  const stPct = vp.stock_pct||0;
+  const stEl = document.getElementById('dir-st-pct');
+  // Stock above plan = bad (overstocked)
+  const isOverstocked = stPct > 110;
+  stEl.textContent = isOverstocked ? `+${(stPct-100).toFixed(0)}% over plan (overstocked)` : `${(stPct-100).toFixed(0)}% vs plan`;
+  stEl.className   = `vs-pct ${isOverstocked?'vs-warn':stPct>=100?'vs-above':'vs-below'}`;
+
+  // Risks
+  document.getElementById('dir-risks').innerHTML = (rd.top_risks||[]).map(r => `
+    <div class="risk-item"><div class="risk-dot"></div><div class="risk-text">${esc(r)}</div></div>`).join('');
+
+  // Opportunities
+  document.getElementById('dir-opps').innerHTML = (rd.top_opportunities||[]).map(o => `
+    <div class="opp-item"><div class="opp-dot"></div><div class="opp-text">${esc(o)}</div></div>`).join('');
+
+  // Cash
+  const cashTrapped = rd.cash_trapped||0;
+  const mdRelease = (analysisData.markdown_risk||[]).slice(0,5).reduce((s,m)=>s+m.revenue*0.3,0);
+  document.getElementById('dir-cash-trapped').textContent = fmtCurr(cashTrapped);
+  document.getElementById('dir-md-release').textContent   = fmtCurr(mdRelease);
+  document.getElementById('dir-cash-release').textContent = fmtCurr(mdRelease*0.7);
+
+  // Summary
+  document.getElementById('dir-summary').textContent = rd.executive_summary || 'Executive summary will appear here once data is analysed.';
 }
 
 // ── File upload ───────────────────────────────────────────────
-function doDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
-function doDragLeave()  { document.getElementById('drop-zone').classList.remove('drag-over'); }
-function doDrop(e)      { e.preventDefault(); doDragLeave(); const f = e.dataTransfer.files[0]; if(f) doUpload(f); }
-function handleFileSelect(inp) { if(inp.files[0]) doUpload(inp.files[0]); }
+function doDragOver(e){ e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function doDragLeave(){ document.getElementById('drop-zone').classList.remove('drag-over'); }
+function doDrop(e){ e.preventDefault(); doDragLeave(); const f=e.dataTransfer.files[0]; if(f) doUpload(f); }
+function handleFileSelect(inp){ if(inp.files[0]) doUpload(inp.files[0]); }
 
 async function doUpload(file) {
   const prog = document.getElementById('upload-progress');
   prog.style.display = 'block';
-  prog.textContent = '⏳ Analysing your data…';
+  prog.textContent = 'Analysing your data…';
 
   const form = new FormData();
   form.append('file', file);
 
   try {
-    const res  = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: form });
+    const res  = await fetch('/api/upload', {method:'POST', credentials:'include', body:form});
     const data = await res.json();
     if (!res.ok) {
-      prog.textContent = '⚠ ' + (data.error || 'Upload failed');
+      prog.textContent = data.error || 'Upload failed';
       return;
     }
-    currentUploadId = data.upload_id;
     prog.style.display = 'none';
-    // Reload full analysis
-    const aRes = await fetch(`/api/analysis?upload_id=${currentUploadId}`, { credentials: 'include' });
-    const analysis = await aRes.json();
-    populateDashboard(analysis);
-    loadInsights();
-  } catch (err) {
-    prog.textContent = '⚠ ' + err.message;
+
+    // Load analysis + role data
+    const aRes = await fetch(`/api/analysis${data.upload_id?'?upload_id='+data.upload_id:''}`, {credentials:'include'});
+    if (aRes.ok) { analysisData = await aRes.json(); }
+    await loadRoleData();
+    showRoleView();
+  } catch(err) {
+    prog.textContent = err.message;
   }
 }
 
-// ── Populate dashboard ────────────────────────────────────────
-function populateDashboard(data) {
-  analysisData = data;
-  document.getElementById('empty-state').style.display   = 'none';
-  document.getElementById('dashboard-views').style.display = 'block';
-
-  const k = data.kpis || {};
-  document.getElementById('kpi-rev').textContent    = '£' + fmt(k.total_revenue);
-  document.getElementById('kpi-rev-sub').textContent = `Gross profit £${fmt(k.gross_profit)} · ${k.avg_margin_pct?.toFixed(1)}% margin`;
-  document.getElementById('kpi-st').textContent     = (k.avg_sell_through||0).toFixed(1) + '%';
-  document.getElementById('kpi-st-sub').textContent  = `${k.avg_cover_weeks?.toFixed(1)} wks avg cover`;
-  document.getElementById('kpi-ro').textContent     = k.reorder_count || 0;
-  document.getElementById('kpi-ro-sub').textContent  = `${k.critical_oos_count || 0} CRITICAL / OOS`;
-  document.getElementById('kpi-md').textContent     = k.markdown_risk_count || 0;
-  document.getElementById('kpi-md-sub').textContent  = 'units at risk';
-
-  buildRevenueChart(data.weekly_trend || []);
-  buildCategoryChart(data.category_scorecard || []);
-  buildBestSellers(data.best_sellers || []);
-  buildReorders(data.reorder_alerts || []);
-  buildMarkdowns(data.markdown_risk || []);
-  buildCategories(data.category_scorecard || []);
-
-  // Enable chat
-  chatReady = true;
-  document.getElementById('chat-input').disabled  = false;
-  document.getElementById('chat-send').disabled   = false;
-  document.getElementById('chat-input').placeholder = 'Ask anything about your range…';
-  document.getElementById('chat-chips').style.display = 'flex';
-}
-
-// ── Charts ────────────────────────────────────────────────────
-function buildRevenueChart(trend) {
-  if (revenueChart) revenueChart.destroy();
-  const ctx = document.getElementById('revenue-chart').getContext('2d');
-  revenueChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: trend.map(t => t.week),
-      datasets: [{
-        data: trend.map(t => t.revenue),
-        backgroundColor: trend.map((_, i) => i === trend.length-1 ? '#0EA5E9' : 'rgba(79,70,229,0.15)'),
-        borderRadius: 4, borderSkipped: false,
-      }]
-    },
-    options: { responsive:true, plugins:{legend:{display:false}}, scales:{
-      x:{grid:{display:false},ticks:{font:{size:10},color:'#9B9BB0'}},
-      y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#9B9BB0',callback:v=>'£'+fmtK(v)}}
-    }}
-  });
-}
-
-function buildCategoryChart(cats) {
-  if (catChart) catChart.destroy();
-  const top = cats.slice(0,6);
-  const ctx  = document.getElementById('category-chart').getContext('2d');
-  catChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: top.map(c => c.category),
-      datasets: [{
-        data: top.map(c => c.revenue),
-        backgroundColor: ['#4F46E5','#0EA5E9','#7C3AED','#F59E0B','#16A34A','#EF4444'].map(c=>c+'CC'),
-        borderRadius: 4, borderSkipped: false,
-      }]
-    },
-    options: { indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{
-      x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},color:'#9B9BB0',callback:v=>'£'+fmtK(v)}},
-      y:{grid:{display:false},ticks:{font:{size:10},color:'#5E5E72'}}
-    }}
-  });
-}
-
-// ── Tables ────────────────────────────────────────────────────
-function buildBestSellers(items) {
-  document.getElementById('bs-count').textContent = items.length + ' SKUs';
-  document.getElementById('bs-tbody').innerHTML = items.map(r => `
-    <tr>
-      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
-      <td>${esc(r.name||'—')}</td>
-      <td>${esc(r.category||'—')}</td>
-      <td><strong>£${fmt(r.revenue)}</strong></td>
-      <td>${Math.round(r.units||0).toLocaleString()}</td>
-      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
-      <td>${r.margin_pct!=null?r.margin_pct.toFixed(1)+'%':'—'}</td>
-    </tr>`).join('');
-}
-
-function buildReorders(items) {
-  document.getElementById('ro-count').textContent = items.length + ' alerts';
-  document.getElementById('ro-tbody').innerHTML = items.map(r => `
-    <tr>
-      <td><span class="urg urg-${r.urgency}">${r.urgency}</span></td>
-      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
-      <td>${esc(r.name||'—')}</td>
-      <td>${esc(r.category||'—')}</td>
-      <td>${r.stock!=null?r.stock.toLocaleString():'OOS'}</td>
-      <td>${r.cover_weeks!=null?r.cover_weeks+'w':'—'}</td>
-      <td>${r.sell_through!=null?r.sell_through.toFixed(1)+'%':'—'}</td>
-      <td>£${fmt(r.revenue)}</td>
-    </tr>`).join('');
-}
-
-function buildMarkdowns(items) {
-  document.getElementById('md-count').textContent = items.length + ' SKUs';
-  document.getElementById('md-tbody').innerHTML = items.map(r => `
-    <tr>
-      <td><span class="sev-${r.severity}">${r.severity}</span></td>
-      <td><span style="font-family:var(--mono);font-size:12px">${esc(r.sku)}</span></td>
-      <td>${esc(r.name||'—')}</td>
-      <td>${esc(r.category||'—')}</td>
-      <td>${r.sell_through.toFixed(1)}%</td>
-      <td>${esc(r.recommended_depth)}</td>
-      <td>£${fmt(r.revenue)}</td>
-    </tr>`).join('');
-}
-
-function buildCategories(items) {
-  const colours = {STRONG:'badge-green',HEALTHY:'badge-teal','AT RISK':'badge-amber',CRITICAL:'badge-red',UNKNOWN:'badge-teal'};
-  document.getElementById('cat-tbody').innerHTML = items.map(c => `
-    <tr>
-      <td><strong>${esc(c.category)}</strong></td>
-      <td><span class="badge ${colours[c.health]||'badge-teal'}">${c.health}</span></td>
-      <td>£${fmt(c.revenue)}</td>
-      <td>${c.sku_count}</td>
-      <td>${c.avg_sell_through!=null?c.avg_sell_through.toFixed(1)+'%':'—'}</td>
-      <td>${c.avg_margin_pct!=null?c.avg_margin_pct.toFixed(1)+'%':'—'}</td>
-    </tr>`).join('');
-}
-
-// ── AI Insights ───────────────────────────────────────────────
-async function loadInsights() {
-  try {
-    const res = await fetch('/api/quick-insights', { credentials: 'include' });
-    const data = await res.json();
-    const list = document.getElementById('insights-list');
-    list.innerHTML = (data.insights || []).map(i =>
-      `<div class="insight-item"><span class="insight-bullet">→</span>${esc(i)}</div>`
-    ).join('');
-  } catch {}
+// ── Auth ──────────────────────────────────────────────────────
+async function logout() {
+  await fetch('/auth/logout', {method:'POST', credentials:'include'});
+  window.location.href = '/login';
 }
 
 // ── AI Chat ───────────────────────────────────────────────────
-function openChat()  { document.getElementById('chat-panel').classList.add('open'); document.getElementById('chat-fab').style.display='none'; }
-function closeChat() { document.getElementById('chat-panel').classList.remove('open'); document.getElementById('chat-fab').style.display='flex'; }
-function sendChip(btn) { document.getElementById('chat-input').value = btn.textContent; sendChat(); }
+let chatOpen = false;
+let chatHistory = [];
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('ai-chat-panel').style.display = chatOpen ? 'flex' : 'none';
+  document.getElementById('ai-chat-fab').style.transform = chatOpen ? 'scale(0.9)' : 'scale(1)';
+  if (chatOpen) document.getElementById('ai-chat-input').focus();
+}
 
 async function sendChat() {
-  if (!chatReady || chatBusy) return;
-  const input = document.getElementById('chat-input');
+  const input = document.getElementById('ai-chat-input');
   const msg = input.value.trim();
   if (!msg) return;
-
-  appendBubble('usr', esc(msg));
   input.value = '';
-  chatBusy = true;
-  document.getElementById('chat-send').disabled = true;
+  appendChatMsg('user', msg);
+  chatHistory.push({role:'user', content:msg});
 
-  const typingId = showTyping();
-
+  const typingEl = appendChatMsg('assistant', '…', true);
   try {
-    const res = await fetch('/api/chat/stream', {
-      method: 'POST', credentials: 'include',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ message: msg, upload_id: currentUploadId }),
+    const context = analysisData ? JSON.stringify({kpis:analysisData.kpis, category_scorecard:analysisData.category_scorecard, reorder_count:(analysisData.reorder_alerts||[]).length, markdown_count:(analysisData.markdown_risk||[]).length}) : '';
+    const res = await fetch('/api/chat', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg, context, history: chatHistory.slice(-6)})
     });
-
-    removeTyping(typingId);
-    if (!res.ok) { appendBubble('ai', '⚠ ' + ((await res.json()).error || 'Error')); return; }
-
-    const bub    = appendBubble('ai', '');
-    const reader = res.body.getReader();
-    const dec    = new TextDecoder();
-    let buf = '', full = '';
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split('\n'); buf = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        try {
-          const p = JSON.parse(line.slice(6));
-          if (p.delta) { full += p.delta; bub.innerHTML = fmtReply(full); scrollChat(); }
-          if (p.error) { bub.textContent = '⚠ ' + p.error; }
-        } catch {}
-      }
-    }
-  } catch (err) {
-    removeTyping(typingId);
-    appendBubble('ai', '⚠ ' + err.message);
-  } finally {
-    chatBusy = false;
-    document.getElementById('chat-send').disabled = false;
-    input.focus();
+    const data = await res.json();
+    const reply = data.reply || data.message || 'Sorry, I could not get a response.';
+    typingEl.textContent = reply;
+    typingEl.classList.remove('chat-typing');
+    chatHistory.push({role:'assistant', content:reply});
+  } catch(e) {
+    typingEl.textContent = 'Connection error — please try again.';
+    typingEl.classList.remove('chat-typing');
   }
+  document.getElementById('ai-chat-msgs').scrollTop = 9999;
 }
 
-function appendBubble(role, html) {
-  const msgs = document.getElementById('chat-msgs');
-  const wrap = document.createElement('div'); wrap.className = 'cmsg ' + role;
-  const av   = document.createElement('div'); av.className = 'cav'; av.textContent = role==='usr'?'U':'T';
-  const bub  = document.createElement('div'); bub.className = 'cbub'; bub.innerHTML = html;
-  wrap.appendChild(av); wrap.appendChild(bub);
-  msgs.appendChild(wrap); scrollChat();
-  return bub;
+function appendChatMsg(role, text, typing=false) {
+  const msgs = document.getElementById('ai-chat-msgs');
+  const el = document.createElement('div');
+  el.className = `chat-msg chat-${role}${typing?' chat-typing':''}`;
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = 9999;
+  return el;
 }
-
-function showTyping() {
-  const id = 'ty-'+Date.now();
-  const msgs = document.getElementById('chat-msgs');
-  const wrap = document.createElement('div'); wrap.className='cmsg ai'; wrap.id=id;
-  wrap.innerHTML='<div class="cav">T</div><div class="cbub"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
-  msgs.appendChild(wrap); scrollChat();
-  return id;
-}
-function removeTyping(id) { document.getElementById(id)?.remove(); }
-function scrollChat() { const m=document.getElementById('chat-msgs'); m.scrollTop=m.scrollHeight; }
 
 // ── Helpers ───────────────────────────────────────────────────
 function esc(t='') { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmtReply(t) { return esc(t).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'); }
-function fmt(n)  { if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(2)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return Math.round(n).toLocaleString(); }
-function fmtK(n) { if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(0)+'K'; return n; }
+function fmtNum(n){ return Math.round(n||0).toLocaleString('en-GB'); }
+function fmtCurr(n){ n=n||0; if(n>=1e6) return '£'+(n/1e6).toFixed(2)+'M'; if(n>=1e3) return '£'+(n/1e3).toFixed(1)+'K'; return '£'+Math.round(n).toLocaleString('en-GB'); }
+function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return n; }
 </script>
+
+<!-- ── AI CHAT ────────────────────────────────────────────── -->
+<style>
+#ai-chat-fab{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,#7DAA75,#A8C5A0);box-shadow:0 6px 24px rgba(125,170,117,0.45);
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:20px;z-index:200;transition:transform 0.2s,box-shadow 0.2s}
+#ai-chat-fab:hover{box-shadow:0 8px 30px rgba(125,170,117,0.55)}
+#ai-chat-panel{display:none;position:fixed;bottom:92px;right:28px;width:360px;height:500px;
+  background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);
+  border:1px solid rgba(168,197,160,0.35);border-radius:20px;
+  box-shadow:0 16px 60px rgba(0,0,0,0.14);z-index:199;flex-direction:column;overflow:hidden}
+#ai-chat-header{padding:16px 18px;border-bottom:1px solid rgba(168,197,160,0.18);
+  display:flex;align-items:center;gap:10px;background:rgba(243,248,243,0.8)}
+.chat-header-dot{width:8px;height:8px;border-radius:50%;background:#7DAA75;animation:pulse-green 2s infinite;flex-shrink:0}
+.chat-header-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--text);flex:1}
+.chat-header-sub{font-size:10px;color:var(--text3)}
+.chat-close-btn{background:none;border:none;font-size:16px;cursor:pointer;color:var(--text3);padding:0 4px;line-height:1}
+#ai-chat-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{padding:10px 13px;border-radius:12px;font-size:12px;line-height:1.6;max-width:88%;word-break:break-word}
+.chat-user{background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-assistant{background:rgba(243,248,243,0.9);border:1px solid rgba(168,197,160,0.25);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-typing{color:var(--text3);font-style:italic}
+#ai-chat-footer{padding:12px 14px;border-top:1px solid rgba(168,197,160,0.15);display:flex;gap:8px;background:rgba(255,255,255,0.9)}
+#ai-chat-input{flex:1;padding:9px 13px;border:1.5px solid rgba(168,197,160,0.35);border-radius:10px;
+  font-family:var(--body);font-size:12px;color:var(--text);background:white;outline:none;resize:none;height:38px;line-height:1.4}
+#ai-chat-input:focus{border-color:#7DAA75}
+#ai-chat-send{padding:8px 14px;background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;
+  border:none;border-radius:9px;font-family:var(--body);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:opacity 0.15s}
+#ai-chat-send:hover{opacity:0.9}
+</style>
+
+<!-- Floating AI Chat Button -->
+<button id="ai-chat-fab" onclick="toggleChat()" title="AI Assistant">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    <circle cx="12" cy="10" r="1" fill="white" stroke="none"/>
+    <circle cx="8" cy="10" r="1" fill="white" stroke="none"/>
+    <circle cx="16" cy="10" r="1" fill="white" stroke="none"/>
+  </svg>
+</button>
+
+<!-- AI Chat Panel -->
+<div id="ai-chat-panel">
+  <div id="ai-chat-header">
+    <div class="chat-header-dot"></div>
+    <div>
+      <div class="chat-header-title">Threadlytics AI</div>
+      <div class="chat-header-sub">Ask about your trading data</div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="ai-chat-msgs">
+    <div class="chat-msg chat-assistant">Hi! I'm your Threadlytics AI assistant. Ask me anything about your trading data — sell-through, markdowns, reorders, margin, or strategy.</div>
+  </div>
+  <div id="ai-chat-footer">
+    <textarea id="ai-chat-input" placeholder="Ask about your data…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+    <button id="ai-chat-send" onclick="sendChat()">Send</button>
+  </div>
+</div>
+
 </body>
 </html>

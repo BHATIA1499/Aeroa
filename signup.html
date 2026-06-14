@@ -4,118 +4,521 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Start free trial — Threadlytics</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234F46E5'/><circle cx='16' cy='16' r='6' fill='%230EA5E9'/></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23A8C5A0'/><circle cx='16' cy='16' r='6' fill='%23F4C0A8'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F7F7FA;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:44px 40px;width:100%;max-width:440px;box-shadow:0 4px 32px rgba(0,0,0,0.06)}
-.logo{display:flex;align-items:center;gap:8px;margin-bottom:32px;text-decoration:none}
-.logo-dot{width:10px;height:10px;border-radius:50%;background:#0EA5E9;box-shadow:0 0 10px #0EA5E9}
-.logo-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0D0D14}
-.logo-text span{color:#0EA5E9}
-h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#0D0D14;margin-bottom:6px}
-.sub{font-size:14px;color:#6B6B80;margin-bottom:6px;font-weight:300}
-.trial-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.2);font-size:11px;font-weight:700;color:#15803D;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:24px}
+:root{
+  --mint:#A8C5A0;--mint-d:#7DAA75;--mint-l:#C8DFBF;
+  --peri:#B8C4E8;--peach:#F4C0A8;--amber:#F0C4A0;
+  --text:#1E1E2A;--text2:#4A4A5A;--text3:#8A8A9A;
+  --heading:'Montserrat',sans-serif;--body:'Inter',system-ui,sans-serif;
+}
+body{font-family:var(--body);min-height:100vh;display:flex;-webkit-font-smoothing:antialiased;overflow:hidden;
+  background:linear-gradient(150deg,#EBF1FF 0%,#FFE8F4 38%,#E5F2EA 68%,#EDE8FF 100%);
+  background-attachment:fixed;}
+
+/* ── LEFT PANEL — frosted glass ── */
+.left{
+  width:46%;flex-shrink:0;
+  background:rgba(255,255,255,0.76);
+  backdrop-filter:blur(28px) saturate(1.6);
+  -webkit-backdrop-filter:blur(28px) saturate(1.6);
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;padding:48px 40px;
+  position:relative;
+  box-shadow:2px 0 40px rgba(168,197,160,0.10);
+  z-index:10;
+}
+.left::after{
+  content:'';position:absolute;top:0;right:-1px;bottom:0;width:80px;
+  background:linear-gradient(90deg,transparent,rgba(235,241,255,0.18));
+  pointer-events:none;
+}
+
+.brand{
+  font-family:var(--heading);font-size:20px;font-weight:900;
+  color:var(--text);text-decoration:none;letter-spacing:-0.04em;
+  flex-shrink:0;align-self:flex-start;
+}
+.brand span{color:var(--mint-d)}
+
+.form-wrap{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;width:100%;max-width:400px;
+  padding:40px 0 24px;
+}
+h1{
+  font-family:var(--heading);font-size:36px;font-weight:900;
+  color:var(--text);letter-spacing:-0.04em;line-height:1.1;
+  margin-bottom:8px;
+}
+.sub{font-size:15px;color:var(--text3);margin-bottom:32px;font-weight:400;line-height:1.55;font-family:var(--body)}
+
+/* Verification step */
+.step{display:none}
+.step.active{display:block}
+
 .field{margin-bottom:16px}
-label{display:block;font-size:12px;font-weight:600;color:#0D0D14;margin-bottom:6px;letter-spacing:0.02em}
-input{width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:inherit;font-size:14px;color:#0D0D14;outline:none;transition:border-color 0.2s;background:#FAFAFA}
-input:focus{border-color:#4F46E5;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,0.08)}
-input::placeholder{color:#9B9BB0}
-.btn{width:100%;padding:13px;background:#4F46E5;color:white;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:4px}
-.btn:hover{background:#4338CA;transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,0.3)}
-.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.error{background:#FFF1F2;border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:#DC2626;margin-bottom:16px;display:none}
-.terms{font-size:11px;color:#9B9BB0;text-align:center;margin-top:14px;line-height:1.5}
-.terms a{color:#4F46E5;text-decoration:none}
-.footer-link{text-align:center;font-size:13px;color:#6B6B80;margin-top:20px}
-.footer-link a{color:#4F46E5;text-decoration:none;font-weight:600}
-.checklist{list-style:none;margin-bottom:24px}
-.checklist li{display:flex;align-items:center;gap:8px;font-size:12px;color:#5E5E72;margin-bottom:5px}
-.checklist li::before{content:'✓';color:#16A34A;font-weight:700;font-size:12px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px;letter-spacing:0.06em;text-transform:uppercase;font-family:var(--heading)}
+.field input{
+  width:100%;padding:14px 18px;
+  border:1.5px solid rgba(168,197,160,0.28);
+  border-radius:14px;
+  font-family:var(--body);font-size:15px;color:var(--text);
+  outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+  background:rgba(255,255,255,0.75);
+}
+.field input:focus{border-color:rgba(125,170,117,0.65);box-shadow:0 0 0 4px rgba(168,197,160,0.15);background:#fff}
+.field input::placeholder{color:var(--text3);font-weight:400}
+/* tinted inputs like reference */
+#name{background:rgba(244,192,168,0.14);border-color:rgba(244,192,168,0.40)}
+#name:focus{border-color:rgba(200,120,80,0.55);background:#fff;box-shadow:0 0 0 4px rgba(244,192,168,0.15)}
+#email,#password{background:rgba(168,197,160,0.12);border-color:rgba(168,197,160,0.32)}
+#otp-code{
+  background:rgba(184,196,232,0.14);border-color:rgba(184,196,232,0.40);
+  font-family:var(--heading);font-size:28px;font-weight:800;letter-spacing:0.22em;
+  text-align:center;padding:18px;
+}
+#otp-code:focus{border-color:rgba(100,120,200,0.6);box-shadow:0 0 0 4px rgba(184,196,232,0.18);background:#fff}
+
+.btn{
+  width:100%;padding:15px;margin-top:10px;
+  background:linear-gradient(135deg,var(--mint-d),var(--mint));
+  color:white;border:none;border-radius:14px;
+  font-family:var(--heading);font-size:15px;font-weight:800;letter-spacing:-0.01em;
+  cursor:pointer;transition:all 0.22s;
+  box-shadow:0 6px 20px rgba(125,170,117,0.38);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(125,170,117,0.48)}
+.btn:disabled{opacity:0.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+.error{
+  background:rgba(255,235,235,0.82);border:1.5px solid rgba(200,60,60,0.18);
+  border-radius:12px;padding:11px 15px;font-size:13px;color:#B02020;
+  margin-bottom:16px;display:none;backdrop-filter:blur(8px);line-height:1.5
+}
+.success-note{
+  background:rgba(168,197,160,0.18);border:1.5px solid rgba(168,197,160,0.4);
+  border-radius:12px;padding:11px 15px;font-size:13px;color:#3A6A30;
+  margin-bottom:16px;display:none;line-height:1.5
+}
+.terms{font-size:12px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.6}
+.terms a{color:var(--mint-d);text-decoration:none;font-weight:600}
+.footer-link{text-align:center;font-size:14px;color:var(--text2);margin-top:18px}
+.footer-link a{color:var(--mint-d);text-decoration:none;font-weight:700}
+.footer-link a:hover{text-decoration:underline}
+.resend-link{font-size:13px;color:var(--text3);text-align:center;margin-top:14px}
+.resend-link a{color:var(--mint-d);text-decoration:none;font-weight:600;cursor:pointer}
+.resend-link a:hover{text-decoration:underline}
+
+/* ── RIGHT PANEL — transparent over body gradient ── */
+.right{
+  flex:1;position:relative;overflow:visible;
+  z-index:20; /* above .left so bubbles can bleed over it */
+  pointer-events:none;
+}
+.right-nav,.bubble,.bub-mini,.bg-chart{pointer-events:auto}
+/* Animated background charts - static decorative */
+.bg-chart{position:absolute;pointer-events:none;opacity:0}
+.bg-chart.visible{opacity:1}
+
+/* Right nav */
+.right-nav{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:22px 32px;gap:26px;
+}
+.right-nav a{font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;
+  transition:color 0.2s;font-family:var(--body)}
+.right-nav a:hover{color:var(--text)}
+.right-nav .rcta{
+  padding:9px 22px;background:linear-gradient(135deg,var(--mint-d),var(--mint));
+  color:white;border-radius:99px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 16px rgba(125,170,117,0.42);transition:all 0.22s;
+}
+.right-nav .rcta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(125,170,117,0.50);color:white}
+
+/* KPI Bubbles */
+.bubble{
+  position:absolute;border-radius:50%;
+  backdrop-filter:blur(32px) saturate(2.4);
+  -webkit-backdrop-filter:blur(32px) saturate(2.4);
+  border:1.5px solid rgba(255,255,255,0.82);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.09),
+    0 24px 64px rgba(0,0,0,0.07),
+    inset 0 3px 7px rgba(255,255,255,0.98),
+    inset 0 -6px 16px rgba(0,0,0,0.07),
+    inset 4px 0 8px rgba(255,255,255,0.42);
+  text-align:center;padding:20px;
+  transform-origin:center;
+}
+.bubble::before{
+  content:'';position:absolute;top:6%;left:8%;width:54%;height:37%;
+  background:radial-gradient(ellipse at 34% 34%,rgba(255,255,255,0.99) 0%,rgba(255,255,255,0.72) 30%,rgba(255,255,255,0.20) 60%,transparent 100%);
+  border-radius:50%;pointer-events:none;filter:blur(2px);z-index:2;
+}
+.bubble::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:
+    radial-gradient(ellipse at 64% 78%,rgba(0,0,0,0.11) 0%,rgba(0,0,0,0.03) 44%,transparent 66%),
+    radial-gradient(ellipse at 50% 97%,rgba(255,255,255,0.28) 0%,transparent 50%);
+  pointer-events:none;z-index:1;
+}
+.bz{position:relative;z-index:3}
+.bubble-stat{font-family:var(--heading);font-weight:900;line-height:1}
+.bubble-label{font-family:var(--body);font-weight:600;line-height:1.3}
+
+/* BUBBLE positions & sizes — some deeply cross into left panel */
+.bub1{width:300px;height:300px;background:rgba(200,223,191,0.30);
+  top:50%;left:38%;transform:translate(-42%,-52%);
+  animation:bfloat1 7s ease-in-out infinite}
+.bub2{width:178px;height:178px;background:rgba(184,196,232,0.28);
+  top:52%;left:-16%;transform:translateY(-50%);
+  animation:bfloat2 8.5s ease-in-out infinite 1s}
+.bub3{width:168px;height:168px;background:rgba(244,192,168,0.26);
+  top:60%;right:7%;transform:translateY(-50%);
+  animation:bfloat3 7.8s ease-in-out infinite 2s}
+.bub4{width:118px;height:118px;background:rgba(240,196,160,0.26);
+  top:18%;left:2%;
+  animation:bfloat2 9s ease-in-out infinite 0.5s}
+.bub5{width:106px;height:106px;background:rgba(168,197,160,0.24);
+  top:14%;right:11%;
+  animation:bfloat1 10s ease-in-out infinite 3s}
+.bub6{width:82px;height:82px;background:rgba(255,255,255,0.40);
+  bottom:17%;left:8%;
+  animation:bfloat3 6.5s ease-in-out infinite 1.5s}
+
+@keyframes bfloat1{
+  0%,100%{transform:translate(-45%,-52%) translateY(0px)}
+  33%{transform:translate(-45%,-52%) translateY(-18px) translateX(6px)}
+  66%{transform:translate(-45%,-52%) translateY(10px) translateX(-4px)}
+}
+@keyframes bfloat2{
+  0%,100%{transform:translateY(-50%) translateY(0px)}
+  40%{transform:translateY(-50%) translateY(-14px) translateX(5px)}
+  70%{transform:translateY(-50%) translateY(8px) translateX(-3px)}
+}
+@keyframes bfloat3{
+  0%,100%{transform:translateY(-50%) translateY(0px)}
+  35%{transform:translateY(-50%) translateY(12px) translateX(-6px)}
+  65%{transform:translateY(-50%) translateY(-16px) translateX(4px)}
+}
+/* Mini bubbles */
+.bub-mini{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,0.38);
+  border:1px solid rgba(255,255,255,0.72);
+  backdrop-filter:blur(14px);
+  box-shadow:inset 0 2px 5px rgba(255,255,255,0.95),0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* Background charts */
+.bg-chart{position:absolute;pointer-events:none}
+
+@media(max-width:800px){
+  body{flex-direction:column;overflow:auto}
+  .left{width:100%;min-height:auto;padding:36px 28px;backdrop-filter:none;background:#F8F8F5}
+  .right{min-height:55vh;overflow:hidden}
+  .form-wrap{max-width:100%;padding:32px 0 20px}
+}
+.strength-bar{display:flex;gap:4px;margin-top:8px;margin-bottom:4px}
+.strength-bar span{flex:1;height:3px;border-radius:2px;background:#E8EEE8;transition:background 0.3s}
+.strength-bar span.s1{background:#E3A08E}
+.strength-bar span.s2{background:#F0C4A0}
+.strength-bar span.s3{background:#B8C4E8}
+.strength-bar span.s4{background:#7DAA75}
+.strength-hint{font-size:11px;color:var(--text3);margin-bottom:4px}
+.privacy-notice{
+  display:flex;align-items:flex-start;gap:8px;
+  background:rgba(168,197,160,0.10);border:1px solid rgba(168,197,160,0.25);
+  border-radius:10px;padding:10px 12px;margin-top:12px;
+}
+.privacy-notice svg{flex-shrink:0;margin-top:1px}
+.privacy-notice p{font-size:11px;color:var(--text3);line-height:1.55}
+.privacy-notice a{color:var(--mint-d);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
-<div class="card">
-  <a href="/" class="logo">
-    <div class="logo-dot"></div>
-    <div class="logo-text">Thread<span>lytics</span></div>
-  </a>
-  <h1>Start your free trial</h1>
-  <p class="sub">No credit card required</p>
-  <div class="trial-badge">✦ 14 days free · cancel any time</div>
 
-  <ul class="checklist">
-    <li>Upload your trading CSV or Excel instantly</li>
-    <li>AI merchandising analyst grounded in your data</li>
-    <li>Reorder alerts, markdown risk, category scorecard</li>
-  </ul>
+<!-- LEFT: FORM -->
+<div class="left">
+  <a href="/" class="brand">Thread<span>lytics</span></a>
 
-  <div class="error" id="error-box"></div>
+  <div class="form-wrap">
 
-  <div class="field">
-    <label for="name">Your name</label>
-    <input type="text" id="name" placeholder="Alex Johnson" autocomplete="name" autofocus>
+    <!-- STEP 1: Sign up form -->
+    <div class="step active" id="step1">
+      <h1>Sign up</h1>
+      <p class="sub">Create your free account — no credit card needed</p>
+
+      <div class="error" id="err1"></div>
+
+      <div class="field">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Alex Johnson" autocomplete="name" autofocus>
+      </div>
+      <div class="field">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="you@brand.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Create Password</label>
+        <input type="password" id="password" placeholder="Min. 8 chars, uppercase, number & symbol" autocomplete="new-password" oninput="checkPwStrength(this.value)" onkeydown="if(event.key==='Enter')doSignup()">
+        <div class="strength-bar">
+          <span id="ps1"></span><span id="ps2"></span><span id="ps3"></span><span id="ps4"></span>
+        </div>
+        <div class="strength-hint" id="pw-hint">8+ chars · 1 uppercase · 1 number · 1 symbol</div>
+      </div>
+
+      <button class="btn" id="btn1" onclick="doSignup()">Start Free Trial →</button>
+
+      <div class="privacy-notice">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7DAA75" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <p>Your data is <strong>end-to-end encrypted</strong> and never shared with third parties. We use bank-grade security to protect your trading data. <a href="/privacy">Privacy Policy</a></p>
+      </div>
+      <p class="terms">By signing up you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</p>
+      <div class="footer-link">Already have an account? <a href="/login">Log in</a></div>
+    </div>
+
+    <!-- STEP 2: Email verification -->
+    <div class="step" id="step2">
+      <h1>Check your email</h1>
+      <p class="sub">We sent a 6-digit code to <strong id="sent-to" style="color:var(--text)"></strong>. Enter it below to verify your account.</p>
+
+      <div class="error" id="err2"></div>
+      <div class="success-note" id="resend-ok">A new code has been sent to your email.</div>
+
+      <div class="field">
+        <label for="otp-code">Verification Code</label>
+        <input type="text" id="otp-code" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')doVerify()">
+      </div>
+
+      <button class="btn" id="btn2" onclick="doVerify()">Verify &amp; Continue →</button>
+
+      <div class="resend-link">Didn't receive it? <a onclick="doResend()">Resend code</a> · <a href="/signup" onclick="location.reload();return false">Start over</a></div>
+    </div>
+
   </div>
-  <div class="field">
-    <label for="email">Work email</label>
-    <input type="email" id="email" placeholder="you@brand.com" autocomplete="email">
+</div>
+
+<!-- RIGHT: HERO -->
+<div class="right">
+  <!-- Nav -->
+  <div class="right-nav">
+    <a href="/#features">Features</a>
+    <a href="/#how-it-works">How it Works</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="/login" class="rcta">Log In</a>
   </div>
-  <div class="field">
-    <label for="password">Password <span style="color:#9B9BB0;font-weight:400">(min. 8 characters)</span></label>
-    <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" onkeydown="if(event.key==='Enter')submit()">
+
+  <!-- Background charts — large, edge-to-edge -->
+  <svg class="bg-chart" style="top:2%;left:-8%;width:54%;opacity:0.50" viewBox="0 0 300 200" aria-hidden="true">
+    <rect x="8"   y="70"  width="38" height="120" rx="7" fill="#A8C5A0"/>
+    <rect x="56"  y="36"  width="38" height="154" rx="7" fill="#F4C0A8"/>
+    <rect x="104" y="56"  width="38" height="134" rx="7" fill="#B8C4E8"/>
+    <rect x="152" y="18"  width="38" height="172" rx="7" fill="#C8DFBF"/>
+    <rect x="200" y="46"  width="38" height="144" rx="7" fill="#F0C4A0"/>
+    <rect x="248" y="64"  width="38" height="126" rx="7" fill="#A8C5A0"/>
+    <line x1="8" y1="196" x2="292" y2="196" stroke="#9AAAB8" stroke-width="1.5" opacity="0.4"/>
+  </svg>
+  <svg class="bg-chart" style="bottom:2%;left:-4%;width:52%;opacity:0.46" viewBox="0 0 260 260" aria-hidden="true">
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#A8C5A0" stroke-width="48" stroke-dasharray="100 692"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#F4C0A8" stroke-width="48" stroke-dasharray="80 692" stroke-dashoffset="-100"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#B8C4E8" stroke-width="48" stroke-dasharray="70 692" stroke-dashoffset="-180"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#F0C4A0" stroke-width="48" stroke-dasharray="90 692" stroke-dashoffset="-250"/>
+    <circle cx="130" cy="130" r="64" fill="rgba(255,255,255,0.72)"/>
+  </svg>
+  <svg class="bg-chart" style="top:8%;right:0%;width:50%;opacity:0.44" viewBox="0 0 280 170" aria-hidden="true">
+    <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A8C5A0" stop-opacity="0.5"/><stop offset="100%" stop-color="#A8C5A0" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="10,155 55,105 102,120 152,62 202,80 248,32 268,44 268,160 10,160" fill="url(#sg1)"/>
+    <polyline points="10,155 55,105 102,120 152,62 202,80 248,32 268,44" fill="none" stroke="#A8C5A0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="10,160 55,136 102,126 152,142 202,116 248,122 268,106" fill="none" stroke="#B8C4E8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>
+    <circle cx="152" cy="62" r="5.5" fill="#A8C5A0"/>
+    <circle cx="248" cy="32" r="5.5" fill="#A8C5A0"/>
+  </svg>
+  <svg class="bg-chart" style="bottom:8%;right:0%;width:44%;opacity:0.44" viewBox="0 0 220 230" aria-hidden="true">
+    <rect x="8"   y="100" width="44" height="120" rx="6" fill="#F4C0A8"/>
+    <rect x="62"  y="64"  width="44" height="156" rx="6" fill="#A8C5A0"/>
+    <rect x="116" y="82"  width="44" height="138" rx="6" fill="#B8C4E8"/>
+    <rect x="170" y="46"  width="44" height="174" rx="6" fill="#C8DFBF"/>
+    <line x1="8" y1="226" x2="216" y2="226" stroke="#9AAAB8" stroke-width="1.4" opacity="0.4"/>
+  </svg>
+
+  <!-- Main bubble — £50k Savings -->
+  <div class="bubble bub1">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="bz" style="margin-bottom:4px">
+      <rect x="3"  y="12" width="4" height="9"  rx="1.5" fill="#1A1A2A" opacity="0.65"/>
+      <rect x="10" y="7"  width="4" height="14" rx="1.5" fill="#1A1A2A" opacity="0.78"/>
+      <rect x="17" y="4"  width="4" height="17" rx="1.5" fill="#1A1A2A"/>
+      <polyline points="3,10 10,5 17,2" stroke="#7DAA75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="bubble-stat bz" style="font-size:48px;color:#1E1E2A">£50k</div>
+    <div class="bz" style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;color:#1E1E2A">Savings</div>
+    <div class="bz" style="font-size:12px;color:#5A5A6A;font-weight:400;font-family:'Inter',sans-serif">Monthly</div>
   </div>
 
-  <button class="btn" id="btn" onclick="submit()">Create free account →</button>
+  <!-- Left bubble — Real-time Analytics -->
+  <div class="bubble bub2">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="bz">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#1A1A2A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="bz" style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1E1E2A;line-height:1.3">Real-time<br>Analytics</div>
+  </div>
 
-  <p class="terms">By signing up you agree to our <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</p>
+  <!-- Right bubble — Boost Efficiency -->
+  <div class="bubble bub3">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="bz">
+      <circle cx="12" cy="12" r="3" stroke="#1E1E2A" stroke-width="2"/>
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#1E1E2A" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div class="bz" style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1E1E2A;line-height:1.3">Boost<br>Efficiency</div>
+  </div>
 
-  <div class="footer-link">Already have an account? <a href="/login">Log in</a></div>
+  <!-- Top-left bubble — ROI -->
+  <div class="bubble bub4">
+    <div class="bubble-stat bz" style="font-size:22px;color:#7DAA75">150%</div>
+    <div class="bubble-label bz" style="font-size:10px;color:#4A5A42">ROI Increase</div>
+  </div>
+
+  <!-- Top-right bubble — Gross Margin -->
+  <div class="bubble bub5">
+    <div class="bubble-stat bz" style="font-size:20px;color:#8A9DD8">56%</div>
+    <div class="bubble-label bz" style="font-size:10px;color:#4A5A70">Gross Margin</div>
+  </div>
+
+  <!-- Small mini bubble -->
+  <div class="bubble bub6">
+    <div class="bubble-stat bz" style="font-size:16px;color:#C07850">−32%</div>
+    <div class="bubble-label bz" style="font-size:9px;color:#7A4030">Markdowns</div>
+  </div>
+
+  <!-- Tiny decorative minis -->
+  <div class="bub-mini" style="width:44px;height:44px;top:42%;left:4%"></div>
+  <div class="bub-mini" style="width:28px;height:28px;bottom:32%;left:36%"></div>
+  <div class="bub-mini" style="width:20px;height:20px;top:74%;right:24%"></div>
+  <div class="bub-mini" style="width:16px;height:16px;top:14%;left:38%"></div>
 </div>
 
 <script>
-async function submit() {
+let signupEmail = '';
+let signupName  = '';
+
+function checkPwStrength(v) {
+  const bars = [1,2,3,4].map(i => document.getElementById('ps'+i));
+  const hint = document.getElementById('pw-hint');
+  let score = 0;
+  if (v.length >= 8)            score++;
+  if (/[A-Z]/.test(v))         score++;
+  if (/[0-9]/.test(v))         score++;
+  if (/[^A-Za-z0-9]/.test(v))  score++;
+  bars.forEach((b,i) => { b.className = i < score ? `s${score}` : ''; });
+  if (score === 4) { hint.textContent = '✓ Strong password'; hint.style.color = '#7DAA75'; }
+  else if (score === 0) { hint.textContent = '8+ chars · 1 uppercase · 1 number · 1 symbol'; hint.style.color = ''; }
+  else {
+    const missing = [v.length<8?'8+ chars':'', !/[A-Z]/.test(v)?'uppercase':'', !/[0-9]/.test(v)?'number':'', !/[^A-Za-z0-9]/.test(v)?'symbol':''].filter(Boolean);
+    hint.textContent = 'Add: ' + missing.join(', ');
+    hint.style.color = score >= 2 ? '#8A9DD8' : '#9AAAB8';
+  }
+}
+
+async function doSignup() {
   const name     = document.getElementById('name').value.trim();
   const email    = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
-  const btn      = document.getElementById('btn');
-  const errBox   = document.getElementById('error-box');
+  const btn      = document.getElementById('btn1');
+  const errBox   = document.getElementById('err1');
   errBox.style.display = 'none';
 
-  if (!email || !password) {
+  if (!name || !email || !password) {
     errBox.textContent = 'Please fill in all fields.';
     errBox.style.display = 'block'; return;
   }
-  if (password.length < 8) {
-    errBox.textContent = 'Password must be at least 8 characters.';
+  if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    errBox.textContent = 'Password must be 8+ characters with an uppercase letter, a number, and a special character.';
     errBox.style.display = 'block'; return;
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Creating account…';
+  btn.disabled = true; btn.textContent = 'Creating account…';
 
   try {
     const res  = await fetch('/auth/signup', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      credentials: 'include',
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
       body: JSON.stringify({ email, password, full_name: name }),
+    });
+    const data = await res.json();
+    if (data.ok && data.verify) {
+      signupEmail = email;
+      signupName  = name;
+      document.getElementById('sent-to').textContent = email;
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step2').classList.add('active');
+      document.getElementById('otp-code').focus();
+    } else if (data.ok && data.redirect) {
+      window.location.href = data.redirect;
+    } else {
+      errBox.textContent = data.error || 'Signup failed. Please try again.';
+      errBox.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Start Free Trial →';
+    }
+  } catch {
+    errBox.textContent = 'Connection error. Please try again.';
+    errBox.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Start Free Trial →';
+  }
+}
+
+async function doVerify() {
+  const code   = document.getElementById('otp-code').value.trim();
+  const btn    = document.getElementById('btn2');
+  const errBox = document.getElementById('err2');
+  errBox.style.display = 'none';
+
+  if (!code || code.length < 6) {
+    errBox.textContent = 'Please enter the 6-digit code from your email.';
+    errBox.style.display = 'block'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Verifying…';
+
+  try {
+    const res  = await fetch('/auth/verify-email', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ email: signupEmail, token: code, full_name: signupName }),
     });
     const data = await res.json();
     if (data.ok) {
       window.location.href = data.redirect || '/dashboard';
     } else {
-      errBox.textContent = data.error || 'Signup failed. Please try again.';
+      errBox.textContent = data.error || 'Invalid code. Please try again.';
       errBox.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Create free account →';
+      btn.disabled = false; btn.textContent = 'Verify & Continue →';
     }
   } catch {
     errBox.textContent = 'Connection error. Please try again.';
     errBox.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Create free account →';
+    btn.disabled = false; btn.textContent = 'Verify & Continue →';
   }
+}
+
+async function doResend() {
+  const ok = document.getElementById('resend-ok');
+  ok.style.display = 'none';
+  // Re-trigger signup to resend
+  try {
+    await fetch('/auth/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ email: signupEmail, full_name: signupName }),
+    });
+    ok.style.display = 'block';
+  } catch {}
 }
 </script>
 </body>

@@ -4,98 +4,479 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Log in — Threadlytics</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234F46E5'/><circle cx='16' cy='16' r='6' fill='%230EA5E9'/></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23A8C5A0'/><circle cx='16' cy='16' r='6' fill='%23F4C0A8'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F7F7FA;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 4px 32px rgba(0,0,0,0.06)}
-.logo{display:flex;align-items:center;gap:8px;margin-bottom:32px;text-decoration:none}
-.logo-dot{width:10px;height:10px;border-radius:50%;background:#0EA5E9;box-shadow:0 0 10px #0EA5E9}
-.logo-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0D0D14}
-.logo-text span{color:#0EA5E9}
-h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#0D0D14;margin-bottom:6px}
-.sub{font-size:14px;color:#6B6B80;margin-bottom:28px;font-weight:300}
+:root{
+  --mint:#A8C5A0;--mint-d:#7DAA75;--mint-l:#C8DFBF;
+  --peri:#B8C4E8;--peach:#F4C0A8;--amber:#F0C4A0;
+  --text:#1E1E2A;--text2:#4A4A5A;--text3:#8A8A9A;
+  --heading:'Montserrat',sans-serif;--body:'Inter',system-ui,sans-serif;
+}
+
+/* Full-page gradient lives on body — creates the "one screen" feel */
+body{
+  font-family:var(--body);min-height:100vh;display:flex;
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+  background:linear-gradient(150deg,#EBF1FF 0%,#FFE8F4 38%,#E5F2EA 68%,#EDE8FF 100%);
+  background-attachment:fixed;
+}
+
+/* ── LEFT PANEL — frosted glass over the gradient ── */
+.left{
+  width:46%;flex-shrink:0;
+  background:rgba(255,255,255,0.76);
+  backdrop-filter:blur(28px) saturate(1.6);
+  -webkit-backdrop-filter:blur(28px) saturate(1.6);
+  display:flex;flex-direction:column;align-items:center;
+  min-height:100vh;padding:48px 40px;
+  position:relative;
+  box-shadow:2px 0 40px rgba(168,197,160,0.10);
+  z-index:10;
+}
+/* Subtle inner glow at the right edge to blend panels */
+.left::after{
+  content:'';position:absolute;top:0;right:-1px;bottom:0;width:80px;
+  background:linear-gradient(90deg,transparent,rgba(235,241,255,0.18));
+  pointer-events:none;
+}
+
+.brand{
+  font-family:var(--heading);font-size:20px;font-weight:900;
+  color:var(--text);text-decoration:none;letter-spacing:-0.04em;
+  flex-shrink:0;align-self:flex-start;
+}
+.brand span{color:var(--mint-d)}
+
+.form-wrap{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;width:100%;max-width:400px;
+  padding:40px 0 24px;
+}
+h1{
+  font-family:var(--heading);font-size:36px;font-weight:900;
+  color:var(--text);letter-spacing:-0.04em;line-height:1.1;
+  margin-bottom:8px;
+}
+.sub{font-size:15px;color:var(--text3);margin-bottom:32px;font-weight:400;line-height:1.55;font-family:var(--body)}
+
+.step{display:none}
+.step.active{display:block}
+
 .field{margin-bottom:16px}
-label{display:block;font-size:12px;font-weight:600;color:#0D0D14;margin-bottom:6px;letter-spacing:0.02em}
-input{width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:inherit;font-size:14px;color:#0D0D14;outline:none;transition:border-color 0.2s;background:#FAFAFA}
-input:focus{border-color:#4F46E5;background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,0.08)}
-input::placeholder{color:#9B9BB0}
-.btn{width:100%;padding:13px;background:#4F46E5;color:white;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;margin-top:4px}
-.btn:hover{background:#4338CA;transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,0.3)}
-.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.error{background:#FFF1F2;border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:#DC2626;margin-bottom:16px;display:none}
-.divider{text-align:center;font-size:12px;color:#9B9BB0;margin:20px 0}
-.footer-link{text-align:center;font-size:13px;color:#6B6B80;margin-top:20px}
-.footer-link a{color:#4F46E5;text-decoration:none;font-weight:600}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px;letter-spacing:0.06em;text-transform:uppercase;font-family:var(--heading)}
+.field input{
+  width:100%;padding:14px 18px;
+  border:1.5px solid rgba(168,197,160,0.28);
+  border-radius:14px;
+  font-family:var(--body);font-size:15px;color:var(--text);
+  outline:none;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+  background:rgba(255,255,255,0.80);
+}
+.field input:focus{border-color:rgba(125,170,117,0.65);box-shadow:0 0 0 4px rgba(168,197,160,0.15);background:#fff}
+.field input::placeholder{color:var(--text3);font-weight:400}
+#login-email{background:rgba(184,196,232,0.16);border-color:rgba(184,196,232,0.40)}
+#login-email:focus{border-color:rgba(100,120,200,0.55);background:#fff;box-shadow:0 0 0 4px rgba(184,196,232,0.15)}
+#login-password{background:rgba(168,197,160,0.14);border-color:rgba(168,197,160,0.35)}
+#reset-email{background:rgba(244,192,168,0.16);border-color:rgba(244,192,168,0.42)}
+#reset-email:focus{border-color:rgba(200,120,80,0.55);background:#fff;box-shadow:0 0 0 4px rgba(244,192,168,0.15)}
+
+.btn{
+  width:100%;padding:15px;margin-top:10px;
+  background:linear-gradient(135deg,var(--mint-d),var(--mint));
+  color:white;border:none;border-radius:14px;
+  font-family:var(--heading);font-size:15px;font-weight:800;letter-spacing:0.01em;
+  cursor:pointer;transition:all 0.22s;
+  box-shadow:0 6px 20px rgba(125,170,117,0.38);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(125,170,117,0.48)}
+.btn:disabled{opacity:0.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+.error{
+  background:rgba(255,235,235,0.90);border:1.5px solid rgba(200,60,60,0.18);
+  border-radius:12px;padding:11px 15px;font-size:13px;color:#B02020;
+  margin-bottom:16px;display:none;backdrop-filter:blur(8px);line-height:1.5;font-family:var(--body)
+}
+.success-note{
+  background:rgba(168,197,160,0.20);border:1.5px solid rgba(168,197,160,0.4);
+  border-radius:12px;padding:11px 15px;font-size:13px;color:#3A6A30;
+  margin-bottom:16px;display:none;line-height:1.5;font-family:var(--body)
+}
+
+.forgot-link{text-align:right;margin-top:-8px;margin-bottom:16px;font-size:13px}
+.forgot-link a{color:var(--mint-d);text-decoration:none;font-weight:600;cursor:pointer;font-family:var(--body)}
+.forgot-link a:hover{text-decoration:underline}
+
+.footer-link{text-align:center;font-size:14px;color:var(--text2);margin-top:18px;font-family:var(--body)}
+.footer-link a{color:var(--mint-d);text-decoration:none;font-weight:700}
 .footer-link a:hover{text-decoration:underline}
+
+.back-link{font-size:13px;color:var(--text3);text-align:center;margin-top:14px;font-family:var(--body)}
+.back-link a{color:var(--mint-d);text-decoration:none;font-weight:600;cursor:pointer}
+.back-link a:hover{text-decoration:underline}
+
+/* ── RIGHT PANEL — transparent, bubbles float over gradient ── */
+.right{
+  flex:1;position:relative;overflow:visible;
+  z-index:20; /* above .left so bubbles can bleed over it */
+  pointer-events:none; /* left panel form stays clickable */
+}
+.right-nav,.bubble,.bub-mini,.bg-chart{pointer-events:auto}
+
+/* Right nav */
+.right-nav{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:flex-end;
+  padding:22px 32px;gap:26px;
+}
+.right-nav a{font-size:13px;font-weight:600;color:var(--text2);text-decoration:none;
+  transition:color 0.2s;font-family:var(--body)}
+.right-nav a:hover{color:var(--text)}
+.right-nav .rcta{
+  padding:9px 22px;background:linear-gradient(135deg,var(--mint-d),var(--mint));
+  color:white;border-radius:99px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 16px rgba(125,170,117,0.42);transition:all 0.22s;font-family:var(--body)
+}
+.right-nav .rcta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(125,170,117,0.50);color:white}
+
+/* KPI Bubbles */
+.bubble{
+  position:absolute;border-radius:50%;
+  backdrop-filter:blur(32px) saturate(2.4);
+  -webkit-backdrop-filter:blur(32px) saturate(2.4);
+  border:1.5px solid rgba(255,255,255,0.85);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.09),
+    0 24px 64px rgba(0,0,0,0.07),
+    inset 0 3px 7px rgba(255,255,255,0.98),
+    inset 0 -6px 16px rgba(0,0,0,0.07),
+    inset 4px 0 8px rgba(255,255,255,0.42);
+  text-align:center;padding:20px;
+}
+.bubble::before{
+  content:'';position:absolute;top:6%;left:8%;width:54%;height:37%;
+  background:radial-gradient(ellipse at 34% 34%,rgba(255,255,255,0.99) 0%,rgba(255,255,255,0.72) 30%,rgba(255,255,255,0.20) 60%,transparent 100%);
+  border-radius:50%;pointer-events:none;filter:blur(2px);z-index:2;
+}
+.bubble::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:
+    radial-gradient(ellipse at 64% 78%,rgba(0,0,0,0.11) 0%,rgba(0,0,0,0.03) 44%,transparent 66%),
+    radial-gradient(ellipse at 50% 97%,rgba(255,255,255,0.28) 0%,transparent 50%);
+  pointer-events:none;z-index:1;
+}
+.bz{position:relative;z-index:3}
+.bubble-stat{font-family:var(--heading);font-weight:900;line-height:1}
+.bubble-label{font-family:var(--body);font-weight:500;line-height:1.3}
+
+/* Bubbles — some deeply cross into left panel */
+.bub1{width:300px;height:300px;background:rgba(184,196,232,0.28);
+  top:50%;left:38%;transform:translate(-42%,-52%);
+  animation:bfloat1 7s ease-in-out infinite}
+.bub2{width:178px;height:178px;background:rgba(200,223,191,0.30);
+  top:52%;left:-16%;transform:translateY(-50%);
+  animation:bfloat2 8.5s ease-in-out infinite 1s}
+.bub3{width:170px;height:170px;background:rgba(244,192,168,0.26);
+  top:60%;right:7%;transform:translateY(-50%);
+  animation:bfloat3 7.8s ease-in-out infinite 2s}
+.bub4{width:120px;height:120px;background:rgba(240,196,160,0.28);
+  top:16%;left:2%;
+  animation:bfloat2 9s ease-in-out infinite 0.5s}
+.bub5{width:108px;height:108px;background:rgba(168,197,160,0.26);
+  top:14%;right:10%;
+  animation:bfloat1 10s ease-in-out infinite 3s}
+.bub6{width:84px;height:84px;background:rgba(255,255,255,0.40);
+  bottom:16%;left:8%;
+  animation:bfloat3 6.5s ease-in-out infinite 1.5s}
+.bub7{width:90px;height:90px;background:rgba(184,196,232,0.26);
+  bottom:22%;right:15%;
+  animation:bfloat2 8s ease-in-out infinite 2.5s}
+.bub8{width:68px;height:68px;background:rgba(244,192,168,0.30);
+  top:38%;left:-12%;
+  animation:bfloat1 7.2s ease-in-out infinite 0.8s}
+
+@keyframes bfloat1{
+  0%,100%{transform:translate(-42%,-52%) translateY(0px)}
+  33%{transform:translate(-42%,-52%) translateY(-18px) translateX(6px)}
+  66%{transform:translate(-42%,-52%) translateY(10px) translateX(-4px)}
+}
+@keyframes bfloat2{
+  0%,100%{transform:translateY(-50%) translateY(0px)}
+  40%{transform:translateY(-50%) translateY(-14px) translateX(5px)}
+  70%{transform:translateY(-50%) translateY(8px) translateX(-3px)}
+}
+@keyframes bfloat3{
+  0%,100%{transform:translateY(-50%) translateY(0px)}
+  35%{transform:translateY(-50%) translateY(12px) translateX(-6px)}
+  65%{transform:translateY(-50%) translateY(-16px) translateX(4px)}
+}
+@keyframes bfloat-free{
+  0%,100%{transform:translateY(0px)}
+  38%{transform:translateY(-12px) translateX(4px)}
+  72%{transform:translateY(8px) translateX(-3px)}
+}
+.bub-mini{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,0.42);
+  border:1px solid rgba(255,255,255,0.75);
+  backdrop-filter:blur(14px);
+  box-shadow:inset 0 2px 5px rgba(255,255,255,0.95),0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* Background charts — wider, bleeding edge-to-edge */
+.bg-chart{position:absolute;pointer-events:none}
+
+@media(max-width:800px){
+  body{flex-direction:column;overflow:auto}
+  .left{width:100%;min-height:auto;padding:36px 28px;backdrop-filter:none;background:#F8F8F5}
+  .right{min-height:55vh;overflow:hidden}
+  .form-wrap{max-width:100%;padding:32px 0 20px}
+}
 </style>
 </head>
 <body>
-<div class="card">
-  <a href="/" class="logo">
-    <div class="logo-dot"></div>
-    <div class="logo-text">Thread<span>lytics</span></div>
-  </a>
-  <h1>Welcome back</h1>
-  <p class="sub">Log in to your merchandising dashboard</p>
 
-  <div class="error" id="error-box"></div>
+<!-- LEFT: FORM -->
+<div class="left">
+  <a href="/" class="brand">Thread<span>lytics</span></a>
 
-  <div class="field">
-    <label for="email">Email address</label>
-    <input type="email" id="email" placeholder="you@brand.com" autocomplete="email" autofocus>
-  </div>
-  <div class="field">
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')submit()">
-  </div>
+  <div class="form-wrap">
 
-  <button class="btn" id="btn" onclick="submit()">Log in</button>
+    <!-- STEP 1: Login form -->
+    <div class="step active" id="step-login">
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to your Threadlytics account</p>
 
-  <div class="footer-link" style="margin-top:16px">
-    Don't have an account? <a href="/signup">Start free trial</a>
+      <div class="error" id="err-login"></div>
+
+      <div class="field">
+        <label for="login-email">Email Address</label>
+        <input type="email" id="login-email" placeholder="you@brand.com" autocomplete="email" autofocus>
+      </div>
+      <div class="field">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+
+      <div class="forgot-link"><a onclick="showForgot()">Forgot password?</a></div>
+
+      <button class="btn" id="btn-login" onclick="doLogin()">Log In →</button>
+
+      <div class="footer-link">Don't have an account? <a href="/signup">Sign up free</a></div>
+    </div>
+
+    <!-- STEP 2: Forgot password -->
+    <div class="step" id="step-forgot">
+      <h1>Reset password</h1>
+      <p class="sub">Enter your email and we'll send you a reset link</p>
+
+      <div class="error" id="err-forgot"></div>
+      <div class="success-note" id="reset-ok">Check your inbox — a reset link is on its way.</div>
+
+      <div class="field">
+        <label for="reset-email">Email Address</label>
+        <input type="email" id="reset-email" placeholder="you@brand.com" autocomplete="email" onkeydown="if(event.key==='Enter')doForgot()">
+      </div>
+
+      <button class="btn" id="btn-forgot" onclick="doForgot()">Send Reset Link →</button>
+
+      <div class="back-link"><a onclick="showLogin()">← Back to log in</a></div>
+    </div>
+
   </div>
 </div>
 
+<!-- RIGHT: HERO — transparent so body gradient shows through -->
+<div class="right">
+  <div class="right-nav">
+    <a href="/#features">Features</a>
+    <a href="/#how-it-works">How it Works</a>
+    <a href="/#pricing">Pricing</a>
+    <a href="/signup" class="rcta">Start Free Trial</a>
+  </div>
+
+  <!-- Background charts — large, edge-to-edge feel -->
+  <svg class="bg-chart" style="top:2%;left:-8%;width:54%;opacity:0.50" viewBox="0 0 300 200" aria-hidden="true">
+    <rect x="8"   y="70"  width="38" height="120" rx="7" fill="#A8C5A0"/>
+    <rect x="56"  y="36"  width="38" height="154" rx="7" fill="#F4C0A8"/>
+    <rect x="104" y="56"  width="38" height="134" rx="7" fill="#B8C4E8"/>
+    <rect x="152" y="18"  width="38" height="172" rx="7" fill="#C8DFBF"/>
+    <rect x="200" y="46"  width="38" height="144" rx="7" fill="#F0C4A0"/>
+    <rect x="248" y="64"  width="38" height="126" rx="7" fill="#A8C5A0"/>
+    <line x1="8" y1="196" x2="292" y2="196" stroke="#9AAAB8" stroke-width="1.5" opacity="0.4"/>
+  </svg>
+  <svg class="bg-chart" style="bottom:2%;left:-4%;width:52%;opacity:0.46" viewBox="0 0 260 260" aria-hidden="true">
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#A8C5A0" stroke-width="48" stroke-dasharray="100 692"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#F4C0A8" stroke-width="48" stroke-dasharray="80 692" stroke-dashoffset="-100"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#B8C4E8" stroke-width="48" stroke-dasharray="70 692" stroke-dashoffset="-180"/>
+    <circle cx="130" cy="130" r="110" fill="none" stroke="#F0C4A0" stroke-width="48" stroke-dasharray="90 692" stroke-dashoffset="-250"/>
+    <circle cx="130" cy="130" r="64" fill="rgba(255,255,255,0.72)"/>
+  </svg>
+  <svg class="bg-chart" style="top:8%;right:0%;width:50%;opacity:0.44" viewBox="0 0 280 170" aria-hidden="true">
+    <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B8C4E8" stop-opacity="0.5"/><stop offset="100%" stop-color="#B8C4E8" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="10,155 55,105 102,120 152,62 202,80 248,32 268,44 268,160 10,160" fill="url(#sg1)"/>
+    <polyline points="10,155 55,105 102,120 152,62 202,80 248,32 268,44" fill="none" stroke="#B8C4E8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="10,160 55,136 102,126 152,142 202,116 248,122 268,106" fill="none" stroke="#A8C5A0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>
+    <circle cx="152" cy="62" r="5.5" fill="#B8C4E8"/>
+    <circle cx="248" cy="32" r="5.5" fill="#B8C4E8"/>
+  </svg>
+  <svg class="bg-chart" style="bottom:8%;right:0%;width:44%;opacity:0.44" viewBox="0 0 220 230" aria-hidden="true">
+    <rect x="8"   y="100" width="44" height="120" rx="6" fill="#F4C0A8"/>
+    <rect x="62"  y="64"  width="44" height="156" rx="6" fill="#B8C4E8"/>
+    <rect x="116" y="82"  width="44" height="138" rx="6" fill="#A8C5A0"/>
+    <rect x="170" y="46"  width="44" height="174" rx="6" fill="#C8DFBF"/>
+    <line x1="8" y1="226" x2="216" y2="226" stroke="#9AAAB8" stroke-width="1.4" opacity="0.4"/>
+  </svg>
+
+  <!-- Main bubble — Revenue -->
+  <div class="bubble bub1">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" class="bz" style="margin-bottom:4px">
+      <rect x="3"  y="12" width="4" height="9"  rx="1.5" fill="#1E1E2A" opacity="0.65"/>
+      <rect x="10" y="7"  width="4" height="14" rx="1.5" fill="#1E1E2A" opacity="0.78"/>
+      <rect x="17" y="4"  width="4" height="17" rx="1.5" fill="#1E1E2A"/>
+      <polyline points="3,10 10,5 17,2" stroke="#7DAA75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="bubble-stat bz" style="font-size:48px;color:#1E1E2A">£3.6M</div>
+    <div class="bz" style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;color:#1E1E2A">Revenue</div>
+    <div class="bz" style="font-size:12px;color:#5A5A6A;font-weight:400;font-family:'Inter',sans-serif">This Season</div>
+  </div>
+
+  <!-- Left bubble — Real-time Analytics (bleeds into left panel) -->
+  <div class="bubble bub2">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="bz">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#1E1E2A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="bz" style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1E1E2A;line-height:1.3">Real-time<br>Analytics</div>
+  </div>
+
+  <!-- Right bubble — Accuracy -->
+  <div class="bubble bub3">
+    <div class="bubble-stat bz" style="font-size:30px;color:#7DAA75">92%</div>
+    <div class="bubble-label bz" style="font-size:11px;color:#4A5A42">In-Season<br>Accuracy</div>
+  </div>
+
+  <!-- Top-left bubble — Stock Cover -->
+  <div class="bubble bub4">
+    <div class="bubble-stat bz" style="font-size:20px;color:#8A9DD8">4.2wks</div>
+    <div class="bubble-label bz" style="font-size:10px;color:#4A5A70">Stock Cover</div>
+  </div>
+
+  <!-- Top-right bubble — Full-Price -->
+  <div class="bubble bub5">
+    <div class="bubble-stat bz" style="font-size:20px;color:#7DAA75">78%</div>
+    <div class="bubble-label bz" style="font-size:10px;color:#4A5A42">Full-Price Sell</div>
+  </div>
+
+  <!-- Bottom-left bubble — Markdowns (bleeds toward left) -->
+  <div class="bubble bub6">
+    <div class="bubble-stat bz" style="font-size:16px;color:#C07850">−32%</div>
+    <div class="bubble-label bz" style="font-size:9px;color:#7A4030">Markdowns</div>
+  </div>
+
+  <!-- Bottom-right bubble — SKUs -->
+  <div class="bubble bub7">
+    <div class="bubble-stat bz" style="font-size:16px;color:#6A7DC8">847</div>
+    <div class="bubble-label bz" style="font-size:9px;color:#4A5070">SKUs Analysed</div>
+  </div>
+
+  <!-- Small bubble — Upload speed (bleeds into left) -->
+  <div class="bubble bub8">
+    <div class="bubble-stat bz" style="font-size:14px;color:#C07850">60s</div>
+    <div class="bubble-label bz" style="font-size:9px;color:#7A4030">Upload→<br>Insight</div>
+  </div>
+
+  <!-- Tiny decorative minis -->
+  <div class="bub-mini" style="width:44px;height:44px;top:42%;left:6%;animation:bfloat-free 9s ease-in-out infinite 1s"></div>
+  <div class="bub-mini" style="width:28px;height:28px;bottom:30%;left:34%;animation:bfloat-free 7s ease-in-out infinite 2s"></div>
+  <div class="bub-mini" style="width:20px;height:20px;top:72%;right:22%;animation:bfloat-free 8.5s ease-in-out infinite 0.5s"></div>
+  <div class="bub-mini" style="width:16px;height:16px;top:12%;left:36%;animation:bfloat-free 6s ease-in-out infinite 3s"></div>
+  <div class="bub-mini" style="width:34px;height:34px;top:28%;right:3%;animation:bfloat-free 10s ease-in-out infinite 1.8s"></div>
+</div>
+
 <script>
-async function submit() {
-  const email    = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const btn      = document.getElementById('btn');
-  const errBox   = document.getElementById('error-box');
+function showForgot() {
+  document.getElementById('step-login').classList.remove('active');
+  document.getElementById('step-forgot').classList.add('active');
+  document.getElementById('reset-email').focus();
+  document.getElementById('err-forgot').style.display = 'none';
+  document.getElementById('reset-ok').style.display = 'none';
+}
+
+function showLogin() {
+  document.getElementById('step-forgot').classList.remove('active');
+  document.getElementById('step-login').classList.add('active');
+  document.getElementById('login-email').focus();
+  document.getElementById('err-login').style.display = 'none';
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const btn      = document.getElementById('btn-login');
+  const errBox   = document.getElementById('err-login');
   errBox.style.display = 'none';
 
   if (!email || !password) {
     errBox.textContent = 'Please enter your email and password.';
-    errBox.style.display = 'block';
-    return;
+    errBox.style.display = 'block'; return;
   }
 
-  btn.disabled = true;
-  btn.textContent = 'Logging in…';
+  btn.disabled = true; btn.textContent = 'Signing in…';
 
   try {
     const res  = await fetch('/auth/login', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      credentials: 'include',
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (data.ok) {
-      window.location.href = data.redirect || '/dashboard';
+    if (data.ok && data.redirect) {
+      window.location.href = data.redirect;
     } else {
-      errBox.textContent = data.error || 'Login failed. Please try again.';
+      errBox.textContent = data.error || 'Invalid email or password.';
       errBox.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'Log in';
+      btn.disabled = false; btn.textContent = 'Log In →';
     }
   } catch {
     errBox.textContent = 'Connection error. Please try again.';
     errBox.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Log in';
+    btn.disabled = false; btn.textContent = 'Log In →';
+  }
+}
+
+async function doForgot() {
+  const email  = document.getElementById('reset-email').value.trim();
+  const btn    = document.getElementById('btn-forgot');
+  const errBox = document.getElementById('err-forgot');
+  const okBox  = document.getElementById('reset-ok');
+  errBox.style.display = 'none';
+  okBox.style.display  = 'none';
+
+  if (!email) {
+    errBox.textContent = 'Please enter your email address.';
+    errBox.style.display = 'block'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  try {
+    const res  = await fetch('/auth/forgot-password', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    okBox.textContent = data.message || 'If that email exists, a reset link has been sent.';
+    okBox.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send Reset Link →';
+  } catch {
+    errBox.textContent = 'Connection error. Please try again.';
+    errBox.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send Reset Link →';
   }
 }
 </script>

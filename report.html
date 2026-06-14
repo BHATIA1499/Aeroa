@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Report — Threadlytics</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23A8C5A0'/><circle cx='16' cy='16' r='6' fill='%23F4C0A8'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══ TOKENS ══ */
+:root {
+  --mint:#7DAA75;--mint-l:#A8C5A0;--mint-ll:#C8DFBF;
+  --blush:#E3A08E;--blush-l:#F4C0A8;
+  --peri:#8A9DD8;--peri-l:#B8C4E8;
+  --peach:#D4862A;--red:#E0524A;
+  --dark:#1E1E2A;--dark2:#2E2E3A;
+  --text:#1E1E2A;--text2:#4A4A5A;--text3:#8A8A9A;
+  --bg:#F8FAFB;--surface:#FFFFFF;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
+  --serif:'Montserrat',sans-serif;--body:'Inter',system-ui,sans-serif;
+  --editorial:'Merriweather',Georgia,serif;
+  --nav-w:228px;
+  --report-max:860px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  background:linear-gradient(150deg,#F0F5FF 0%,#FFF0F5 35%,#EEF7EE 65%,#F3F0FF 100%);
+  background-attachment:fixed;
+  display:flex;min-height:100vh;overflow-x:hidden;
+}
+
+/* ══ SIDEBAR ══ */
+#sidebar{
+  width:var(--nav-w);flex-shrink:0;
+  background:rgba(255,255,255,0.84);backdrop-filter:blur(20px);
+  border-right:1px solid rgba(168,197,160,0.20);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
+}
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;text-decoration:none}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px rgba(125,170,117,0.5)}
+.sb-logo-text{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text)}
+.sb-logo-text span{color:var(--mint)}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s;text-decoration:none;margin-bottom:1px}
+.nav-item:hover{background:rgba(125,170,117,0.08);color:var(--text)}
+.nav-item.active{background:rgba(125,170,117,0.14);color:#5A8A52;font-weight:700}
+.sb-bottom{padding:14px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:rgba(243,246,244,0.9)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7DAA75,#A8C5A0);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;font-weight:600;color:var(--mint);text-transform:uppercase;letter-spacing:0.06em}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:inherit}
+.logout-btn:hover{color:var(--red)}
+
+/* ══ MAIN ══ */
+#main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(168,197,160,0.18);
+  padding:0 28px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.topbar-title{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--text)}
+.report-badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;background:rgba(125,170,117,0.14);color:var(--mint);border:1px solid rgba(125,170,117,0.28);text-transform:uppercase;letter-spacing:0.08em}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;border:1.5px solid var(--border);background:white;color:var(--text2);
+}
+.tb-btn:hover{border-color:rgba(125,170,117,0.35);color:var(--text);background:rgba(125,170,117,0.04)}
+.tb-btn-primary{background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;border:none;box-shadow:0 4px 14px rgba(125,170,117,0.35)}
+.tb-btn-primary:hover{background:linear-gradient(135deg,#6A9864,#7DAA75);transform:translateY(-1px)}
+.tb-btn-pptx{background:linear-gradient(135deg,#C05A38,#D47850);color:white;border:none;box-shadow:0 4px 14px rgba(192,90,56,0.30)}
+.tb-btn-pptx:hover{background:linear-gradient(135deg,#A84828,#C06840);transform:translateY(-1px)}
+
+/* ══ REPORT TABS ══ */
+#report-tabs{
+  background:rgba(255,255,255,0.80);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:0 28px;
+  display:flex;gap:0;
+}
+.rtab{
+  padding:14px 20px;font-size:13px;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2.5px solid transparent;transition:all 0.18s;
+  white-space:nowrap;
+}
+.rtab:hover{color:var(--text);border-bottom-color:rgba(125,170,117,0.3)}
+.rtab.active{color:var(--mint);border-bottom-color:var(--mint)}
+
+/* ══ CONTENT ══ */
+#content{flex:1;padding:32px 28px 56px;display:flex;gap:32px}
+
+/* ══ SECTION NAV (sticky right) ══ */
+#section-nav{
+  width:180px;flex-shrink:0;
+  position:sticky;top:90px;height:fit-content;
+}
+.snav-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px}
+.snav-item{
+  display:block;font-size:12px;font-weight:500;color:var(--text3);
+  text-decoration:none;padding:5px 0 5px 12px;
+  border-left:2px solid var(--border);transition:all 0.15s;
+  margin-bottom:2px;cursor:pointer;
+}
+.snav-item:hover{color:var(--text);border-left-color:var(--mint-l)}
+.snav-item.active{color:var(--mint);border-left-color:var(--mint);font-weight:700}
+
+/* ══ REPORT BODY ══ */
+#report-body{flex:1;min-width:0}
+.report-view{display:none}
+.report-view.active{display:block}
+
+/* ══ LOADING STATE ══ */
+#loading-overlay{
+  position:fixed;inset:0;background:rgba(248,250,251,0.92);backdrop-filter:blur(8px);
+  z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity 0.4s;
+}
+#loading-overlay.hidden{opacity:0;pointer-events:none}
+.loader-ring{
+  width:56px;height:56px;border:3px solid rgba(125,170,117,0.15);
+  border-top:3px solid var(--mint);border-radius:50%;
+  animation:spin 0.9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text)}
+.loader-sub{font-size:13px;color:var(--text2);max-width:320px;text-align:center;line-height:1.6}
+.loader-progress{width:280px;height:3px;background:rgba(125,170,117,0.15);border-radius:2px;overflow:hidden}
+.loader-progress-fill{height:100%;background:linear-gradient(90deg,#7DAA75,#A8C5A0);width:0;transition:width 0.5s ease;border-radius:2px}
+.loader-step{font-size:12px;color:var(--text3);min-height:20px}
+
+/* ══ REPORT SECTIONS ══ */
+.report-section{margin-bottom:40px;scroll-margin-top:90px}
+.section-label{
+  display:inline-block;font-size:10px;font-weight:700;color:var(--mint);
+  text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;
+}
+.section-title{
+  font-family:var(--serif);font-size:22px;font-weight:800;color:var(--dark);
+  margin-bottom:16px;letter-spacing:-0.01em;
+}
+.section-divider{height:2px;background:linear-gradient(90deg,var(--mint-l),transparent);margin-bottom:20px}
+
+/* ══ EXECUTIVE SUMMARY CARD ══ */
+.exec-card{
+  background:linear-gradient(135deg,var(--dark) 0%,var(--dark2) 100%);
+  border-radius:16px;padding:36px 40px;margin-bottom:32px;position:relative;overflow:hidden;
+}
+.exec-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 20%,rgba(168,197,160,0.15) 0%,transparent 55%),
+             radial-gradient(ellipse at 10% 80%,rgba(184,196,232,0.10) 0%,transparent 50%);
+}
+.exec-label{
+  font-size:10px;font-weight:700;color:var(--mint-l);text-transform:uppercase;
+  letter-spacing:0.14em;margin-bottom:14px;position:relative;z-index:1;
+  display:flex;align-items:center;gap:8px;
+}
+.exec-label-dot{width:5px;height:5px;border-radius:50%;background:var(--mint)}
+.exec-text{
+  font-family:var(--editorial);font-size:17px;line-height:1.75;
+  color:rgba(255,255,255,0.92);position:relative;z-index:1;
+}
+.exec-text::before{content:'"';font-size:48px;color:rgba(168,197,160,0.3);
+  position:absolute;left:-8px;top:-10px;font-family:Georgia,serif;line-height:1}
+
+/* ══ KPI STRIP ══ */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.kpi-card{
+  background:rgba(255,255,255,0.88);border:1.5px solid rgba(255,255,255,0.95);
+  border-radius:12px;padding:16px 18px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95);
+  border-top:3px solid transparent;
+}
+.kpi-card:nth-child(1){border-top-color:var(--mint-l)}
+.kpi-card:nth-child(2){border-top-color:var(--peri-l)}
+.kpi-card:nth-child(3){border-top-color:var(--blush-l)}
+.kpi-card:nth-child(4){border-top-color:#F0C4A0}
+.kpi-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px}
+.kpi-value{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:11px;color:var(--text2)}
+
+/* ══ PROSE CARDS ══ */
+.prose-card{
+  background:rgba(255,255,255,0.80);backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,0.92);border-radius:14px;
+  padding:22px 26px;margin-bottom:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.04);
+}
+.prose-card-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.prose-card-icon{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.prose-card-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--dark)}
+.prose-card-subtitle{font-size:11px;color:var(--text3);margin-top:1px}
+.prose-text{
+  font-size:14px;line-height:1.8;color:var(--text2);
+  font-family:var(--body);
+}
+
+/* Two-col prose grid */
+.prose-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.prose-grid .prose-card{margin-bottom:0}
+
+/* ══ CATEGORY TABLE ══ */
+.cat-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.cat-table thead tr th{
+  padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.09em;
+  background:rgba(248,250,252,0.9);border-bottom:1.5px solid var(--border);
+  text-align:left;
+}
+.cat-table tbody tr td{
+  padding:10px 14px;border-bottom:1px solid rgba(0,0,0,0.04);
+  font-size:13px;color:var(--text);
+}
+.cat-table tbody tr:last-child td{border-bottom:none}
+.cat-table tbody tr:hover td{background:rgba(125,170,117,0.03)}
+.health-badge{
+  display:inline-block;padding:2px 9px;border-radius:99px;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+}
+.health-STRONG  {background:rgba(125,170,117,0.15);color:#3A6A32}
+.health-HEALTHY {background:rgba(168,197,160,0.20);color:#5A8A52}
+.health-AT.RISK {background:rgba(240,196,160,0.25);color:#906040}
+.health-CRITICAL{background:rgba(224,82,74,0.12);color:#C03828}
+.health-UNKNOWN {background:rgba(0,0,0,0.06);color:var(--text3)}
+
+/* ══ ACTIONS LIST ══ */
+.actions-list{display:flex;flex-direction:column;gap:10px}
+.action-item{
+  display:flex;gap:16px;align-items:flex-start;
+  background:rgba(255,255,255,0.80);border:1.5px solid rgba(255,255,255,0.92);
+  border-radius:12px;padding:16px 20px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  transition:box-shadow 0.2s;
+}
+.action-item:hover{box-shadow:0 4px 18px rgba(0,0,0,0.07)}
+.action-num{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:12px;font-weight:800;color:white;
+}
+.action-num.p1,.action-num.p2{background:linear-gradient(135deg,#E05A4A,#FF8070)}
+.action-num.p3,.action-num.p4{background:linear-gradient(135deg,#D4862A,#F0A840)}
+.action-num.p5,.action-num.p6{background:linear-gradient(135deg,#7DAA75,#A8C5A0)}
+.action-text{font-size:13.5px;color:var(--text);line-height:1.65}
+.action-priority{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:4px}
+.action-priority.Critical{background:rgba(224,82,74,0.12);color:#C03828}
+.action-priority.High{background:rgba(212,134,42,0.12);color:#A06020}
+.action-priority.Recommended{background:rgba(125,170,117,0.14);color:#3A7A32}
+
+/* ══ RISK CARD ══ */
+.risk-card{
+  border-left:4px solid var(--red);background:rgba(255,248,247,0.90);
+  border-radius:0 12px 12px 0;padding:16px 20px;margin-bottom:10px;
+  border:1px solid rgba(224,82,74,0.15);border-left:4px solid var(--red);
+}
+.risk-card-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px}
+.risk-card-text{font-size:13px;color:var(--text2);line-height:1.65}
+
+/* ══ WEEKLY NARRATIVE ══ */
+.weekly-card{
+  background:rgba(255,255,255,0.82);backdrop-filter:blur(12px);
+  border:1.5px solid rgba(125,170,117,0.20);border-radius:14px;
+  padding:26px 30px;margin-bottom:20px;
+  box-shadow:0 2px 14px rgba(125,170,117,0.08);
+}
+.weekly-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.weekly-pulse{width:8px;height:8px;border-radius:50%;background:var(--mint);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(125,170,117,0.4)}50%{opacity:0.7;box-shadow:0 0 0 6px rgba(125,170,117,0)}}
+.weekly-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--dark)}
+.weekly-date{font-size:11px;color:var(--text3);margin-left:auto}
+.weekly-text{
+  font-family:var(--editorial);font-size:14px;line-height:1.9;color:var(--text2);
+  font-style:italic;
+}
+
+/* ══ AI BADGE ══ */
+.ai-badge{
+  display:inline-flex;align-items:center;gap:6px;margin-top:20px;
+  font-size:11px;color:var(--text3);
+}
+.ai-badge-icon{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#7DAA75,#B8C4E8);display:flex;align-items:center;justify-content:center;font-size:8px;color:white}
+
+/* ══ EMPTY / ERROR ══ */
+.state-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;text-align:center}
+.state-icon{font-size:48px;margin-bottom:16px;opacity:0.4}
+.state-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+.state-sub{font-size:14px;color:var(--text2);max-width:360px;line-height:1.6;margin-bottom:24px}
+.state-btn{
+  padding:12px 28px;background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;
+  border-radius:99px;font-family:inherit;font-size:14px;font-weight:600;border:none;cursor:pointer;
+  box-shadow:0 4px 16px rgba(125,170,117,0.35);text-decoration:none;display:inline-block;
+}
+
+/* ══ PRINT STYLES ══ */
+@media print {
+  body{background:white!important;display:block}
+  #sidebar,#topbar,#report-tabs,#section-nav,#loading-overlay,
+  .topbar-right,.tb-btn,.tb-btn-primary,.tb-btn-pptx,
+  .no-print{display:none!important}
+  #main{margin-left:0!important}
+  #content{padding:0!important;display:block}
+  #report-body{width:100%}
+  .report-view{display:block!important}
+  .report-section{page-break-inside:avoid}
+  .exec-card{background:#1E1E2A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .prose-grid{grid-template-columns:1fr 1fr}
+  .kpi-strip{grid-template-columns:repeat(4,1fr)}
+
+  /* Report header for print */
+  #print-header{display:block!important;padding:20px 0 12px;border-bottom:2px solid #1E1E2A;margin-bottom:24px}
+  #print-header .ph-logo{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:#1E1E2A}
+  #print-header .ph-logo span{color:#7DAA75}
+  #print-header .ph-meta{font-size:11px;color:#8A8A9A;margin-top:4px}
+}
+#print-header{display:none}
+
+/* ══ MISC ══ */
+.blush-l{color:#E3A08E}
+.min-l{color:var(--mint)}
+.winner-row{background:rgba(125,170,117,0.05)!important}
+.risk-row{background:rgba(224,82,74,0.04)!important}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%)}
+  #main{margin-left:0}
+  .prose-grid{grid-template-columns:1fr}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  #section-nav{display:none}
+  #content{padding:20px 16px 40px}
+}
+</style>
+</head>
+<body>
+
+<!-- PRINT HEADER (hidden on screen, visible when printing) -->
+<div id="print-header">
+  <div class="ph-logo">Thread<span>lytics</span></div>
+  <div class="ph-meta" id="print-date">AI Trade Report · Generated today</div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-title">Generating Trade Report</div>
+  <div class="loader-sub" id="loader-sub">The AI is analysing your merchandising data and crafting professional commentary…</div>
+  <div class="loader-progress"><div class="loader-progress-fill" id="loader-bar"></div></div>
+  <div class="loader-step" id="loader-step">Initialising…</div>
+</div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <a href="/dashboard" class="sb-logo">
+    <div class="sb-logo-dot"></div>
+    <div class="sb-logo-text">Thread<span>lytics</span></div>
+  </a>
+  <nav class="sb-nav">
+    <div class="nav-section">Report Views</div>
+    <a class="nav-item active" href="#" onclick="switchTab('executive');return false">📊 Executive Summary</a>
+    <a class="nav-item" href="#" onclick="switchTab('weekly');return false">📅 Weekly Trade Pack</a>
+    <a class="nav-item" href="#" onclick="switchTab('category');return false">🏷 Category Commentary</a>
+    <a class="nav-item" href="#" onclick="switchTab('risk');return false">⚠️ Risk Report</a>
+    <div class="nav-section">Navigate</div>
+    <a class="nav-item" href="/action-centre">⚡ Action Centre</a>
+    <a class="nav-item" href="/dashboard">← Dashboard</a>
+  </nav>
+  <div class="sb-bottom">
+    <div class="user-card">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sb-name">Loading…</div>
+        <div class="user-role" id="sb-role">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Out</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">AI Trade Report</div>
+      <div class="report-badge" id="report-badge">Generating…</div>
+    </div>
+    <div class="topbar-right no-print">
+      <button class="tb-btn" onclick="regenerateReport()" title="Regenerate with fresh AI commentary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Regenerate
+      </button>
+      <button class="tb-btn" onclick="window.print()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Export PDF
+      </button>
+      <button class="tb-btn tb-btn-pptx" onclick="downloadPptx()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        PowerPoint
+      </button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div id="report-tabs" class="no-print">
+    <div class="rtab active" data-tab="executive" onclick="switchTab('executive')">Executive Summary</div>
+    <div class="rtab" data-tab="weekly"    onclick="switchTab('weekly')">Weekly Trade Pack</div>
+    <div class="rtab" data-tab="category"  onclick="switchTab('category')">Category Commentary</div>
+    <div class="rtab" data-tab="risk"      onclick="switchTab('risk')">Risk Report</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- SECTION NAV -->
+    <div id="section-nav" class="no-print">
+      <div class="snav-title">In this report</div>
+      <div id="snav-items"></div>
+    </div>
+
+    <!-- REPORT BODY -->
+    <div id="report-body">
+
+      <!-- EMPTY / ERROR STATE -->
+      <div id="state-error" class="state-card" style="display:none">
+        <div class="state-icon">📄</div>
+        <div class="state-title">No Data Available</div>
+        <div class="state-sub">Please upload a merchandising dataset first to generate your AI Trade Report.</div>
+        <a href="/dashboard" class="state-btn">Go to Dashboard</a>
+      </div>
+
+      <!-- ══ TAB: EXECUTIVE SUMMARY ══ -->
+      <div class="report-view active" id="view-executive">
+
+        <div class="report-section" id="sec-exec-summary">
+          <div class="section-label">AI Generated · Board Level</div>
+          <h2 class="section-title">Executive Summary</h2>
+          <div class="section-divider"></div>
+          <div class="exec-card">
+            <div class="exec-label"><div class="exec-label-dot"></div>EXECUTIVE OVERVIEW</div>
+            <div class="exec-text" id="exec-summary-text">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-kpis">
+          <div class="section-label">Period Performance</div>
+          <h2 class="section-title">Key Metrics</h2>
+          <div class="section-divider"></div>
+          <div class="kpi-strip" id="kpi-strip">
+            <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value" id="kpi-rev">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Gross Margin</div><div class="kpi-value" id="kpi-mg">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Sell-Through</div><div class="kpi-value" id="kpi-st">—</div></div>
+            <div class="kpi-card"><div class="kpi-label">Stock Cover</div><div class="kpi-value" id="kpi-cov">—</div></div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-business">
+          <div class="section-label">Business Overview</div>
+          <h2 class="section-title">Trading Summary</h2>
+          <div class="section-divider"></div>
+          <div class="prose-card">
+            <div class="prose-card-header">
+              <div class="prose-card-icon" style="background:rgba(125,170,117,0.12)">📈</div>
+              <div><div class="prose-card-title">Business Overview</div><div class="prose-card-subtitle">Overall trading picture and commercial context</div></div>
+            </div>
+            <div class="prose-text" id="text-business-overview">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-perf">
+          <div class="section-label">Financial Performance</div>
+          <h2 class="section-title">Revenue & Margin</h2>
+          <div class="section-divider"></div>
+          <div class="prose-grid">
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(125,170,117,0.12)">£</div>
+                <div><div class="prose-card-title">Revenue Performance</div><div class="prose-card-subtitle">Revenue quality and trend</div></div>
+              </div>
+              <div class="prose-text" id="text-revenue">Generating…</div>
+            </div>
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(184,196,232,0.18)">%</div>
+                <div><div class="prose-card-title">Margin Performance</div><div class="prose-card-subtitle">Margin health and protection</div></div>
+              </div>
+              <div class="prose-text" id="text-margin">Generating…</div>
+            </div>
+          </div>
+          <div class="prose-card" style="margin-top:16px">
+            <div class="prose-card-header">
+              <div class="prose-card-icon" style="background:rgba(240,196,160,0.18)">📦</div>
+              <div><div class="prose-card-title">Stock Performance</div><div class="prose-card-subtitle">Cover, position and working capital</div></div>
+            </div>
+            <div class="prose-text" id="text-stock">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-actions-exec">
+          <div class="section-label">Priority Actions</div>
+          <h2 class="section-title">Recommended Actions</h2>
+          <div class="section-divider"></div>
+          <div class="actions-list" id="actions-exec"></div>
+          <div class="ai-badge">
+            <div class="ai-badge-icon">✦</div>
+            Generated by Threadlytics AI · Based on uploaded trading dataset
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: WEEKLY TRADE PACK ══ -->
+      <div class="report-view" id="view-weekly">
+
+        <div class="report-section" id="sec-weekly-header">
+          <div class="section-label">Weekly Trading Review</div>
+          <h2 class="section-title">Weekly Trade Pack</h2>
+          <div class="section-divider"></div>
+          <div class="weekly-card">
+            <div class="weekly-header">
+              <div class="weekly-pulse"></div>
+              <div class="weekly-title">Trading Narrative</div>
+              <div class="weekly-date" id="weekly-date">Generated today</div>
+            </div>
+            <div class="weekly-text" id="text-weekly-narrative">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-weekly-kpis">
+          <div class="section-label">Week's Numbers</div>
+          <h2 class="section-title">Performance at a Glance</h2>
+          <div class="section-divider"></div>
+          <div class="kpi-strip">
+            <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value" id="wk-kpi-rev">—</div><div class="kpi-sub">Period total</div></div>
+            <div class="kpi-card"><div class="kpi-label">Gross Profit</div><div class="kpi-value" id="wk-kpi-gp">—</div><div class="kpi-sub">After cost of sales</div></div>
+            <div class="kpi-card"><div class="kpi-label">Units Sold</div><div class="kpi-value" id="wk-kpi-units">—</div><div class="kpi-sub">Across all SKUs</div></div>
+            <div class="kpi-card"><div class="kpi-label">Reorder Alerts</div><div class="kpi-value" id="wk-kpi-ro">—</div><div class="kpi-sub">Requiring action</div></div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-weekly-cats">
+          <div class="section-label">Category Summary</div>
+          <h2 class="section-title">Category Performance</h2>
+          <div class="section-divider"></div>
+          <div class="prose-grid">
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(125,170,117,0.12)">🏆</div>
+                <div><div class="prose-card-title">Category Winners</div><div class="prose-card-subtitle">Top performing categories this week</div></div>
+              </div>
+              <div class="prose-text" id="wk-cat-winners">Generating…</div>
+            </div>
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(224,82,74,0.10)">⚠️</div>
+                <div><div class="prose-card-title">Category Risks</div><div class="prose-card-subtitle">Categories requiring action this week</div></div>
+              </div>
+              <div class="prose-text" id="wk-cat-risks">Generating…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-weekly-actions">
+          <div class="section-label">This Week's Actions</div>
+          <h2 class="section-title">Action Log</h2>
+          <div class="section-divider"></div>
+          <div class="actions-list" id="actions-weekly"></div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: CATEGORY COMMENTARY ══ -->
+      <div class="report-view" id="view-category">
+
+        <div class="report-section" id="sec-cat-intro">
+          <div class="section-label">Category Analysis</div>
+          <h2 class="section-title">Category Commentary</h2>
+          <div class="section-divider"></div>
+          <div class="prose-card" style="margin-bottom:20px">
+            <div class="prose-card-header">
+              <div class="prose-card-icon" style="background:rgba(184,196,232,0.18)">🏷</div>
+              <div><div class="prose-card-title">Category Portfolio Overview</div><div class="prose-card-subtitle">Overall category mix and commercial assessment</div></div>
+            </div>
+            <div class="prose-text" id="text-cat-summary">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-cat-table">
+          <div class="section-label">Performance Data</div>
+          <h2 class="section-title">Category Scorecard</h2>
+          <div class="section-divider"></div>
+          <div style="background:rgba(255,255,255,0.82);border:1.5px solid rgba(255,255,255,0.92);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.04)">
+            <table class="cat-table" id="cat-table">
+              <thead><tr>
+                <th>Category</th><th>Revenue</th><th>Units</th>
+                <th>Sell-Through</th><th>Margin</th><th>SKUs</th><th>Health</th>
+              </tr></thead>
+              <tbody id="cat-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-cat-winners">
+          <div class="section-label">Category Spotlight</div>
+          <h2 class="section-title">Winners & Growth Opportunities</h2>
+          <div class="section-divider"></div>
+          <div class="prose-grid">
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(125,170,117,0.12)">📈</div>
+                <div><div class="prose-card-title">Category Winners</div></div>
+              </div>
+              <div class="prose-text" id="text-cat-winners-detail">Generating…</div>
+            </div>
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(168,197,160,0.14)">🔁</div>
+                <div><div class="prose-card-title">Replenishment Opportunities</div></div>
+              </div>
+              <div class="prose-text" id="text-replenishment">Generating…</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-cat-risks">
+          <div class="section-label">Commercial Risks</div>
+          <h2 class="section-title">Category Risks & Markdown Exposure</h2>
+          <div class="section-divider"></div>
+          <div class="prose-grid">
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(224,82,74,0.10)">📉</div>
+                <div><div class="prose-card-title">Category Risks</div></div>
+              </div>
+              <div class="prose-text" id="text-cat-risks-detail">Generating…</div>
+            </div>
+            <div class="prose-card">
+              <div class="prose-card-header">
+                <div class="prose-card-icon" style="background:rgba(212,134,42,0.12)">🏷</div>
+                <div><div class="prose-card-title">Markdown Risks</div></div>
+              </div>
+              <div class="prose-text" id="text-markdown">Generating…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: RISK REPORT ══ -->
+      <div class="report-view" id="view-risk">
+
+        <div class="report-section" id="sec-risk-summary">
+          <div class="section-label">Risk Assessment</div>
+          <h2 class="section-title">Risk Report</h2>
+          <div class="section-divider"></div>
+          <div class="exec-card" style="background:linear-gradient(135deg,#220A0A,#2A1010)">
+            <div class="exec-label" style="color:#FF9988"><div class="exec-label-dot" style="background:#FF6050"></div>RISK REGISTER SUMMARY</div>
+            <div class="exec-text" id="text-risk-summary" style="color:rgba(255,220,215,0.92)">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-risk-kpis">
+          <div class="section-label">Risk Metrics</div>
+          <h2 class="section-title">Exposure Overview</h2>
+          <div class="section-divider"></div>
+          <div class="kpi-strip">
+            <div class="kpi-card" style="border-top-color:#E05A4A"><div class="kpi-label">Markdown Risk SKUs</div><div class="kpi-value" id="risk-kpi-md" style="color:#C03828">—</div></div>
+            <div class="kpi-card" style="border-top-color:#D4862A"><div class="kpi-label">Stockout Risk SKUs</div><div class="kpi-value" id="risk-kpi-ro" style="color:#A06020">—</div></div>
+            <div class="kpi-card" style="border-top-color:#8A9DD8"><div class="kpi-label">Avg Stock Cover</div><div class="kpi-value" id="risk-kpi-cov" style="color:#6070B0">—</div></div>
+            <div class="kpi-card" style="border-top-color:#E3A08E"><div class="kpi-label">Gross Margin</div><div class="kpi-value" id="risk-kpi-mg" style="color:#A06040">—</div></div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-risk-categories">
+          <div class="section-label">Category Risks</div>
+          <h2 class="section-title">At-Risk Categories</h2>
+          <div class="section-divider"></div>
+          <div id="risk-cats-container"></div>
+        </div>
+
+        <div class="report-section" id="sec-risk-markdown">
+          <div class="section-label">Stock & Markdown</div>
+          <h2 class="section-title">Markdown & Inventory Risk</h2>
+          <div class="section-divider"></div>
+          <div class="prose-card">
+            <div class="prose-card-header">
+              <div class="prose-card-icon" style="background:rgba(212,134,42,0.12)">⚠️</div>
+              <div><div class="prose-card-title">Markdown Risk Analysis</div></div>
+            </div>
+            <div class="prose-text" id="risk-text-markdown">Generating…</div>
+          </div>
+        </div>
+
+        <div class="report-section" id="sec-risk-actions">
+          <div class="section-label">Risk Mitigation</div>
+          <h2 class="section-title">Recommended Mitigations</h2>
+          <div class="section-divider"></div>
+          <div class="actions-list" id="actions-risk"></div>
+          <div class="ai-badge">
+            <div class="ai-badge-icon">✦</div>
+            Generated by Threadlytics AI · Risk assessment based on live trading data
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /report-body -->
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let reportData  = null;
+let kpisData    = null;
+let catsData    = [];
+let currentTab  = 'executive';
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function fmtCurr(v) {
+  if (!v) return '—';
+  if (v >= 1000000) return `£${(v/1000000).toFixed(1)}M`;
+  if (v >= 1000)    return `£${(v/1000).toFixed(0)}k`;
+  return `£${Math.round(v).toLocaleString()}`;
+}
+function fmtNum(v)  { return v ? Number(v).toLocaleString() : '—'; }
+function fmtPct(v)  { return v ? v.toFixed(1) + '%' : '—'; }
+function fmtDate()  {
+  return new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.report-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.rtab').forEach(t => t.classList.remove('active'));
+  document.querySelector('#view-' + tab).classList.add('active');
+  document.querySelector(`.rtab[data-tab="${tab}"]`).classList.add('active');
+  // Update sidebar
+  document.querySelectorAll('#sidebar .nav-item').forEach(n => {
+    n.classList.toggle('active', n.textContent.trim().toLowerCase().includes(tab));
+  });
+  buildSectionNav();
+}
+
+/* ══════════════════════════════════════════
+   SECTION NAV
+══════════════════════════════════════════ */
+function buildSectionNav() {
+  const view = document.querySelector('.report-view.active');
+  if (!view) return;
+  const sections = view.querySelectorAll('.report-section');
+  const nav = document.getElementById('snav-items');
+  nav.innerHTML = Array.from(sections).map(s => {
+    const title = s.querySelector('.section-title')?.textContent || s.id;
+    return `<a class="snav-item" onclick="scrollToSection('${s.id}')">${title}</a>`;
+  }).join('');
+}
+
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   RENDER REPORT
+══════════════════════════════════════════ */
+function renderReport(report, kpis, cats) {
+  reportData = report;
+  kpisData   = kpis;
+  catsData   = cats || [];
+
+  const today = fmtDate();
+  document.getElementById('print-date').textContent = `AI Trade Report · Generated ${today}`;
+  document.getElementById('weekly-date').textContent = `Generated ${today}`;
+  document.getElementById('report-badge').textContent = `Generated ${today}`;
+
+  // KPIs
+  const rev = kpis.total_revenue || 0;
+  document.getElementById('kpi-rev').textContent  = fmtCurr(rev);
+  document.getElementById('kpi-mg').textContent   = fmtPct(kpis.avg_margin_pct);
+  document.getElementById('kpi-st').textContent   = fmtPct(kpis.avg_sell_through);
+  document.getElementById('kpi-cov').textContent  = (kpis.avg_cover_weeks || 0).toFixed(1) + ' wks';
+
+  document.getElementById('wk-kpi-rev').textContent   = fmtCurr(rev);
+  document.getElementById('wk-kpi-gp').textContent    = fmtCurr(kpis.gross_profit);
+  document.getElementById('wk-kpi-units').textContent = fmtNum(kpis.total_units);
+  document.getElementById('wk-kpi-ro').textContent    = kpis.reorder_count || 0;
+
+  document.getElementById('risk-kpi-md').textContent  = kpis.markdown_risk_count || 0;
+  document.getElementById('risk-kpi-ro').textContent  = kpis.reorder_count || 0;
+  document.getElementById('risk-kpi-cov').textContent = (kpis.avg_cover_weeks || 0).toFixed(1) + ' wks';
+  document.getElementById('risk-kpi-mg').textContent  = fmtPct(kpis.avg_margin_pct);
+
+  // Prose sections
+  setText('exec-summary-text',            report.executive_summary);
+  setText('text-business-overview',       report.business_overview);
+  setText('text-revenue',                 report.revenue_performance);
+  setText('text-margin',                  report.margin_performance);
+  setText('text-stock',                   report.stock_performance);
+  setText('text-weekly-narrative',        report.weekly_trade_narrative);
+  setText('wk-cat-winners',              report.category_winners);
+  setText('wk-cat-risks',               report.category_risks);
+  setText('text-cat-summary',            report.category_commentary?.summary || report.business_overview);
+  setText('text-cat-winners-detail',     report.category_commentary?.winners_detail || report.category_winners);
+  setText('text-cat-risks-detail',       report.category_commentary?.risks_detail || report.category_risks);
+  setText('text-replenishment',          report.replenishment_opportunities);
+  setText('text-markdown',               report.markdown_risks);
+  setText('text-risk-summary',           report.risk_register_summary);
+  setText('risk-text-markdown',         report.markdown_risks);
+
+  // Actions
+  renderActions(report.recommended_actions || []);
+
+  // Category table
+  renderCatTable(cats || []);
+
+  // Risk category cards
+  renderRiskCats(cats || []);
+
+  buildSectionNav();
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el && text) el.textContent = text;
+}
+
+function renderActions(actions) {
+  const pLabels = ['Critical','Critical','High','High','Recommended','Recommended'];
+  const html = actions.map((a, i) => {
+    const num = i + 1;
+    const pCls = i < 2 ? 'p1' : i < 4 ? 'p3' : 'p5';
+    const pLabel = pLabels[i] || 'Recommended';
+    const text = typeof a === 'string' ? a.replace(/^\d+\.\s*/, '') : a;
+    return `<div class="action-item">
+      <div class="action-num ${pCls}">${num}</div>
+      <div>
+        <div class="action-priority ${pLabel}">${pLabel}</div>
+        <div class="action-text">${text}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  ['actions-exec','actions-weekly','actions-risk'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+function renderCatTable(cats) {
+  const tbody = document.getElementById('cat-tbody');
+  if (!tbody || !cats.length) return;
+  tbody.innerHTML = cats.map(c => {
+    const health = c.health || 'UNKNOWN';
+    const isWinner = health === 'STRONG' || health === 'HEALTHY';
+    const isRisk   = health === 'AT RISK' || health === 'CRITICAL';
+    const rowCls   = isWinner ? 'winner-row' : isRisk ? 'risk-row' : '';
+    const hClass   = 'health-' + health.replace(' ','.');
+    return `<tr class="${rowCls}">
+      <td><strong>${c.category}</strong></td>
+      <td>${fmtCurr(c.revenue)}</td>
+      <td>${fmtNum(c.units)}</td>
+      <td>${c.avg_sell_through !== undefined ? c.avg_sell_through + '%' : '—'}</td>
+      <td>${c.avg_margin_pct !== undefined ? c.avg_margin_pct + '%' : '—'}</td>
+      <td>${c.sku_count || '—'}</td>
+      <td><span class="health-badge ${hClass}">${health}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRiskCats(cats) {
+  const container = document.getElementById('risk-cats-container');
+  if (!container) return;
+  const riskCats = cats.filter(c => c.health === 'AT RISK' || c.health === 'CRITICAL');
+  if (!riskCats.length) {
+    container.innerHTML = '<div class="prose-card"><div class="prose-text">No critical or at-risk categories identified in the current dataset.</div></div>';
+    return;
+  }
+  container.innerHTML = riskCats.map(c => `
+    <div class="risk-card">
+      <div class="risk-card-title">⚠ ${c.category} — ${c.health}</div>
+      <div class="risk-card-text">
+        Revenue: ${fmtCurr(c.revenue)} ·
+        Sell-Through: ${c.avg_sell_through !== undefined ? c.avg_sell_through + '%' : '—'} ·
+        Margin: ${c.avg_margin_pct !== undefined ? c.avg_margin_pct + '%' : '—'} ·
+        SKUs: ${c.sku_count || '—'}
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   LOADING PROGRESS
+══════════════════════════════════════════ */
+function setProgress(pct, step) {
+  document.getElementById('loader-bar').style.width = pct + '%';
+  document.getElementById('loader-step').textContent = step;
+}
+
+/* ══════════════════════════════════════════
+   LOAD REPORT (SSE streaming)
+══════════════════════════════════════════ */
+async function loadReport(forceRefresh = false) {
+  const overlay = document.getElementById('loading-overlay');
+  overlay.classList.remove('hidden');
+  setProgress(10, 'Connecting to AI…');
+
+  const url = forceRefresh ? '/api/report/stream' : '/api/report';
+
+  // Try non-streaming first (uses cache)
+  if (!forceRefresh) {
+    try {
+      const res = await fetch(url, {credentials:'include'});
+      if (res.ok) {
+        const data = await res.json();
+        if (data.error === 'no_data') {
+          showError();
+          return;
+        }
+        setProgress(90, 'Rendering report…');
+        renderReport(data.report, data.kpis || {}, data.categories || []);
+        setProgress(100, 'Done');
+        setTimeout(() => overlay.classList.add('hidden'), 400);
+        return;
+      }
+      if (res.status === 404) { showError(); return; }
+    } catch(e) { /* fall through to stream */ }
+  }
+
+  // Streaming mode
+  setProgress(20, 'Generating commentary with AI…');
+  try {
+    const es = new EventSource('/api/report/stream');
+    es.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'status') {
+        setProgress(Math.min(85, parseInt(document.getElementById('loader-bar').style.width || 20) + 15), msg.message);
+      } else if (msg.type === 'chunk') {
+        setProgress(Math.min(85, parseInt(document.getElementById('loader-bar').style.width || 30) + 1), 'Writing commentary…');
+      } else if (msg.type === 'complete') {
+        es.close();
+        setProgress(95, 'Rendering report…');
+        renderReport(msg.report, msg.kpis || {}, msg.categories || []);
+        setProgress(100, msg.fallback ? 'Report ready (data-driven)' : 'Report ready');
+        setTimeout(() => overlay.classList.add('hidden'), 500);
+      } else if (msg.type === 'error') {
+        es.close();
+        showError();
+      }
+    };
+    es.onerror = () => { es.close(); showError(); };
+  } catch(e) { showError(); }
+}
+
+function showError() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('state-error').style.display = 'flex';
+}
+
+function regenerateReport() {
+  loadReport(true);
+}
+
+async function downloadPptx() {
+  const btn = document.querySelector('.tb-btn-pptx');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ Generating…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/report/pptx', {credentials:'include'});
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Threadlytics_Trade_Report_${new Date().toISOString().slice(0,10)}.pptx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('PowerPoint generation failed. Please try again.');
+  }
+  btn.innerHTML = orig;
+  btn.disabled = false;
+}
+
+async function logout() {
+  await fetch('/auth/logout',{method:'POST',credentials:'include'});
+  location.href = '/login';
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+async function init() {
+  try {
+    const me = await fetch('/auth/me',{credentials:'include'}).then(r=>r.json());
+    if (!me || me.error) { location.href = '/login'; return; }
+    const initials = (me.full_name || me.email || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sb-avatar').textContent = initials;
+    document.getElementById('sb-name').textContent   = me.full_name || me.email;
+    document.getElementById('sb-role').textContent   = me.role || 'AM';
+  } catch(e) { location.href = '/login'; return; }
+
+  loadReport(false);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Action Centre — Threadlytics</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23A8C5A0'/><circle cx='16' cy='16' r='6' fill='%23F4C0A8'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════ */
+:root {
+  --mint:#A8C5A0; --mint-d:#7DAA75; --mint-l:#C8DFBF;
+  --blush:#F4C0A8; --blush-d:#E3A08E;
+  --peri:#B8C4E8; --peri-d:#8A9DD8;
+  --peach:#F0C4A0; --amber:#C0905A;
+  --text:#1E1E2A; --text2:#4A4A5A; --text3:#8A8A9A;
+  --bg:rgba(255,255,255,0.80); --border:rgba(0,0,0,0.07);
+  --serif:'Montserrat',sans-serif; --body:'Inter',system-ui,sans-serif;
+  --nav-w:228px;
+
+  /* Action type colours */
+  --c-markdown:#E05A4A;
+  --c-reorder:#5BAA8A;
+  --c-intake:#D4862A;
+  --c-po:#C03828;
+  --c-transfer:#6080C8;
+  --c-supplier:#B8903A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  background:linear-gradient(150deg,#F0F5FF 0%,#FFF0F5 35%,#EEF7EE 65%,#F3F0FF 100%);
+  background-attachment:fixed;
+  display:flex;min-height:100vh;overflow-x:hidden;
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+#sidebar{
+  width:var(--nav-w);flex-shrink:0;
+  background:rgba(255,255,255,0.84);
+  backdrop-filter:blur(20px);
+  border-right:1px solid rgba(168,197,160,0.20);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:50;
+}
+.sb-logo{
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;text-decoration:none;
+}
+.sb-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--mint-d);box-shadow:0 0 8px rgba(125,170,117,0.5)}
+.sb-logo-text{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text)}
+.sb-logo-text span{color:var(--mint-d)}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;padding:12px 10px 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);
+  transition:all 0.15s;text-decoration:none;margin-bottom:1px;
+}
+.nav-item:hover{background:rgba(125,170,117,0.08);color:var(--text)}
+.nav-item.active{background:rgba(125,170,117,0.14);color:#5A8A52;font-weight:700}
+.nav-item .ni-dot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+.nav-item .ni-count{
+  margin-left:auto;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:99px;background:rgba(0,0,0,0.07);
+}
+.sb-bottom{padding:14px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:rgba(243,246,244,0.9)}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7DAA75,#A8C5A0);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;font-weight:600;color:var(--mint-d);text-transform:uppercase;letter-spacing:0.06em}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:inherit;transition:color 0.15s}
+.logout-btn:hover{color:#E05A4A}
+
+/* ═══════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════ */
+#main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh;min-width:0}
+
+/* ═══════════════════════════════════════════
+   HERO HEADER
+═══════════════════════════════════════════ */
+#ac-hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#151A26 0%,#1E2638 45%,#1A2830 100%);
+  padding:32px 36px 28px;
+}
+#ac-hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 80% 20%,rgba(168,197,160,0.18) 0%,transparent 55%),
+    radial-gradient(ellipse at 10% 80%,rgba(184,196,232,0.14) 0%,transparent 50%);
+}
+.hero-inner{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.hero-left{}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:4px 14px;border-radius:99px;
+  background:rgba(168,197,160,0.15);border:1px solid rgba(168,197,160,0.35);
+  font-size:10px;font-weight:700;color:#A8C5A0;letter-spacing:0.1em;
+  text-transform:uppercase;margin-bottom:12px;
+}
+.hero-pulse{width:6px;height:6px;border-radius:50%;background:#A8C5A0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(168,197,160,0.5)}50%{opacity:0.7;box-shadow:0 0 0 6px rgba(168,197,160,0)}}
+.hero-title{font-family:var(--serif);font-size:26px;font-weight:900;color:white;letter-spacing:-0.02em;margin-bottom:6px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:0}
+.hero-scan{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:12px;font-size:11px;color:rgba(255,255,255,0.4);
+}
+.hero-scan-bar{width:120px;height:2px;background:rgba(255,255,255,0.1);border-radius:1px;overflow:hidden}
+.hero-scan-fill{height:100%;background:linear-gradient(90deg,rgba(168,197,160,0.6),rgba(168,197,160,0.9));border-radius:1px;animation:scan 2s ease-in-out infinite}
+@keyframes scan{0%{width:0%}80%{width:100%}100%{width:100%;opacity:0}}
+
+/* Summary stats */
+.hero-stats{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.hstat{
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.10);
+  border-radius:12px;padding:14px 18px;min-width:110px;text-align:center;
+}
+.hstat-val{font-family:var(--serif);font-size:22px;font-weight:900;color:white;line-height:1;margin-bottom:4px}
+.hstat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.08em}
+.hstat.critical .hstat-val{color:#FF8070}
+.hstat.high .hstat-val{color:#FFB860}
+.hstat.opportunity .hstat-val{color:#A8C5A0}
+.hstat.cash .hstat-val{color:#90C8E0}
+.hstat.confidence .hstat-val{color:#C0A8E8}
+
+/* ═══════════════════════════════════════════
+   TOOLBAR
+═══════════════════════════════════════════ */
+#toolbar{
+  background:rgba(255,255,255,0.82);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:12px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:40;
+}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;
+  border:1.5px solid var(--border);background:white;color:var(--text2);
+  cursor:pointer;transition:all 0.15s;font-family:inherit;
+}
+.chip:hover{border-color:rgba(125,170,117,0.4);color:var(--text)}
+.chip.active{background:var(--text);color:white;border-color:var(--text)}
+.chip.type-markdown.active{background:var(--c-markdown);border-color:var(--c-markdown);color:white}
+.chip.type-reorder.active{background:var(--c-reorder);border-color:var(--c-reorder);color:white}
+.chip.type-intake.active{background:var(--c-intake);border-color:var(--c-intake);color:white}
+.chip.type-po.active{background:var(--c-po);border-color:var(--c-po);color:white}
+.chip.type-transfer.active{background:var(--c-transfer);border-color:var(--c-transfer);color:white}
+.chip.type-supplier.active{background:var(--c-supplier);border-color:var(--c-supplier);color:white}
+.chip-dot{width:6px;height:6px;border-radius:50%}
+.sort-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sort-label{font-size:12px;font-weight:500;color:var(--text3)}
+.sort-select{
+  padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);
+  background:white;font-family:inherit;font-size:12px;color:var(--text);
+  cursor:pointer;outline:none;
+}
+
+/* ═══════════════════════════════════════════
+   CONTENT
+═══════════════════════════════════════════ */
+#content{flex:1;padding:24px 28px 40px}
+
+/* ── STATES ── */
+.state-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:50vh;text-align:center;
+}
+.state-icon{font-size:48px;margin-bottom:16px;opacity:0.4}
+.state-title{font-family:var(--serif);font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+.state-sub{font-size:14px;color:var(--text2);max-width:380px;line-height:1.6}
+.skeleton-pulse{animation:skel 1.4s ease-in-out infinite}
+@keyframes skel{0%,100%{opacity:0.5}50%{opacity:1}}
+
+/* ── ACTION CARDS ── */
+.action-card{
+  background:rgba(255,255,255,0.82);backdrop-filter:blur(16px);
+  border:1.5px solid rgba(255,255,255,0.92);border-radius:16px;
+  box-shadow:0 2px 16px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95);
+  margin-bottom:12px;overflow:hidden;
+  transition:box-shadow 0.2s,border-color 0.2s;
+}
+.action-card:hover{box-shadow:0 6px 28px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.98)}
+
+/* Type-specific left border */
+.action-card[data-type="Markdown"]         { border-left:4px solid var(--c-markdown) }
+.action-card[data-type="Reorder"]          { border-left:4px solid var(--c-reorder) }
+.action-card[data-type="Intake Reduction"] { border-left:4px solid var(--c-intake) }
+.action-card[data-type="PO Cancellation"]  { border-left:4px solid var(--c-po) }
+.action-card[data-type="Stock Transfer"]   { border-left:4px solid var(--c-transfer) }
+.action-card[data-type="Supplier Review"]  { border-left:4px solid var(--c-supplier) }
+
+/* Card header */
+.ac-header{
+  display:flex;align-items:center;gap:12px;padding:18px 20px;
+  cursor:pointer;user-select:none;
+}
+.ac-header:hover .ac-expand-icon{opacity:0.8}
+
+.rank-badge{
+  width:28px;height:28px;border-radius:50%;background:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:11px;font-weight:800;color:white;flex-shrink:0;
+}
+.rank-badge.rank-1,.rank-badge.rank-2,.rank-badge.rank-3{background:linear-gradient(135deg,#E05A4A,#FF8070)}
+
+.priority-chip{
+  padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0;
+}
+.priority-chip.Critical{background:rgba(224,90,74,0.12);color:#C03828;border:1px solid rgba(224,90,74,0.25)}
+.priority-chip.High{background:rgba(208,134,42,0.12);color:#B06820;border:1px solid rgba(208,134,42,0.25)}
+.priority-chip.Medium{background:rgba(96,128,200,0.10);color:#4A68B0;border:1px solid rgba(96,128,200,0.22)}
+
+.type-chip{
+  padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.06em;flex-shrink:0;
+}
+[data-type="Markdown"]         .type-chip{background:rgba(224,90,74,0.10);color:var(--c-markdown)}
+[data-type="Reorder"]          .type-chip{background:rgba(91,170,138,0.12);color:var(--c-reorder)}
+[data-type="Intake Reduction"] .type-chip{background:rgba(212,134,42,0.12);color:var(--c-intake)}
+[data-type="PO Cancellation"]  .type-chip{background:rgba(192,56,40,0.10);color:var(--c-po)}
+[data-type="Stock Transfer"]   .type-chip{background:rgba(96,128,200,0.12);color:var(--c-transfer)}
+[data-type="Supplier Review"]  .type-chip{background:rgba(184,144,58,0.12);color:var(--c-supplier)}
+
+.ac-title-area{flex:1;min-width:0}
+.ac-title{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-meta{font-size:11px;color:var(--text3)}
+
+.ac-confidence{flex-shrink:0;text-align:center}
+.conf-ring-wrap{position:relative;width:52px;height:52px}
+.conf-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:4}
+.conf-ring-fill{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dasharray 0.6s ease}
+.conf-ring-text{font-family:var(--serif);font-size:11px;font-weight:800;fill:var(--text)}
+.conf-ring-sub{font-size:9px;fill:var(--text3)}
+
+.ac-expand-icon{
+  font-size:18px;color:var(--text3);transition:transform 0.25s,opacity 0.2s;flex-shrink:0;opacity:0.5;
+}
+.action-card.open .ac-expand-icon{transform:rotate(180deg)}
+
+/* Card body */
+.ac-body{
+  display:none;border-top:1px solid rgba(0,0,0,0.05);
+  padding:20px 20px 24px;
+  animation:fadeDown 0.22s ease;
+}
+.action-card.open .ac-body{display:block}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Detail grid */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.detail-item{background:rgba(248,250,252,0.9);border:1px solid rgba(0,0,0,0.05);border-radius:10px;padding:14px 16px}
+.detail-item.full{grid-column:1/-1}
+.detail-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:6px}
+.detail-value{font-size:13px;color:var(--text);line-height:1.6}
+.detail-value.action-highlight{
+  font-weight:700;color:var(--text);
+  background:rgba(125,170,117,0.10);
+  border:1px solid rgba(125,170,117,0.25);
+  border-radius:8px;padding:10px 14px;
+  font-size:13.5px;
+}
+
+/* Impact metrics */
+.impact-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.impact-metric{background:rgba(255,255,255,0.95);border:1.5px solid rgba(0,0,0,0.07);border-radius:12px;padding:16px;text-align:center}
+.impact-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.impact-value{font-family:var(--serif);font-size:20px;font-weight:900;color:var(--text)}
+.impact-value.positive{color:#5BAA8A}
+.impact-value.negative{color:#E05A4A}
+.impact-value.neutral{color:var(--peri-d)}
+.impact-sub{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* Score bars */
+.score-section{margin-bottom:20px}
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.score-row-label{font-size:11px;font-weight:600;color:var(--text2);width:110px;flex-shrink:0}
+.score-bar-wrap{flex:1;height:6px;background:rgba(0,0,0,0.07);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.score-bar-fill.priority{background:linear-gradient(90deg,#E05A4A,#FF9060)}
+.score-bar-fill.confidence{background:linear-gradient(90deg,#5BAA8A,#A8C5A0)}
+.score-val{font-family:var(--serif);font-size:12px;font-weight:800;color:var(--text);width:36px;text-align:right;flex-shrink:0}
+
+/* Action buttons */
+.card-btns{display:flex;gap:10px;flex-wrap:wrap}
+.cbtn{
+  padding:9px 20px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.18s;border:none;
+}
+.cbtn-primary{background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;box-shadow:0 4px 14px rgba(125,170,117,0.35)}
+.cbtn-primary:hover{background:linear-gradient(135deg,#6A9864,#7DAA75);transform:translateY(-1px);box-shadow:0 6px 18px rgba(125,170,117,0.45)}
+.cbtn-secondary{background:rgba(0,0,0,0.05);color:var(--text2);border:1.5px solid var(--border)}
+.cbtn-secondary:hover{background:rgba(0,0,0,0.08);color:var(--text)}
+.cbtn-ghost{background:none;color:var(--text3);border:none;font-size:12px}
+.cbtn-ghost:hover{color:var(--text2)}
+
+/* Empty/no actions */
+.no-results{text-align:center;padding:60px 20px;color:var(--text3)}
+
+/* Results header */
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.results-count{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--text)}
+.results-count span{color:var(--text3);font-weight:400}
+
+/* Upload prompt */
+.upload-prompt{
+  background:rgba(255,255,255,0.80);backdrop-filter:blur(16px);
+  border:2px dashed rgba(125,170,117,0.30);border-radius:16px;
+  padding:48px;text-align:center;max-width:500px;margin:0 auto;
+}
+.upload-prompt h3{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:8px}
+.upload-prompt p{font-size:14px;color:var(--text2);margin-bottom:24px;line-height:1.6}
+.upload-prompt-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;background:linear-gradient(135deg,#7DAA75,#A8C5A0);
+  color:white;border-radius:99px;font-family:inherit;font-size:14px;font-weight:600;
+  border:none;cursor:pointer;box-shadow:0 4px 16px rgba(125,170,117,0.35);
+  transition:all 0.2s;text-decoration:none;
+}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%)}
+  #main{margin-left:0}
+  .detail-grid{grid-template-columns:1fr}
+  .impact-row{grid-template-columns:1fr}
+  .hero-stats{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <a href="/dashboard" class="sb-logo">
+    <div class="sb-logo-dot"></div>
+    <div class="sb-logo-text">Thread<span>lytics</span></div>
+  </a>
+
+  <nav class="sb-nav">
+    <div class="nav-section">Action Centre</div>
+    <a class="nav-item active" href="#" data-filter="">
+      <div class="ni-dot" style="background:#1E1E2A"></div>
+      All Actions
+      <span class="ni-count" id="nav-count-all">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="Markdown">
+      <div class="ni-dot" style="background:var(--c-markdown)"></div>
+      Markdown
+      <span class="ni-count" id="nav-count-markdown">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="Reorder">
+      <div class="ni-dot" style="background:var(--c-reorder)"></div>
+      Reorder
+      <span class="ni-count" id="nav-count-reorder">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="Intake Reduction">
+      <div class="ni-dot" style="background:var(--c-intake)"></div>
+      Intake Reduction
+      <span class="ni-count" id="nav-count-intake">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="PO Cancellation">
+      <div class="ni-dot" style="background:var(--c-po)"></div>
+      PO Cancellation
+      <span class="ni-count" id="nav-count-po">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="Stock Transfer">
+      <div class="ni-dot" style="background:var(--c-transfer)"></div>
+      Stock Transfer
+      <span class="ni-count" id="nav-count-transfer">—</span>
+    </a>
+    <a class="nav-item" href="#" data-filter="Supplier Review">
+      <div class="ni-dot" style="background:var(--c-supplier)"></div>
+      Supplier Review
+      <span class="ni-count" id="nav-count-supplier">—</span>
+    </a>
+
+    <div class="nav-section">Navigate</div>
+    <a class="nav-item" href="/dashboard">
+      <span style="font-size:12px">←</span> Dashboard
+    </a>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="user-card">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sb-name">Loading…</div>
+        <div class="user-role" id="sb-role">—</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Out</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HERO -->
+  <div id="ac-hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <div class="hero-pulse"></div>
+          AI Powered
+        </div>
+        <h1 class="hero-title">AI Action Centre</h1>
+        <p class="hero-sub">Commercial opportunity engine — scanning your merchandising data</p>
+        <div class="hero-scan">
+          <div class="hero-scan-bar"><div class="hero-scan-fill"></div></div>
+          Analysing dataset
+        </div>
+      </div>
+      <div class="hero-stats" id="hero-stats">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <div class="filter-chips" id="filter-chips">
+      <button class="chip active" data-filter="" onclick="setFilter(this,'')">All Actions</button>
+      <button class="chip type-markdown" data-filter="Markdown" onclick="setFilter(this,'Markdown')">
+        <div class="chip-dot" style="background:var(--c-markdown)"></div>Markdown
+      </button>
+      <button class="chip type-reorder" data-filter="Reorder" onclick="setFilter(this,'Reorder')">
+        <div class="chip-dot" style="background:var(--c-reorder)"></div>Reorder
+      </button>
+      <button class="chip type-intake" data-filter="Intake Reduction" onclick="setFilter(this,'Intake Reduction')">
+        <div class="chip-dot" style="background:var(--c-intake)"></div>Intake Reduction
+      </button>
+      <button class="chip type-po" data-filter="PO Cancellation" onclick="setFilter(this,'PO Cancellation')">
+        <div class="chip-dot" style="background:var(--c-po)"></div>PO Cancellation
+      </button>
+      <button class="chip type-transfer" data-filter="Stock Transfer" onclick="setFilter(this,'Stock Transfer')">
+        <div class="chip-dot" style="background:var(--c-transfer)"></div>Stock Transfer
+      </button>
+      <button class="chip type-supplier" data-filter="Supplier Review" onclick="setFilter(this,'Supplier Review')">
+        <div class="chip-dot" style="background:var(--c-supplier)"></div>Supplier Review
+      </button>
+    </div>
+    <div class="sort-wrap">
+      <span class="sort-label">Sort by</span>
+      <select class="sort-select" id="sort-select" onchange="applySort()">
+        <option value="priority">Priority Score</option>
+        <option value="confidence">Confidence</option>
+        <option value="revenue">Revenue Impact</option>
+        <option value="cash">Cash Recovery</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- Loading -->
+    <div id="state-loading" class="state-card">
+      <div class="state-icon skeleton-pulse">⚡</div>
+      <div class="state-title skeleton-pulse">Scanning Dataset…</div>
+      <div class="state-sub">The action engine is analysing your merchandising data and generating commercial recommendations.</div>
+    </div>
+
+    <!-- No data -->
+    <div id="state-nodata" class="state-card" style="display:none">
+      <div class="state-icon">📂</div>
+      <div class="state-title">No Dataset Uploaded</div>
+      <div class="state-sub" style="margin-bottom:24px">Upload your merchandising data to activate the AI Action Centre and identify commercial opportunities.</div>
+      <div class="upload-prompt">
+        <h3>Upload Your Trading Data</h3>
+        <p>The Action Centre requires at least SKU, Units Sold, Revenue, and Sell-Through columns to generate recommendations.</p>
+        <a href="/dashboard" class="upload-prompt-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Go to Dashboard to Upload
+        </a>
+      </div>
+    </div>
+
+    <!-- Actions list -->
+    <div id="actions-wrap" style="display:none">
+      <div class="results-header">
+        <div class="results-count" id="results-count">— actions</div>
+      </div>
+      <div id="actions-container"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let allActions = [];
+let currentFilter = '';
+let currentSort = 'priority';
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function fmtCurr(v) {
+  if (!v || v === 0) return '£0';
+  if (v >= 1000000) return `£${(v/1000000).toFixed(1)}M`;
+  if (v >= 1000)    return `£${(v/1000).toFixed(0)}k`;
+  return `£${Math.round(v)}`;
+}
+function typeSlug(t) {
+  return t.toLowerCase().replace(/ /g,'-');
+}
+function typeColor(t) {
+  const map = {
+    'Markdown':'var(--c-markdown)',
+    'Reorder':'var(--c-reorder)',
+    'Intake Reduction':'var(--c-intake)',
+    'PO Cancellation':'var(--c-po)',
+    'Stock Transfer':'var(--c-transfer)',
+    'Supplier Review':'var(--c-supplier)'
+  };
+  return map[t] || '#888';
+}
+
+/* Confidence SVG ring */
+function confRing(pct, color) {
+  const r = 20, circ = 2 * Math.PI * r;
+  const fill = circ * pct / 100;
+  return `<svg class="conf-ring-wrap" viewBox="0 0 48 48" width="52" height="52">
+    <circle class="conf-ring-bg" cx="24" cy="24" r="${r}"/>
+    <circle class="conf-ring-fill" cx="24" cy="24" r="${r}"
+      stroke="${color}"
+      stroke-dasharray="${fill} ${circ}"
+      stroke-dashoffset="${circ * 0.25}"
+      style="stroke:${color}"/>
+    <text x="24" y="22" text-anchor="middle" class="conf-ring-text">${pct}</text>
+    <text x="24" y="31" text-anchor="middle" class="conf-ring-sub">%</text>
+  </svg>`;
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+async function init() {
+  // Load user info
+  try {
+    const me = await fetch('/auth/me', {credentials:'include'}).then(r=>r.json());
+    if (!me || me.error) { location.href = '/login'; return; }
+    const initials = (me.full_name || me.email || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('sb-avatar').textContent = initials;
+    document.getElementById('sb-name').textContent   = me.full_name || me.email;
+    document.getElementById('sb-role').textContent   = me.role || 'AM';
+  } catch(e) { location.href = '/login'; return; }
+
+  // Load action centre data
+  try {
+    const res = await fetch('/api/action-centre', {credentials:'include'});
+    const data = await res.json();
+
+    document.getElementById('state-loading').style.display = 'none';
+
+    if (data.no_data || !data.actions || data.actions.length === 0) {
+      document.getElementById('state-nodata').style.display = 'flex';
+      return;
+    }
+
+    allActions = data.actions;
+    renderSummary(data.summary);
+    updateNavCounts();
+    renderActions();
+    document.getElementById('actions-wrap').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('state-loading').innerHTML = `
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Could not load actions</div>
+      <div class="state-sub">Please upload a dataset first or try refreshing the page.</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SUMMARY STATS
+═══════════════════════════════════════════ */
+function renderSummary(s) {
+  if (!s || !s.total_actions) return;
+  document.getElementById('hero-stats').innerHTML = `
+    <div class="hstat critical">
+      <div class="hstat-val">${s.critical_count}</div>
+      <div class="hstat-label">Critical</div>
+    </div>
+    <div class="hstat high">
+      <div class="hstat-val">${s.high_count}</div>
+      <div class="hstat-label">High Priority</div>
+    </div>
+    <div class="hstat opportunity">
+      <div class="hstat-val">${fmtCurr(s.total_opportunity)}</div>
+      <div class="hstat-label">Revenue Opportunity</div>
+    </div>
+    <div class="hstat cash">
+      <div class="hstat-val">${fmtCurr(s.total_cash_recovery)}</div>
+      <div class="hstat-label">Cash Recovery</div>
+    </div>
+    <div class="hstat confidence">
+      <div class="hstat-val">${s.avg_confidence}%</div>
+      <div class="hstat-label">Avg Confidence</div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   NAV COUNTS
+═══════════════════════════════════════════ */
+function updateNavCounts() {
+  const countMap = {};
+  allActions.forEach(a => { countMap[a.type] = (countMap[a.type] || 0) + 1; });
+  document.getElementById('nav-count-all').textContent = allActions.length;
+  document.getElementById('nav-count-markdown').textContent  = countMap['Markdown'] || 0;
+  document.getElementById('nav-count-reorder').textContent   = countMap['Reorder'] || 0;
+  document.getElementById('nav-count-intake').textContent    = countMap['Intake Reduction'] || 0;
+  document.getElementById('nav-count-po').textContent        = countMap['PO Cancellation'] || 0;
+  document.getElementById('nav-count-transfer').textContent  = countMap['Stock Transfer'] || 0;
+  document.getElementById('nav-count-supplier').textContent  = countMap['Supplier Review'] || 0;
+}
+
+/* ═══════════════════════════════════════════
+   FILTER + SORT
+═══════════════════════════════════════════ */
+function setFilter(btn, filter) {
+  // Toolbar chips
+  document.querySelectorAll('#filter-chips .chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  // Sidebar nav
+  document.querySelectorAll('#sidebar .nav-item[data-filter]').forEach(n => n.classList.remove('active'));
+  const sideItem = document.querySelector(`#sidebar .nav-item[data-filter="${filter}"]`);
+  if (sideItem) sideItem.classList.add('active');
+
+  currentFilter = filter;
+  renderActions();
+}
+
+function applySort() {
+  currentSort = document.getElementById('sort-select').value;
+  renderActions();
+}
+
+function getFilteredSorted() {
+  let list = currentFilter
+    ? allActions.filter(a => a.type === currentFilter)
+    : [...allActions];
+
+  const sortMap = {
+    priority:   (a,b) => b.priority_score - a.priority_score,
+    confidence: (a,b) => b.confidence - a.confidence,
+    revenue:    (a,b) => b.revenue_impact - a.revenue_impact,
+    cash:       (a,b) => b.cash_recovery - a.cash_recovery,
+  };
+  list.sort(sortMap[currentSort] || sortMap.priority);
+  return list;
+}
+
+/* ═══════════════════════════════════════════
+   RENDER ACTIONS
+═══════════════════════════════════════════ */
+function renderActions() {
+  const list = getFilteredSorted();
+  const container = document.getElementById('actions-container');
+  const countEl   = document.getElementById('results-count');
+
+  countEl.innerHTML = `<strong>${list.length}</strong> <span>${currentFilter || 'total'} action${list.length !== 1 ? 's' : ''} identified</span>`;
+
+  if (list.length === 0) {
+    container.innerHTML = `<div class="no-results">No ${currentFilter} actions in the current dataset.</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((a, i) => buildCard(a, i)).join('');
+
+  // Animate score bars after render
+  setTimeout(() => {
+    container.querySelectorAll('.score-bar-fill').forEach(el => {
+      el.style.width = el.getAttribute('data-width') + '%';
+    });
+    // Animate confidence rings
+    container.querySelectorAll('.conf-ring-fill').forEach(el => {
+      const r = 20, circ = 2 * Math.PI * r;
+      const pct = parseInt(el.getAttribute('data-pct') || 0);
+      el.setAttribute('stroke-dasharray', `${circ * pct / 100} ${circ}`);
+    });
+  }, 50);
+}
+
+/* ═══════════════════════════════════════════
+   BUILD CARD HTML
+═══════════════════════════════════════════ */
+function buildCard(a, idx) {
+  const color       = typeColor(a.type);
+  const confPct     = a.confidence;
+  const r           = 20, circ = 2 * Math.PI * r;
+  const confFill    = circ * confPct / 100;
+
+  // Revenue impact display
+  const revStr  = a.revenue_impact > 0 ? fmtCurr(a.revenue_impact) : '—';
+  const revCls  = a.revenue_impact > 0 ? 'positive' : 'neutral';
+  const margStr = a.margin_impact !== 0 ? (a.margin_impact > 0 ? '+' : '') + a.margin_impact + '%' : '—';
+  const margCls = a.margin_impact > 0 ? 'positive' : a.margin_impact < 0 ? 'negative' : 'neutral';
+  const cashStr = a.cash_recovery > 0 ? fmtCurr(a.cash_recovery) : '—';
+  const cashCls = a.cash_recovery > 0 ? 'positive' : 'neutral';
+
+  const revLabel  = a.type === 'Reorder' ? 'Revenue Protected' : a.type === 'Markdown' ? 'Rev. Opportunity' : 'Revenue Impact';
+  const margLabel = a.type === 'Reorder' ? 'Margin Maintained' : 'Margin Impact';
+  const cashLabel = a.cash_recovery > 0 ? 'Cash Recovery' : 'Cash Outlay';
+
+  const rankCls = a.rank <= 3 ? `rank-${a.rank}` : '';
+
+  return `
+  <div class="action-card" data-type="${a.type}" id="card-${a.id}">
+    <div class="ac-header" onclick="toggleCard(${a.id})">
+      <div class="rank-badge ${rankCls}">#${a.rank}</div>
+      <div class="priority-chip ${a.priority_label}">${a.priority_label}</div>
+      <div class="type-chip">${a.type}</div>
+      <div class="ac-title-area">
+        <div class="ac-title">${a.title}</div>
+        <div class="ac-meta">${a.category}${a.sku && a.sku !== 'Category Level' && a.sku !== 'Cross-Category' ? ' · ' + a.sku : ''}</div>
+      </div>
+      <div class="ac-confidence">
+        <svg viewBox="0 0 48 48" width="52" height="52">
+          <circle cx="24" cy="24" r="${r}" fill="none" stroke="rgba(0,0,0,0.07)" stroke-width="4"/>
+          <circle cx="24" cy="24" r="${r}" fill="none"
+            stroke="${color}" stroke-width="4" stroke-linecap="round"
+            stroke-dasharray="0 ${circ}"
+            stroke-dashoffset="${circ * 0.25}"
+            class="conf-ring-fill" data-pct="${confPct}"
+            style="transition:stroke-dasharray 0.8s ${idx * 0.06}s ease"/>
+          <text x="24" y="22" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="11" font-weight="800" fill="#1E1E2A">${confPct}</text>
+          <text x="24" y="31" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#8A8A9A">%</text>
+        </svg>
+      </div>
+      <div class="ac-expand-icon">▾</div>
+    </div>
+
+    <div class="ac-body">
+      <!-- Detail grid -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Issue</div>
+          <div class="detail-value">${a.issue}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Root Cause</div>
+          <div class="detail-value">${a.root_cause}</div>
+        </div>
+        <div class="detail-item full">
+          <div class="detail-label">Recommended Action</div>
+          <div class="detail-value action-highlight">${a.recommended_action}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Expected Outcome</div>
+          <div class="detail-value">${a.expected_outcome}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Business Impact</div>
+          <div class="detail-value">${a.business_impact}</div>
+        </div>
+      </div>
+
+      <!-- Impact metrics -->
+      <div class="impact-row">
+        <div class="impact-metric">
+          <div class="impact-label">${revLabel}</div>
+          <div class="impact-value ${revCls}">${revStr}</div>
+          <div class="impact-sub">Estimated</div>
+        </div>
+        <div class="impact-metric">
+          <div class="impact-label">${margLabel}</div>
+          <div class="impact-value ${margCls}">${margStr}</div>
+          <div class="impact-sub">Basis points</div>
+        </div>
+        <div class="impact-metric">
+          <div class="impact-label">${cashLabel}</div>
+          <div class="impact-value ${cashCls}">${cashStr}</div>
+          <div class="impact-sub">Projected</div>
+        </div>
+      </div>
+
+      <!-- Score bars -->
+      <div class="score-section">
+        <div class="score-row">
+          <div class="score-row-label">Priority Score</div>
+          <div class="score-bar-wrap">
+            <div class="score-bar-fill priority" data-width="${a.priority_score}" style="width:0%"></div>
+          </div>
+          <div class="score-val">${a.priority_score}</div>
+        </div>
+        <div class="score-row">
+          <div class="score-row-label">Confidence</div>
+          <div class="score-bar-wrap">
+            <div class="score-bar-fill confidence" data-width="${a.confidence}" style="width:0%"></div>
+          </div>
+          <div class="score-val">${a.confidence}%</div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="card-btns">
+        <button class="cbtn cbtn-primary" onclick="markActioned(${a.id}, this)">
+          ✓ Mark as Actioned
+        </button>
+        <button class="cbtn cbtn-secondary" onclick="dismissAction(${a.id})">
+          Dismiss
+        </button>
+        <button class="cbtn cbtn-ghost" onclick="copyAction(${a.id})">
+          Copy to clipboard
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   INTERACTIONS
+═══════════════════════════════════════════ */
+function toggleCard(id) {
+  const card = document.getElementById(`card-${id}`);
+  const wasOpen = card.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.action-card.open').forEach(c => c.classList.remove('open'));
+  // Re-open if it was closed
+  if (!wasOpen) card.classList.add('open');
+}
+
+function markActioned(id, btn) {
+  const card = document.getElementById(`card-${id}`);
+  card.style.opacity = '0.45';
+  card.style.filter  = 'grayscale(0.6)';
+  btn.textContent    = '✓ Actioned';
+  btn.style.background = '#5BAA8A';
+  btn.disabled = true;
+}
+
+function dismissAction(id) {
+  const card = document.getElementById(`card-${id}`);
+  card.style.transition = 'all 0.3s';
+  card.style.opacity = '0';
+  card.style.transform = 'translateX(20px)';
+  setTimeout(() => card.remove(), 300);
+}
+
+function copyAction(id) {
+  const action = allActions.find(a => a.id === id);
+  if (!action) return;
+  const text = [
+    `ACTION #${action.rank}: ${action.title}`,
+    `Type: ${action.type} | Priority: ${action.priority_label} | Confidence: ${action.confidence}%`,
+    ``,
+    `ISSUE: ${action.issue}`,
+    `ROOT CAUSE: ${action.root_cause}`,
+    `RECOMMENDED ACTION: ${action.recommended_action}`,
+    `EXPECTED OUTCOME: ${action.expected_outcome}`,
+    ``,
+    `Revenue Impact: ${action.revenue_impact > 0 ? '£' + action.revenue_impact.toLocaleString() : '—'}`,
+    `Margin Impact: ${action.margin_impact !== 0 ? action.margin_impact + '%' : '—'}`,
+    `Cash Recovery: ${action.cash_recovery > 0 ? '£' + action.cash_recovery.toLocaleString() : '—'}`,
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(`#card-${id} .cbtn-ghost`);
+    if (btn) { btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy to clipboard', 2000); }
+  });
+}
+
+/* Sidebar nav filter clicks */
+document.querySelectorAll('#sidebar .nav-item[data-filter]').forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    const filter = item.getAttribute('data-filter');
+    // Sync toolbar chip
+    document.querySelectorAll('#filter-chips .chip').forEach(c => {
+      c.classList.toggle('active', c.getAttribute('data-filter') === filter);
+    });
+    currentFilter = filter;
+    // Update sidebar active state
+    document.querySelectorAll('#sidebar .nav-item[data-filter]').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    renderActions();
+  });
+});
+
+async function logout() {
+  await fetch('/auth/logout', {method:'POST', credentials:'include'});
+  location.href = '/login';
+}
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+init();
+</script>
+</body>
+</html>
