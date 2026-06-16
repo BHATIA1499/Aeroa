@@ -353,7 +353,7 @@ h1 {
 
 /* ══ TICKER ══ */
 .ticker { background: rgba(255,255,255,0.65); border-top: 1px solid var(--gray-m); border-bottom: 1px solid var(--gray-m); padding: 11px 0; overflow: hidden; white-space: nowrap; backdrop-filter: blur(10px); }
-.ticker-track { display: inline-block; animation: scroll 20s linear infinite; }
+.ticker-track { display: inline-flex; white-space: nowrap; width: max-content; animation: scroll 20s linear infinite; will-change: transform; }
 .t-item { display: inline-block; padding: 0 30px; font-size: 12px; color: var(--text3); }
 .t-item strong { color: var(--mint-d); font-weight: 700; margin-right: 6px; }
 @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
@@ -786,7 +786,7 @@ footer { background: #1A1A26; padding: 56px 48px 32px; border-top: 1px solid rgb
 @media(max-width:500px){
   .stats-grid{grid-template-columns:1fr} .foot-grid{grid-template-columns:1fr}
   h1{font-size:28px}
-  .bubble:nth-child(n+4){display:none}
+  .bubble:nth-child(n+10){display:none}
 }
 </style>
 </head>
@@ -1047,7 +1047,6 @@ footer { background: #1A1A26; padding: 56px 48px 32px; border-top: 1px solid rgb
     <a href="#how-it-works">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="/login">Sign In</a>
-    <a href="/signup" class="nav-cta">Start Free Trial</a>
   </div>
   <button class="nav-hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -1060,7 +1059,6 @@ footer { background: #1A1A26; padding: 56px 48px 32px; border-top: 1px solid rgb
   <a href="#how-it-works" class="mob-link">How It Works</a>
   <a href="#pricing" class="mob-link">Pricing</a>
   <a href="/login" class="mob-link">Sign In</a>
-  <a href="/signup" class="mob-cta">Start Free Trial</a>
 </div>
 
 <!-- HERO -->
@@ -1669,6 +1667,57 @@ const BUBBLES = [
   { size:160, cls:'bf2', tint:'rgba(244,192,168,0.22)', border:'rgba(255,215,195,0.65)',
     stat:'24/7', icon:'<path d="M18 8h1a4 4 0 0 1 0 8h-1" stroke="#E89C7A" stroke-width="2" stroke-linecap="round"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" stroke="#E89C7A" stroke-width="2"/><line x1="6" y1="1" x2="6" y2="4" stroke="#E89C7A" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="1" x2="10" y2="4" stroke="#E89C7A" stroke-width="2" stroke-linecap="round"/><line x1="14" y1="1" x2="14" y2="4" stroke="#E89C7A" stroke-width="2" stroke-linecap="round"/>',
     label:'AI on Call', statColor:'#E89C7A', labelColor:'#B06840', pos:{top:'70%'}, fs:30, ls:13 },
+
+  // ── Density pack A — lane 0 (top)
+  { size:138, cls:'bf3', tint:'rgba(255,220,235,0.22)', border:'rgba(255,200,220,0.65)',
+    stat:'500', icon:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="#D07090" stroke-width="2"/><line x1="8" y1="21" x2="16" y2="21" stroke="#D07090" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12" y2="21" stroke="#D07090" stroke-width="2"/>',
+    label:'Active SKUs', statColor:'#D07090', labelColor:'#904060', pos:{top:'5%'}, fs:26, ls:12 },
+  { size:125, cls:'bf1', tint:'rgba(168,197,160,0.22)', border:'rgba(200,230,200,0.65)',
+    stat:'£2M', icon:'<line x1="12" y1="1" x2="12" y2="23" stroke="#7DAA75" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#7DAA75" stroke-width="2" stroke-linecap="round"/>',
+    label:'Gross Profit', statColor:'#7DAA75', labelColor:'#4A7040', pos:{top:'2%'}, fs:24, ls:12 },
+  { size:142, cls:'bf4', tint:'rgba(184,196,232,0.22)', border:'rgba(200,215,245,0.65)',
+    stat:'8 wks', icon:'<rect x="3" y="4" width="18" height="18" rx="2" stroke="#8A9DD8" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="#8A9DD8" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="#8A9DD8" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="#8A9DD8" stroke-width="2"/>',
+    label:'Lead Time', statColor:'#8A9DD8', labelColor:'#5A6AA8', pos:{top:'7%'}, fs:24, ls:12 },
+  { size:130, cls:'bf2', tint:'rgba(200,223,191,0.22)', border:'rgba(210,240,200,0.65)',
+    stat:'12%', icon:'<polyline points="23 18 13.5 8.5 8.5 13.5 1 6" stroke="#7DAA75" stroke-width="2" stroke-linecap="round"/>',
+    label:'OOS Rate', statColor:'#7DAA75', labelColor:'#5A7A52', pos:{top:'3%'}, fs:26, ls:12 },
+  { size:148, cls:'bf3', tint:'rgba(240,196,160,0.22)', border:'rgba(255,220,190,0.65)',
+    stat:'41%', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#E0A070" stroke-width="2.2" stroke-linecap="round"/>',
+    label:'Jackets Margin', statColor:'#E0A070', labelColor:'#A06030', pos:{top:'9%'}, fs:26, ls:12 },
+
+  // ── Density pack B — lane 1 (middle)
+  { size:140, cls:'bf1', tint:'rgba(168,197,160,0.24)', border:'rgba(200,230,200,0.65)',
+    stat:'37', icon:'<circle cx="12" cy="12" r="10" stroke="#7DAA75" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="#7DAA75" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="#7DAA75" stroke-width="2.5" stroke-linecap="round"/>',
+    label:'Reorder Alerts', statColor:'#7DAA75', labelColor:'#4A7040', pos:{top:'38%'}, fs:28, ls:12 },
+  { size:132, cls:'bf2', tint:'rgba(184,196,232,0.22)', border:'rgba(200,215,248,0.65)',
+    stat:'44s', icon:'<circle cx="12" cy="12" r="10" stroke="#8A9DD8" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke="#8A9DD8" stroke-width="2" stroke-linecap="round"/>',
+    label:'Avg Insight Time', statColor:'#8A9DD8', labelColor:'#5A6AA8', pos:{top:'42%'}, fs:24, ls:12 },
+  { size:145, cls:'bf4', tint:'rgba(255,220,235,0.22)', border:'rgba(255,200,220,0.65)',
+    stat:'Q4', icon:'<rect x="3" y="4" width="18" height="18" rx="2" stroke="#D07090" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="#D07090" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="#D07090" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="#D07090" stroke-width="2"/>',
+    label:'Season Forecast', statColor:'#D07090', labelColor:'#904060', pos:{top:'36%'}, fs:26, ls:12 },
+  { size:128, cls:'bf1', tint:'rgba(168,197,160,0.22)', border:'rgba(200,230,200,0.65)',
+    stat:'23', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#7DAA75" stroke-width="2.2" stroke-linecap="round"/>',
+    label:'Markdown SKUs', statColor:'#7DAA75', labelColor:'#5A7A52', pos:{top:'44%'}, fs:26, ls:12 },
+  { size:152, cls:'bf3', tint:'rgba(240,196,160,0.22)', border:'rgba(255,220,190,0.65)',
+    stat:'£94K', icon:'<line x1="12" y1="1" x2="12" y2="23" stroke="#E0A070" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#E0A070" stroke-width="2" stroke-linecap="round"/>',
+    label:'Margin Recovery', statColor:'#E0A070', labelColor:'#A06030', pos:{top:'40%'}, fs:22, ls:12 },
+
+  // ── Density pack C — lane 2 (bottom)
+  { size:136, cls:'bf2', tint:'rgba(184,196,232,0.22)', border:'rgba(200,215,245,0.65)',
+    stat:'61%', icon:'<rect x="3" y="3" width="18" height="18" rx="2" stroke="#8A9DD8" stroke-width="2"/><path d="M3 9h18M9 21V9" stroke="#8A9DD8" stroke-width="2" stroke-linecap="round"/>',
+    label:'Top Cat. Margin', statColor:'#8A9DD8', labelColor:'#5A6AA8', pos:{top:'67%'}, fs:24, ls:12 },
+  { size:144, cls:'bf4', tint:'rgba(200,223,191,0.22)', border:'rgba(210,240,200,0.65)',
+    stat:'2.1x', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#7DAA75" stroke-width="2.2" stroke-linecap="round"/>',
+    label:'Sell-Through Lift', statColor:'#7DAA75', labelColor:'#4A7040', pos:{top:'72%'}, fs:24, ls:12 },
+  { size:130, cls:'bf1', tint:'rgba(244,192,168,0.22)', border:'rgba(255,215,195,0.65)',
+    stat:'98%', icon:'<polyline points="20 6 9 17 4 12" stroke="#E89C7A" stroke-width="2" stroke-linecap="round"/>',
+    label:'Data Accuracy', statColor:'#E89C7A', labelColor:'#B06840', pos:{top:'69%'}, fs:26, ls:12 },
+  { size:148, cls:'bf3', tint:'rgba(255,220,235,0.22)', border:'rgba(255,200,220,0.65)',
+    stat:'50+', icon:'<rect x="2" y="3" width="20" height="14" rx="2" stroke="#D07090" stroke-width="2"/><line x1="8" y1="21" x2="16" y2="21" stroke="#D07090" stroke-width="2" stroke-linecap="round"/>',
+    label:'Brands Onboard', statColor:'#D07090', labelColor:'#904060', pos:{top:'74%'}, fs:24, ls:12 },
+  { size:135, cls:'bf2', tint:'rgba(184,196,232,0.22)', border:'rgba(200,215,248,0.65)',
+    stat:'£48K', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#8A9DD8" stroke-width="2.2" stroke-linecap="round"/>',
+    label:'Top SKU Revenue', statColor:'#8A9DD8', labelColor:'#5A6AA8', pos:{top:'66%'}, fs:22, ls:12 },
 ];
 
 const arena = document.getElementById('bubble-arena');
@@ -1743,7 +1792,7 @@ function boom(x,y) {
     // Spread bubbles across width; one full traversal apart within a lane
     const TRAVERSE = W + 400;
     states.forEach((s, i) => {
-      const laneCount = 5; // 5 bubbles per lane
+      const laneCount = 15; // 15 bubbles per lane (45 total)
       // space evenly — guarantees full coverage, no gap
       s.x = (s.laneSlot / laneCount) * TRAVERSE;
       s.laneY = LANE_Y[s.lane] * H;
@@ -1886,8 +1935,8 @@ document.querySelectorAll('.counter').forEach(el=>co.observe(el));
   addMsg('ai','You have <strong>37 OOS SKUs</strong> with sell-through above 50%. Most urgent: JAC0475 Brixton Trench (£48K revenue, sold out). Raise POs today — 8-week Italian lead time.');
 
   const chatObs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) { chatObs.disconnect(); setTimeout(runStep, 1200); }
-  }, { threshold: 0.3 });
+    if (entries[0].isIntersecting) { chatObs.disconnect(); setTimeout(runStep, 400); }
+  }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
   chatObs.observe(document.getElementById('chat-msgs'));
 })();
 
