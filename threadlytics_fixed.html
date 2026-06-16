@@ -796,241 +796,257 @@ footer { background: #1A1A26; padding: 56px 48px 32px; border-top: 1px solid rgb
 <div class="data-bg" aria-hidden="true">
   <div class="data-bg-inner">
 
-    <!-- ═══ LEFT COLUMN — charts bleed off left edge, no card borders ═══ -->
+    <!-- ═══ LEFT COLUMN ═══ -->
 
-    <!-- Bar chart — top left, bleeds off edge -->
-    <svg class="dbg" style="top:0%;left:0;width:360px;height:300px" viewBox="0 0 380 300">
-      <defs><linearGradient id="bar-fade-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="35%" stop-color="white" stop-opacity="1"/></linearGradient></defs>
-      <!-- Y axis labels -->
-      <text x="36" y="58"  font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£80k</text>
-      <text x="36" y="98"  font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£60k</text>
-      <text x="36" y="138" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£40k</text>
-      <text x="36" y="178" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£20k</text>
-      <!-- Grid lines -->
-      <line x1="62" y1="55"  x2="375" y2="55"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
-      <line x1="62" y1="95"  x2="375" y2="95"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
-      <line x1="62" y1="135" x2="375" y2="135" stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
-      <line x1="62" y1="175" x2="375" y2="175" stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
-      <!-- Bars -->
-      <rect x="68"  y="118" width="36" height="162" rx="5" fill="#A8C5A0" opacity="0.78"/>
-      <rect x="114" y="72"  width="36" height="208" rx="5" fill="#F4C0A8" opacity="0.78"/>
-      <rect x="160" y="95"  width="36" height="185" rx="5" fill="#B8C4E8" opacity="0.78"/>
-      <rect x="206" y="52"  width="36" height="228" rx="5" fill="#F0C4A0" opacity="0.78"/>
-      <rect x="252" y="82"  width="36" height="198" rx="5" fill="#A8C5A0" opacity="0.78"/>
-      <rect x="298" y="105" width="36" height="175" rx="5" fill="#F4C0A8" opacity="0.78"/>
-      <rect x="344" y="64"  width="28" height="216" rx="5" fill="#B8C4E8" opacity="0.78"/>
-      <!-- X labels -->
-      <text x="78"  y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Jan</text>
-      <text x="124" y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Feb</text>
-      <text x="170" y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Mar</text>
-      <text x="216" y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Apr</text>
-      <text x="262" y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">May</text>
-      <text x="306" y="292" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Jun</text>
-      <line x1="62" y1="280" x2="375" y2="280" stroke="#C0CED0" stroke-width="1" opacity="0.5"/>
+    <!-- Bar chart — top left -->
+    <svg class="dbg" style="top:0%;left:-20px;width:480px;height:380px" viewBox="0 0 480 380">
+      <text x="10" y="18" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Monthly Revenue</text>
+      <text x="46" y="54"  font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£100k</text>
+      <text x="46" y="94"  font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£75k</text>
+      <text x="46" y="134" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£50k</text>
+      <text x="46" y="174" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">£25k</text>
+      <line x1="72" y1="51"  x2="478" y2="51"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
+      <line x1="72" y1="91"  x2="478" y2="91"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
+      <line x1="72" y1="131" x2="478" y2="131" stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
+      <line x1="72" y1="171" x2="478" y2="171" stroke="#D8E4D8" stroke-width="0.8" opacity="0.6"/>
+      <rect x="78"  y="114" width="42" height="162" rx="5" fill="#A8C5A0" opacity="0.78"/>
+      <text x="99"  y="108" font-size="8" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">£68k</text>
+      <rect x="132" y="68"  width="42" height="208" rx="5" fill="#F4C0A8" opacity="0.78"/>
+      <text x="153" y="62"  font-size="8" fill="#E89C7A" text-anchor="middle" font-family="Inter,sans-serif">£87k</text>
+      <rect x="186" y="91"  width="42" height="185" rx="5" fill="#B8C4E8" opacity="0.78"/>
+      <text x="207" y="85"  font-size="8" fill="#8A9DD8" text-anchor="middle" font-family="Inter,sans-serif">£77k</text>
+      <rect x="240" y="48"  width="42" height="228" rx="5" fill="#F0C4A0" opacity="0.78"/>
+      <text x="261" y="42"  font-size="8" fill="#E0A070" text-anchor="middle" font-family="Inter,sans-serif">£95k</text>
+      <rect x="294" y="78"  width="42" height="198" rx="5" fill="#A8C5A0" opacity="0.78"/>
+      <text x="315" y="72"  font-size="8" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">£83k</text>
+      <rect x="348" y="101" width="42" height="175" rx="5" fill="#F4C0A8" opacity="0.78"/>
+      <text x="369" y="95"  font-size="8" fill="#E89C7A" text-anchor="middle" font-family="Inter,sans-serif">£73k</text>
+      <rect x="402" y="60"  width="42" height="216" rx="5" fill="#B8C4E8" opacity="0.78"/>
+      <text x="423" y="54"  font-size="8" fill="#8A9DD8" text-anchor="middle" font-family="Inter,sans-serif">£90k</text>
+      <text x="99"  y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Jan</text>
+      <text x="153" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Feb</text>
+      <text x="207" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Mar</text>
+      <text x="261" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Apr</text>
+      <text x="315" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">May</text>
+      <text x="369" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Jun</text>
+      <text x="423" y="298" font-size="9" fill="#9AAAB8" font-family="Inter,sans-serif">Jul</text>
+      <line x1="72" y1="283" x2="478" y2="283" stroke="#C0CED0" stroke-width="1" opacity="0.5"/>
+      <!-- Trend annotation -->
+      <rect x="310" y="30" width="90" height="22" rx="6" fill="rgba(168,197,160,0.25)" stroke="rgba(168,197,160,0.5)" stroke-width="1"/>
+      <text x="355" y="44" font-size="8.5" font-weight="700" fill="#5A8A5A" text-anchor="middle" font-family="Montserrat,sans-serif">▲ +18% YoY</text>
     </svg>
 
-    <!-- Donut chart — left mid, half bleeds off edge -->
-    <svg class="dbg" style="top:26%;left:0;width:280px;height:320px" viewBox="0 0 320 320">
-      <defs><linearGradient id="donut-fade-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/></linearGradient></defs>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#A8C5A0" stroke-width="52" stroke-dasharray="251 754" stroke-dashoffset="0" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#F4C0A8" stroke-width="52" stroke-dasharray="188 754" stroke-dashoffset="-251" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#B8C4E8" stroke-width="52" stroke-dasharray="157 754" stroke-dashoffset="-439" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#F0C4A0" stroke-width="52" stroke-dasharray="158 754" stroke-dashoffset="-596" opacity="0.75"/>
-      <circle cx="160" cy="160" r="82" fill="rgba(255,255,255,0.82)"/>
-      <!-- Center label -->
-      <text x="160" y="155" font-size="14" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">56.7%</text>
-      <text x="160" y="172" font-size="9" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Sell-Through</text>
-      <!-- Legend dots -->
-      <circle cx="175" cy="250" r="5" fill="#A8C5A0"/>
-      <text x="183" y="254" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Knitwear 33%</text>
-      <circle cx="175" cy="266" r="5" fill="#F4C0A8"/>
-      <text x="183" y="270" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Denim 25%</text>
-      <circle cx="175" cy="282" r="5" fill="#B8C4E8"/>
-      <text x="183" y="286" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Shirts 21%</text>
+    <!-- Donut chart — left mid -->
+    <svg class="dbg" style="top:28%;left:-20px;width:360px;height:360px" viewBox="0 0 360 360">
+      <text x="30" y="20" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Category Mix</text>
+      <circle cx="180" cy="185" r="130" fill="none" stroke="#A8C5A0" stroke-width="56" stroke-dasharray="272 817" stroke-dashoffset="0" opacity="0.75"/>
+      <circle cx="180" cy="185" r="130" fill="none" stroke="#F4C0A8" stroke-width="56" stroke-dasharray="204 817" stroke-dashoffset="-272" opacity="0.75"/>
+      <circle cx="180" cy="185" r="130" fill="none" stroke="#B8C4E8" stroke-width="56" stroke-dasharray="171 817" stroke-dashoffset="-476" opacity="0.75"/>
+      <circle cx="180" cy="185" r="130" fill="none" stroke="#F0C4A0" stroke-width="56" stroke-dasharray="170 817" stroke-dashoffset="-647" opacity="0.75"/>
+      <circle cx="180" cy="185" r="92" fill="rgba(255,255,255,0.88)"/>
+      <text x="180" y="178" font-size="22" font-weight="900" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">56.7%</text>
+      <text x="180" y="196" font-size="10" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Sell-Through</text>
+      <text x="180" y="212" font-size="9" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">▲ +3.2pp vs LY</text>
+      <circle cx="50" cy="310" r="6" fill="#A8C5A0"/>
+      <text x="60" cy="314" y="314" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Knitwear 33%</text>
+      <circle cx="50" cy="328" r="6" fill="#F4C0A8"/>
+      <text x="60" y="332" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Denim 25%</text>
+      <circle cx="195" cy="310" r="6" fill="#B8C4E8"/>
+      <text x="205" y="314" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Shirts 21%</text>
+      <circle cx="195" cy="328" r="6" fill="#F0C4A0"/>
+      <text x="205" y="332" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Other 21%</text>
     </svg>
 
-    <!-- Area line chart — left lower, bleeds off edge -->
-    <svg class="dbg" style="top:54%;left:0;width:340px;height:220px" viewBox="0 0 360 220">
+    <!-- Area line chart — left lower -->
+    <svg class="dbg" style="top:57%;left:-20px;width:460px;height:280px" viewBox="0 0 460 280">
       <defs>
         <linearGradient id="lga2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A8C5A0" stop-opacity="0.50"/><stop offset="100%" stop-color="#A8C5A0" stop-opacity="0"/></linearGradient>
         <linearGradient id="lgb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B8C4E8" stop-opacity="0.38"/><stop offset="100%" stop-color="#B8C4E8" stop-opacity="0"/></linearGradient>
-        <linearGradient id="area-fade-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="20%" stop-color="white" stop-opacity="1"/></linearGradient>
       </defs>
-      <!-- Grid -->
-      <line x1="42" y1="40"  x2="355" y2="40"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="42" y1="80"  x2="355" y2="80"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="42" y1="120" x2="355" y2="120" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="42" y1="160" x2="355" y2="160" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <text x="6"  y="43"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">£3.6M</text>
-      <text x="6"  y="83"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">£2.4M</text>
-      <text x="6"  y="123" font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">£1.2M</text>
-      <!-- Area fill + line -->
-      <polygon points="42,158 88,118 134,132 178,82 222,98 268,55 310,70 355,62 355,175 42,175" fill="url(#lga2)"/>
-      <polyline points="42,158 88,118 134,132 178,82 222,98 268,55 310,70 355,62" fill="none" stroke="#A8C5A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="42,168 88,148 134,140 178,152 222,124 268,132 310,108 355,116 355,175 42,175" fill="url(#lgb2)"/>
-      <polyline points="42,168 88,148 134,140 178,152 222,124 268,132 310,108 355,116" fill="none" stroke="#B8C4E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
-      <circle cx="178" cy="82" r="4.5" fill="#7DAA75"/>
-      <circle cx="268" cy="55" r="4.5" fill="#7DAA75"/>
-      <!-- Tooltip -->
-      <rect x="260" y="32" width="70" height="32" rx="6" fill="rgba(255,255,255,0.92)" stroke="#D0DED0" stroke-width="1"/>
-      <text x="295" y="46" font-size="8.5" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">£3.62M</text>
-      <text x="295" y="58" font-size="7.5" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">▲ +18% YoY</text>
-      <!-- X labels -->
-      <text x="42"  y="198" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q1</text>
-      <text x="134" y="198" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q2</text>
-      <text x="222" y="198" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q3</text>
-      <text x="310" y="198" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q4</text>
-      <line x1="42" y1="175" x2="355" y2="175" stroke="#C0CED0" stroke-width="1" opacity="0.45"/>
+      <text x="10" y="18" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Revenue Trend</text>
+      <line x1="48" y1="40"  x2="455" y2="40"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="48" y1="80"  x2="455" y2="80"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="48" y1="120" x2="455" y2="120" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="48" y1="160" x2="455" y2="160" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <text x="8"  y="43"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">£3.6M</text>
+      <text x="8"  y="83"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">£2.4M</text>
+      <text x="8"  y="123" font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">£1.2M</text>
+      <polygon points="48,158 112,118 176,132 240,82 304,98 368,55 420,70 455,62 455,175 48,175" fill="url(#lga2)"/>
+      <polyline points="48,158 112,118 176,132 240,82 304,98 368,55 420,70 455,62" fill="none" stroke="#A8C5A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <polygon points="48,168 112,148 176,140 240,152 304,124 368,132 420,108 455,116 455,175 48,175" fill="url(#lgb2)"/>
+      <polyline points="48,168 112,148 176,140 240,152 304,124 368,132 420,108 455,116" fill="none" stroke="#B8C4E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+      <circle cx="240" cy="82" r="5" fill="#7DAA75"/>
+      <circle cx="368" cy="55" r="5" fill="#7DAA75"/>
+      <rect x="340" y="30" width="80" height="32" rx="6" fill="rgba(255,255,255,0.92)" stroke="#D0DED0" stroke-width="1"/>
+      <text x="380" y="44" font-size="9" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">£3.62M</text>
+      <text x="380" y="57" font-size="8" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">▲ +18% YoY</text>
+      <text x="48"  y="210" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q1</text>
+      <text x="176" y="210" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q2</text>
+      <text x="304" y="210" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q3</text>
+      <text x="420" y="210" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q4</text>
+      <line x1="48" y1="175" x2="455" y2="175" stroke="#C0CED0" stroke-width="1" opacity="0.45"/>
     </svg>
 
-    <!-- Horizontal bar chart — bottom left, bleeds off edge -->
-    <svg class="dbg" style="bottom:0%;left:0;width:340px;height:240px" viewBox="0 0 360 240">
-      <defs><linearGradient id="hbar-fade-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="16%" stop-color="white" stop-opacity="1"/></linearGradient></defs>
-      <text x="34" y="22" font-size="9.5" font-weight="700" fill="#5A6A6A" font-family="Montserrat,sans-serif">Category Revenue</text>
-      <!-- Category labels + bars -->
-      <text x="34" y="48"  font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Knitwear</text>
-      <rect x="40" y="36"  width="188" height="16" rx="4" fill="#A8C5A0" opacity="0.80"/>
-      <text x="234" y="48"  font-size="8" fill="#5A7A5A" font-family="Inter,sans-serif">£1.24M</text>
-
-      <text x="34" y="74"  font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Denim</text>
-      <rect x="40" y="62"  width="148" height="16" rx="4" fill="#F4C0A8" opacity="0.80"/>
-      <text x="194" y="74"  font-size="8" fill="#9A6A4A" font-family="Inter,sans-serif">£0.98M</text>
-
-      <text x="34" y="100" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Shirts</text>
-      <rect x="40" y="88"  width="214" height="16" rx="4" fill="#B8C4E8" opacity="0.80"/>
-      <text x="260" y="100" font-size="8" fill="#4A5A8A" font-family="Inter,sans-serif">£1.41M</text>
-
-      <text x="34" y="126" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Outerwear</text>
-      <rect x="40" y="114" width="122" height="16" rx="4" fill="#F0C4A0" opacity="0.80"/>
-      <text x="168" y="126" font-size="8" fill="#9A7A3A" font-family="Inter,sans-serif">£0.81M</text>
-
-      <text x="34" y="152" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Footwear</text>
-      <rect x="40" y="140" width="170" height="16" rx="4" fill="#C8DFBF" opacity="0.80"/>
-      <text x="216" y="152" font-size="8" fill="#4A6A3A" font-family="Inter,sans-serif">£1.12M</text>
-
-      <text x="34" y="178" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Accessories</text>
-      <rect x="40" y="166" width="96"  height="16" rx="4" fill="#E3A08E" opacity="0.75"/>
-      <text x="142" y="178" font-size="8" fill="#8A4A3A" font-family="Inter,sans-serif">£0.64M</text>
-
+    <!-- Horizontal bar chart — bottom left -->
+    <svg class="dbg" style="bottom:0%;left:-20px;width:460px;height:290px" viewBox="0 0 460 290">
+      <text x="14" y="22" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Category Revenue</text>
+      <text x="44" y="50"  font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Knitwear</text>
+      <rect x="50" y="37"  width="220" height="17" rx="4" fill="#A8C5A0" opacity="0.80"/>
+      <text x="276" y="50"  font-size="8.5" fill="#5A7A5A" font-family="Inter,sans-serif">£1.24M · 33%</text>
+      <text x="44" y="78"  font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Denim</text>
+      <rect x="50" y="65"  width="174" height="17" rx="4" fill="#F4C0A8" opacity="0.80"/>
+      <text x="230" y="78"  font-size="8.5" fill="#9A6A4A" font-family="Inter,sans-serif">£0.98M · 25%</text>
+      <text x="44" y="106" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Shirts</text>
+      <rect x="50" y="93"  width="252" height="17" rx="4" fill="#B8C4E8" opacity="0.80"/>
+      <text x="308" y="106" font-size="8.5" fill="#4A5A8A" font-family="Inter,sans-serif">£1.41M · 21%</text>
+      <text x="44" y="134" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Outerwear</text>
+      <rect x="50" y="121" width="144" height="17" rx="4" fill="#F0C4A0" opacity="0.80"/>
+      <text x="200" y="134" font-size="8.5" fill="#9A7A3A" font-family="Inter,sans-serif">£0.81M · 11%</text>
+      <text x="44" y="162" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Footwear</text>
+      <rect x="50" y="149" width="200" height="17" rx="4" fill="#C8DFBF" opacity="0.80"/>
+      <text x="256" y="162" font-size="8.5" fill="#4A6A3A" font-family="Inter,sans-serif">£1.12M · 15%</text>
+      <text x="44" y="190" font-size="8.5" fill="#7A8A8A" text-anchor="end" font-family="Inter,sans-serif">Accessories</text>
+      <rect x="50" y="177" width="114" height="17" rx="4" fill="#E3A08E" opacity="0.75"/>
+      <text x="170" y="190" font-size="8.5" fill="#8A4A3A" font-family="Inter,sans-serif">£0.64M · 9%</text>
+      <text x="14" y="218" font-size="8" fill="#B0C0C0" font-family="Inter,sans-serif">Total: £6.20M season-to-date</text>
     </svg>
 
-    <!-- ═══ RIGHT COLUMN — charts bleed off right edge ═══ -->
+    <!-- ═══ RIGHT COLUMN ═══ -->
 
-    <!-- Large donut — top right, bleeds off edge -->
-    <svg class="dbg" style="top:0%;right:0;width:300px;height:320px" viewBox="0 0 320 320">
-      <defs><linearGradient id="donut-fade-r" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="1"/><stop offset="65%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#A8C5A0" stroke-width="52" stroke-dasharray="300 754" stroke-dashoffset="0" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#F4C0A8" stroke-width="52" stroke-dasharray="225 754" stroke-dashoffset="-300" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#B8C4E8" stroke-width="52" stroke-dasharray="138 754" stroke-dashoffset="-525" opacity="0.75"/>
-      <circle cx="160" cy="160" r="120" fill="none" stroke="#C8DFBF" stroke-width="52" stroke-dasharray="91 754" stroke-dashoffset="-663" opacity="0.75"/>
-      <circle cx="160" cy="160" r="82" fill="rgba(255,255,255,0.82)"/>
-      <text x="160" y="152" font-size="13" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">1,250</text>
-      <text x="160" y="168" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Total SKUs</text>
+    <!-- Large donut — top right -->
+    <svg class="dbg" style="top:0%;right:-20px;width:400px;height:380px" viewBox="0 0 400 380">
+      <text x="20" y="20" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">SKU Health Overview</text>
+      <circle cx="200" cy="195" r="135" fill="none" stroke="#A8C5A0" stroke-width="58" stroke-dasharray="318 849" stroke-dashoffset="0" opacity="0.75"/>
+      <circle cx="200" cy="195" r="135" fill="none" stroke="#F4C0A8" stroke-width="58" stroke-dasharray="238 849" stroke-dashoffset="-318" opacity="0.75"/>
+      <circle cx="200" cy="195" r="135" fill="none" stroke="#B8C4E8" stroke-width="58" stroke-dasharray="147 849" stroke-dashoffset="-556" opacity="0.75"/>
+      <circle cx="200" cy="195" r="135" fill="none" stroke="#C8DFBF" stroke-width="58" stroke-dasharray="146 849" stroke-dashoffset="-703" opacity="0.75"/>
+      <circle cx="200" cy="195" r="96" fill="rgba(255,255,255,0.88)"/>
+      <text x="200" y="185" font-size="28" font-weight="900" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">1,250</text>
+      <text x="200" y="203" font-size="10" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Total SKUs</text>
+      <text x="200" y="220" font-size="9" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">500 Active · 37 OOS</text>
+      <!-- Legend -->
+      <circle cx="30" cy="315" r="7" fill="#A8C5A0"/>
+      <text x="42" y="320" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Healthy 37.5%</text>
+      <circle cx="30" cy="335" r="7" fill="#F4C0A8"/>
+      <text x="42" y="340" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">At Risk 28.1%</text>
+      <circle cx="175" cy="315" r="7" fill="#B8C4E8"/>
+      <text x="187" y="320" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">Slow Move 17.4%</text>
+      <circle cx="175" cy="335" r="7" fill="#C8DFBF"/>
+      <text x="187" y="340" font-size="9" fill="#7A8A8A" font-family="Inter,sans-serif">New In 17.2%</text>
     </svg>
 
-    <!-- Stacked bar — right upper-mid, bleeds off edge -->
-    <svg class="dbg" style="top:26%;right:0;width:340px;height:250px" viewBox="0 0 360 250">
-      <defs><linearGradient id="sbar-fade-r" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="1"/><stop offset="82%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs>
-      <!-- Grid -->
-      <line x1="8" y1="42"  x2="340" y2="42"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="8" y1="82"  x2="340" y2="82"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="8" y1="122" x2="340" y2="122" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="8" y1="162" x2="340" y2="162" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <text x="348" y="45"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">100%</text>
-      <text x="348" y="85"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">75%</text>
-      <text x="348" y="125" font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">50%</text>
-      <text x="348" y="165" font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">25%</text>
-      <!-- Bars with % labels -->
-      <rect x="18"  y="82"  width="42" height="120" rx="5" fill="#A8C5A0" opacity="0.78"/>
-      <text x="39" y="138" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">78%</text>
-      <rect x="72"  y="60"  width="42" height="142" rx="5" fill="#F4C0A8" opacity="0.78"/>
-      <text x="93" y="136" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">92%</text>
-      <rect x="126" y="100" width="42" height="102" rx="5" fill="#B8C4E8" opacity="0.78"/>
-      <text x="147" y="155" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">63%</text>
-      <rect x="180" y="70"  width="42" height="132" rx="5" fill="#F0C4A0" opacity="0.78"/>
-      <text x="201" y="140" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">87%</text>
-      <rect x="234" y="92"  width="42" height="110" rx="5" fill="#C8DFBF" opacity="0.78"/>
-      <text x="255" y="150" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">71%</text>
-      <rect x="288" y="52"  width="42" height="150" rx="5" fill="#A8C5A0" opacity="0.78"/>
-      <text x="309" y="130" font-size="8" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">97%</text>
-      <!-- X labels -->
-      <text x="39"  y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Jan</text>
-      <text x="93"  y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Feb</text>
-      <text x="147" y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Mar</text>
-      <text x="201" y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Apr</text>
-      <text x="255" y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">May</text>
-      <text x="309" y="216" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Jun</text>
-      <line x1="8" y1="202" x2="340" y2="202" stroke="#C0CED0" stroke-width="1" opacity="0.5"/>
+    <!-- Stacked bar — right upper-mid -->
+    <svg class="dbg" style="top:28%;right:-20px;width:460px;height:310px" viewBox="0 0 460 310">
+      <text x="10" y="20" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Weekly Sell-Through %</text>
+      <line x1="10" y1="44"  x2="440" y2="44"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="10" y1="84"  x2="440" y2="84"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="10" y1="124" x2="440" y2="124" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="10" y1="164" x2="440" y2="164" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <text x="444" y="47"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">100%</text>
+      <text x="444" y="87"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">75%</text>
+      <text x="444" y="127" font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">50%</text>
+      <text x="444" y="167" font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">25%</text>
+      <rect x="18"  y="84"  width="50" height="120" rx="5" fill="#A8C5A0" opacity="0.78"/>
+      <text x="43"  y="148" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">78%</text>
+      <rect x="82"  y="62"  width="50" height="142" rx="5" fill="#F4C0A8" opacity="0.78"/>
+      <text x="107" y="137" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">92%</text>
+      <rect x="146" y="102" width="50" height="102" rx="5" fill="#B8C4E8" opacity="0.78"/>
+      <text x="171" y="157" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">63%</text>
+      <rect x="210" y="72"  width="50" height="132" rx="5" fill="#F0C4A0" opacity="0.78"/>
+      <text x="235" y="142" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">87%</text>
+      <rect x="274" y="94"  width="50" height="110" rx="5" fill="#C8DFBF" opacity="0.78"/>
+      <text x="299" y="153" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">71%</text>
+      <rect x="338" y="54"  width="50" height="150" rx="5" fill="#A8C5A0" opacity="0.78"/>
+      <text x="363" y="133" font-size="9" fill="white" font-weight="700" text-anchor="middle" font-family="Montserrat,sans-serif">97%</text>
+      <text x="43"  y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 1</text>
+      <text x="107" y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 2</text>
+      <text x="171" y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 3</text>
+      <text x="235" y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 4</text>
+      <text x="299" y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 5</text>
+      <text x="363" y="228" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Wk 6</text>
+      <line x1="10" y1="210" x2="440" y2="210" stroke="#C0CED0" stroke-width="1" opacity="0.5"/>
+      <rect x="10" y="248" width="10" height="4" rx="2" fill="#A8C5A0"/>
+      <text x="24" y="254" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Full-price ST</text>
+      <rect x="140" y="248" width="10" height="4" rx="2" fill="#F4C0A8"/>
+      <text x="154" y="254" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Markdown ST</text>
+      <rect x="270" y="248" width="10" height="4" rx="2" fill="#B8C4E8"/>
+      <text x="284" y="254" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">OOS Rate</text>
     </svg>
 
-    <!-- Multi-line chart — right lower, bleeds off edge -->
-    <svg class="dbg" style="top:54%;right:0;width:340px;height:230px" viewBox="0 0 370 230">
+    <!-- Multi-line chart — right lower -->
+    <svg class="dbg" style="top:57%;right:-20px;width:460px;height:290px" viewBox="0 0 460 290">
       <defs>
         <linearGradient id="lgc2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F4C0A8" stop-opacity="0.45"/><stop offset="100%" stop-color="#F4C0A8" stop-opacity="0"/></linearGradient>
-        <linearGradient id="mline-fade-r" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="1"/><stop offset="80%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
       </defs>
-      <!-- Grid + Y labels -->
-      <text x="6"  y="42"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">90%</text>
-      <text x="6"  y="82"  font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">70%</text>
-      <text x="6"  y="122" font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">50%</text>
-      <text x="6"  y="162" font-size="8" fill="#9AAAB8" font-family="Inter,sans-serif">30%</text>
-      <line x1="30" y1="38"  x2="355" y2="38"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="30" y1="78"  x2="355" y2="78"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="30" y1="118" x2="355" y2="118" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <line x1="30" y1="158" x2="355" y2="158" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
-      <!-- Area + lines -->
-      <polygon points="30,158 80,122 130,134 180,88 230,104 280,58 330,74 355,66 355,178 30,178" fill="url(#lgc2)"/>
-      <polyline points="30,158 80,122 130,134 180,88 230,104 280,58 330,74 355,66" fill="none" stroke="#F4C0A8" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-      <polyline points="30,168 80,150 130,144 180,132 230,140 280,120 330,128 355,112" fill="none" stroke="#A8C5A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
-      <circle cx="180" cy="88" r="4.5" fill="#F4C0A8"/>
-      <circle cx="280" cy="58" r="4.5" fill="#F4C0A8"/>
-      <!-- Tooltip -->
-      <rect x="268" y="36" width="76" height="30" rx="6" fill="rgba(255,255,255,0.92)" stroke="#E0D0C8" stroke-width="1"/>
-      <text x="306" y="49" font-size="8.5" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">88% S/T</text>
-      <text x="306" y="61" font-size="7.5" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">▲ +6pp WoW</text>
-      <!-- Legend -->
-      <rect x="30" y="198" width="10" height="4" rx="2" fill="#F4C0A8"/>
-      <text x="44" y="204" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Full-price sell-through</text>
-      <rect x="175" y="198" width="10" height="4" rx="2" fill="#A8C5A0" stroke="#A8C5A0" stroke-dasharray="3,2"/>
-      <text x="189" y="204" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Markdown rate</text>
-      <line x1="30" y1="180" x2="355" y2="180" stroke="#C0CED0" stroke-width="1" opacity="0.4"/>
+      <text x="10" y="20" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Margin vs Sell-Through</text>
+      <text x="8"  y="48"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">90%</text>
+      <text x="8"  y="88"  font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">70%</text>
+      <text x="8"  y="128" font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">50%</text>
+      <text x="8"  y="168" font-size="8.5" fill="#9AAAB8" font-family="Inter,sans-serif">30%</text>
+      <line x1="34" y1="44"  x2="450" y2="44"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="34" y1="84"  x2="450" y2="84"  stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="34" y1="124" x2="450" y2="124" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <line x1="34" y1="164" x2="450" y2="164" stroke="#D8E4D8" stroke-width="0.8" opacity="0.5"/>
+      <polygon points="34,162 100,122 166,134 232,88 298,104 364,58 420,74 450,66 450,180 34,180" fill="url(#lgc2)"/>
+      <polyline points="34,162 100,122 166,134 232,88 298,104 364,58 420,74 450,66" fill="none" stroke="#F4C0A8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="34,172 100,154 166,148 232,138 298,144 364,124 420,132 450,116" fill="none" stroke="#A8C5A0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+      <circle cx="232" cy="88" r="5" fill="#F4C0A8"/>
+      <circle cx="364" cy="58" r="5" fill="#F4C0A8"/>
+      <rect x="342" y="36" width="90" height="32" rx="6" fill="rgba(255,255,255,0.92)" stroke="#E0D0C8" stroke-width="1"/>
+      <text x="387" y="50" font-size="9" font-weight="700" fill="#3A4A3A" text-anchor="middle" font-family="Montserrat,sans-serif">88% S/T</text>
+      <text x="387" y="63" font-size="8" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">▲ +6pp WoW</text>
+      <text x="34"  y="218" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q1</text>
+      <text x="166" y="218" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q2</text>
+      <text x="298" y="218" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q3</text>
+      <text x="420" y="218" font-size="8.5" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">Q4</text>
+      <line x1="34" y1="182" x2="450" y2="182" stroke="#C0CED0" stroke-width="1" opacity="0.4"/>
+      <rect x="10" y="240" width="10" height="4" rx="2" fill="#F4C0A8"/>
+      <text x="24" y="246" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Full-price sell-through</text>
+      <rect x="190" y="240" width="10" height="4" rx="2" fill="#A8C5A0"/>
+      <text x="204" y="246" font-size="8" fill="#7A8A8A" font-family="Inter,sans-serif">Gross margin %</text>
     </svg>
 
-    <!-- KPI stat strip — bottom right, bleeds off edge -->
-    <svg class="dbg" style="bottom:0%;right:0;width:360px;height:250px" viewBox="0 0 380 250">
-      <defs><linearGradient id="kpi-fade-r" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="white" stop-opacity="1"/><stop offset="75%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient></defs>
-      <text x="12" y="22" font-size="9.5" font-weight="700" fill="#5A6A6A" font-family="Montserrat,sans-serif">Trading Summary</text>
-      <!-- KPI 1 -->
-      <rect x="12" y="32" width="108" height="82" rx="10" fill="rgba(168,197,160,0.20)" stroke="rgba(168,197,160,0.35)" stroke-width="1"/>
-      <text x="22" y="52" font-size="8" fill="#6A8A6A" font-family="Inter,sans-serif">GROSS MARGIN</text>
-      <text x="22" y="74" font-size="20" font-weight="800" fill="#3A5A3A" font-family="Montserrat,sans-serif">56.7%</text>
-      <text x="22" y="90" font-size="8" fill="#7DAA75" font-family="Inter,sans-serif">▲ +2.1pp vs LY</text>
-      <!-- KPI 2 -->
-      <rect x="130" y="32" width="108" height="82" rx="10" fill="rgba(184,196,232,0.20)" stroke="rgba(184,196,232,0.35)" stroke-width="1"/>
-      <text x="140" y="52" font-size="8" fill="#5A6A9A" font-family="Inter,sans-serif">STOCK COVER</text>
-      <text x="140" y="74" font-size="20" font-weight="800" fill="#3A4A7A" font-family="Montserrat,sans-serif">4.2wks</text>
-      <text x="140" y="90" font-size="8" fill="#8A9DD8" font-family="Inter,sans-serif">Target: 3–5 wks</text>
-      <!-- KPI 3 -->
-      <rect x="248" y="32" width="108" height="82" rx="10" fill="rgba(244,192,168,0.20)" stroke="rgba(244,192,168,0.35)" stroke-width="1"/>
-      <text x="258" y="52" font-size="8" fill="#9A6A4A" font-family="Inter,sans-serif">OOS SKUS</text>
-      <text x="258" y="74" font-size="20" font-weight="800" fill="#7A3A2A" font-family="Montserrat,sans-serif">37</text>
-      <text x="258" y="90" font-size="8" fill="#E3A08E" font-family="Inter,sans-serif">↑ 8 vs last week</text>
-      <!-- Mini sparkline bar chart -->
-      <line x1="12" y1="130" x2="356" y2="130" stroke="#D0DCD0" stroke-width="0.8" opacity="0.5"/>
-      <rect x="12"  y="152" width="36" height="70" rx="4" fill="#A8C5A0" opacity="0.68"/>
-      <rect x="60"  y="132" width="36" height="90" rx="4" fill="#F4C0A8" opacity="0.68"/>
-      <rect x="108" y="143" width="36" height="79" rx="4" fill="#B8C4E8" opacity="0.68"/>
-      <rect x="156" y="120" width="36" height="102" rx="4" fill="#F0C4A0" opacity="0.68"/>
-      <rect x="204" y="138" width="36" height="84" rx="4" fill="#A8C5A0" opacity="0.68"/>
-      <rect x="252" y="126" width="36" height="96" rx="4" fill="#C8DFBF" opacity="0.68"/>
-      <rect x="300" y="112" width="36" height="110" rx="4" fill="#F4C0A8" opacity="0.68"/>
-      <text x="30"  y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W1</text>
-      <text x="78"  y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W2</text>
-      <text x="126" y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W3</text>
-      <text x="174" y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W4</text>
-      <text x="222" y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W5</text>
-      <text x="270" y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W6</text>
-      <text x="318" y="238" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W7</text>
+    <!-- KPI stat strip — bottom right -->
+    <svg class="dbg" style="bottom:0%;right:-20px;width:460px;height:290px" viewBox="0 0 460 290">
+      <text x="14" y="22" font-size="10" font-weight="700" fill="#6A7A8A" font-family="Montserrat,sans-serif">Trading Summary</text>
+      <rect x="14" y="32" width="128" height="90" rx="10" fill="rgba(168,197,160,0.20)" stroke="rgba(168,197,160,0.40)" stroke-width="1.5"/>
+      <text x="26" y="52" font-size="8" fill="#6A8A6A" font-family="Inter,sans-serif">GROSS MARGIN</text>
+      <text x="26" y="76" font-size="24" font-weight="900" fill="#3A5A3A" font-family="Montserrat,sans-serif">56.7%</text>
+      <text x="26" y="92" font-size="8.5" fill="#7DAA75" font-family="Inter,sans-serif">▲ +2.1pp vs LY</text>
+      <text x="26" y="108" font-size="7.5" fill="#9AAAB8" font-family="Inter,sans-serif">Target: 58.0%</text>
+      <rect x="154" y="32" width="128" height="90" rx="10" fill="rgba(184,196,232,0.20)" stroke="rgba(184,196,232,0.40)" stroke-width="1.5"/>
+      <text x="166" y="52" font-size="8" fill="#5A6A9A" font-family="Inter,sans-serif">STOCK COVER</text>
+      <text x="166" y="76" font-size="24" font-weight="900" fill="#3A4A7A" font-family="Montserrat,sans-serif">4.2wks</text>
+      <text x="166" y="92" font-size="8.5" fill="#8A9DD8" font-family="Inter,sans-serif">Target: 3–5 wks ✓</text>
+      <text x="166" y="108" font-size="7.5" fill="#9AAAB8" font-family="Inter,sans-serif">847 SKUs tracked</text>
+      <rect x="294" y="32" width="128" height="90" rx="10" fill="rgba(244,192,168,0.20)" stroke="rgba(244,192,168,0.40)" stroke-width="1.5"/>
+      <text x="306" y="52" font-size="8" fill="#9A6A4A" font-family="Inter,sans-serif">OOS SKUS</text>
+      <text x="306" y="76" font-size="24" font-weight="900" fill="#7A3A2A" font-family="Montserrat,sans-serif">37</text>
+      <text x="306" y="92" font-size="8.5" fill="#E3A08E" font-family="Inter,sans-serif">↑ 8 vs last week</text>
+      <text x="306" y="108" font-size="7.5" fill="#9AAAB8" font-family="Inter,sans-serif">£48K revenue risk</text>
+      <line x1="14" y1="140" x2="436" y2="140" stroke="#D0DCD0" stroke-width="0.8" opacity="0.5"/>
+      <text x="14" y="158" font-size="8.5" font-weight="600" fill="#7A8A8A" font-family="Inter,sans-serif">Weekly Revenue</text>
+      <rect x="14"  y="168" width="46" height="80" rx="4" fill="#A8C5A0" opacity="0.68"/>
+      <text x="37"  y="163" font-size="7.5" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">£68k</text>
+      <rect x="74"  y="148" width="46" height="100" rx="4" fill="#F4C0A8" opacity="0.68"/>
+      <text x="97"  y="143" font-size="7.5" fill="#E89C7A" text-anchor="middle" font-family="Inter,sans-serif">£87k</text>
+      <rect x="134" y="158" width="46" height="90" rx="4" fill="#B8C4E8" opacity="0.68"/>
+      <text x="157" y="153" font-size="7.5" fill="#8A9DD8" text-anchor="middle" font-family="Inter,sans-serif">£75k</text>
+      <rect x="194" y="133" width="46" height="115" rx="4" fill="#F0C4A0" opacity="0.68"/>
+      <text x="217" y="128" font-size="7.5" fill="#E0A070" text-anchor="middle" font-family="Inter,sans-serif">£96k</text>
+      <rect x="254" y="150" width="46" height="98" rx="4" fill="#A8C5A0" opacity="0.68"/>
+      <text x="277" y="145" font-size="7.5" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">£82k</text>
+      <rect x="314" y="143" width="46" height="105" rx="4" fill="#C8DFBF" opacity="0.68"/>
+      <text x="337" y="138" font-size="7.5" fill="#7DAA75" text-anchor="middle" font-family="Inter,sans-serif">£88k</text>
+      <rect x="374" y="125" width="46" height="123" rx="4" fill="#F4C0A8" opacity="0.68"/>
+      <text x="397" y="120" font-size="7.5" fill="#E89C7A" text-anchor="middle" font-family="Inter,sans-serif">£103k</text>
+      <text x="37"  y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W1</text>
+      <text x="97"  y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W2</text>
+      <text x="157" y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W3</text>
+      <text x="217" y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W4</text>
+      <text x="277" y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W5</text>
+      <text x="337" y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W6</text>
+      <text x="397" y="262" font-size="8" fill="#9AAAB8" text-anchor="middle" font-family="Inter,sans-serif">W7</text>
     </svg>
 
   </div>
@@ -1736,9 +1752,6 @@ function boom(x,y) {
 /* ── BOUNCY BUBBLE PHYSICS ── */
 (function(){
   const arenaEl = arena;
-  // 3 lanes (y-centres as fraction of arena height)
-  // Each lane holds 3 bubbles, spaced horizontally so they never overlap
-  const LANE_Y = [0.14, 0.46, 0.78]; // fraction of arena height
   const bubbleEls = [];
   const states = [];
 
@@ -1768,68 +1781,73 @@ function boom(x,y) {
     });
     arenaEl.appendChild(el);
     bubbleEls.push(el);
-
-    const lane = i % 3;
-    // 5 bubbles per lane
-    const laneSlot = Math.floor(i / 3); // 0..4 within lane
-    states.push({
-      lane,
-      laneSlot,
-      x: 0,
-      phase: 0,
-      speed: 3.0 + (i % 3) * 0.20 + (laneSlot * 0.12),
-      amp: 22 + (lane * 5),
-      freq: 0.016 + (i * 0.0015),
-      size: b.size,
-      ready: false,
-    });
   });
 
-  // Init positions after layout
   requestAnimationFrame(() => {
-    const W = arenaEl.offsetWidth;
-    const H = arenaEl.offsetHeight;
-    // Spread bubbles across width; one full traversal apart within a lane
-    const TRAVERSE = W + 400;
-    states.forEach((s, i) => {
-      const laneCount = 15; // 15 bubbles per lane (45 total)
-      // space evenly — guarantees full coverage, no gap
-      s.x = (s.laneSlot / laneCount) * TRAVERSE;
-      s.laneY = LANE_Y[s.lane] * H;
-      s.phase = (i / BUBBLES.length) * Math.PI * 2; // spread phases
+    const W = arenaEl.offsetWidth || window.innerWidth;
+    const H = arenaEl.offsetHeight || window.innerHeight;
+
+    BUBBLES.forEach((b, i) => {
+      // Each bubble gets a fully independent random vertical centre (10%–90% of height)
+      const yCenter = (0.10 + Math.random() * 0.80) * H;
+      // Primary bounce: large amplitude so bubbles drift across full arena height
+      const amp1   = 80  + Math.random() * 160;   // 80–240 px
+      const freq1  = 0.006 + Math.random() * 0.010; // slow undulation
+      // Secondary drift: very slow large wave adds wandering quality
+      const amp2   = 50  + Math.random() * 100;
+      const freq2  = 0.002 + Math.random() * 0.004;
+      // Tiny wobble for organic feel
+      const amp3   = 8   + Math.random() * 12;
+      const freq3  = 0.025 + Math.random() * 0.020;
+      // Horizontal speed varies so faster bubbles pass slower ones
+      const speed  = 1.4 + Math.random() * 2.8;
+      // Stagger start positions across the full width
+      const startX = (i / BUBBLES.length) * (W + b.size * 2) - b.size;
+      // Random phase offsets so they never start in sync
+      const phase1 = Math.random() * Math.PI * 2;
+      const phase2 = Math.random() * Math.PI * 2;
+      const phase3 = Math.random() * Math.PI * 2;
+
+      states.push({ yCenter, amp1, freq1, amp2, freq2, amp3, freq3, speed, x: startX, phase1, phase2, phase3, size: b.size });
       bubbleEls[i].style.opacity = '1';
-      s.ready = true;
     });
 
     let rafId;
     function tick() {
-      const W2 = arenaEl.offsetWidth;
-      const H2 = arenaEl.offsetHeight;
+      const W2 = arenaEl.offsetWidth || window.innerWidth;
+      const H2 = arenaEl.offsetHeight || window.innerHeight;
       states.forEach((s, i) => {
-        if (!s.ready) return;
         s.x += s.speed;
         if (s.x > W2 + s.size + 50) {
+          // When a bubble wraps, give it a fresh random vertical centre
           s.x = -s.size - 50;
-          s.phase = Math.random() * Math.PI * 2;
+          s.yCenter = (0.10 + Math.random() * 0.80) * H2;
+          s.phase1 = Math.random() * Math.PI * 2;
+          s.phase2 = Math.random() * Math.PI * 2;
         }
-        s.phase += s.freq;
+        s.phase1 += s.freq1;
+        s.phase2 += s.freq2;
+        s.phase3 += s.freq3;
 
-        // Sinusoidal Y bounce
-        const yOff = Math.sin(s.phase) * s.amp;
-        // Squash/stretch: scaleY slightly < 1 at extremes, > 1 at midpoint
-        const absNorm = Math.abs(Math.sin(s.phase)); // 0 at centre, 1 at peaks
-        const scaleY = 1 + (0.5 - absNorm) * 0.06; // 0.97→1.03
-        const scaleX = 1 / scaleY; // compensate width
-        const cx = s.laneY || (LANE_Y[s.lane] * H2);
-        const y = cx - s.size / 2 + yOff;
+        const yOff = Math.sin(s.phase1) * s.amp1
+                   + Math.sin(s.phase2) * s.amp2
+                   + Math.sin(s.phase3) * s.amp3;
+
+        // Clamp so bubbles don't escape the arena
+        const rawY   = s.yCenter - s.size / 2 + yOff;
+        const clampY = Math.max(-s.size * 0.3, Math.min(H2 - s.size * 0.7, rawY));
+
+        // Squash/stretch for cartoon-physics feel
+        const norm   = Math.abs(Math.sin(s.phase1));
+        const scaleY = 1 + (0.5 - norm) * 0.055;
+        const scaleX = 1 / scaleY;
 
         bubbleEls[i].style.transform =
-          `translate(${s.x}px, ${y}px) scaleX(${scaleX.toFixed(3)}) scaleY(${scaleY.toFixed(3)})`;
+          `translate(${s.x}px, ${clampY}px) scaleX(${scaleX.toFixed(3)}) scaleY(${scaleY.toFixed(3)})`;
       });
       rafId = requestAnimationFrame(tick);
     }
     tick();
-    // Pause when not visible to save CPU
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) cancelAnimationFrame(rafId);
       else tick();
@@ -1837,11 +1855,22 @@ function boom(x,y) {
   });
 })();
 
-/* ── TICKER ── */
+/* ── TICKER — JS rAF drive (works on all mobile browsers) ── */
 const tItems=[['Sell-through','29.8%'],['Reorder alerts','105 SKUs'],['Markdown risk','£3.5M'],['Gross margin','56.7%'],['Best seller','JAC0475 Brixton Trench'],['Revenue','£3.62M'],['OOS SKUs','37'],['Stock cover','Avg 4.2 wks'],['Active SKUs','500'],['Gross profit','£2.05M']];
 const te=document.getElementById('ticker');
 const th=tItems.map(([k,v])=>`<span class="t-item"><strong>${k}</strong>${v}</span>`).join('');
-te.innerHTML=th+th; /* duplicate for seamless loop: animation scrolls -50% */
+te.innerHTML=th+th;
+// Kill CSS animation — we drive it via rAF for reliable mobile support
+te.style.animation='none';
+te.style.webkitAnimation='none';
+let tickPos=0;
+(function tickerLoop(){
+  tickPos-=0.9;
+  const half=te.scrollWidth/2;
+  if(half>0 && Math.abs(tickPos)>=half) tickPos=0;
+  te.style.transform=`translateX(${tickPos}px)`;
+  requestAnimationFrame(tickerLoop);
+})();
 
 /* ── PRICING TOGGLE ── */
 let annual=false;
