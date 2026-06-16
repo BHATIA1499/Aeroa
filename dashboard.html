@@ -1101,12 +1101,15 @@ function renderMA() {
     document.getElementById('ma-st-bar').style.width    = Math.min(avgST,100)+'%';
   }, 100);
 
-  // Overview Charts ─ always-available data only
+  // Overview Charts ─ use best available data with robust fallbacks
   const topSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
   const wt = analysisData.weekly_trend || [];
+  const cats = [...(analysisData.category_scorecard||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  const mdRisk = [...(analysisData.markdown_risk||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
   const PALETTE = ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#A8C5A0','#B8C4E8','#C8DFBF'];
 
-  // Chart 1: weekly trend if available, else top-SKU bar rotated 90°
+  // ── Chart 1: Revenue overview ─────────────────────────────────
+  // Priority: weekly trend line → category bar → donut from KPIs
   if (wt.length) {
     charts.maTrend = safeChart('ma-trend-chart', {
       type:'line',
@@ -1123,11 +1126,31 @@ function renderMA() {
           x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:8}},
           y:{grid:{color:'rgba(125,170,117,0.12)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
         }}
-    }, 'No date column found — trend chart needs a date field');
+    });
+  } else if (cats.length) {
+    // Fallback 1: Category revenue bar chart
+    charts.maTrend = safeChart('ma-trend-chart', {
+      type:'bar',
+      data:{
+        labels: cats.map(c=>c.category||'Other'),
+        datasets:[{
+          label:'Revenue by Category',
+          data: cats.map(c=>c.revenue||0),
+          backgroundColor: PALETTE.map(c=>c+'CC'),
+          borderRadius:5, borderSkipped:false
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Rev: '+fmtCurr(ctx.parsed.y)}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}},
+          y:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
   } else if (topSkus.length) {
-    // Fallback: donut of revenue split — top 3 SKUs vs rest
-    const top3Rev   = topSkus.slice(0,3).reduce((s,x)=>s+(x.revenue||0),0);
-    const restRev   = (k.total_revenue||0) - top3Rev;
+    // Fallback 2: top SKU donut
+    const top3Rev = topSkus.slice(0,3).reduce((s,x)=>s+(x.revenue||0),0);
+    const restRev = (k.total_revenue||0) - top3Rev;
     charts.maTrend = safeChart('ma-trend-chart', {
       type:'doughnut',
       data:{
@@ -1139,12 +1162,13 @@ function renderMA() {
       options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
         plugins:{legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
           tooltip:{callbacks:{label:c=>fmtCurr(c.parsed)}}}}
-    }, 'No chart data available');
+    });
   } else {
     renderEmptyChart('ma-trend-chart', 'Upload data to see charts');
   }
 
-  // Chart 2: Top SKUs horizontal bar — always has data
+  // ── Chart 2: Performance breakdown ───────────────────────────
+  // Priority: top SKUs bar → category sell-through bar → markdown severity pie
   if (topSkus.length) {
     charts.maTop = safeChart('ma-top-chart', {
       type:'bar',
@@ -1160,7 +1184,63 @@ function renderMA() {
           x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
           y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A',maxTicksLimit:8}}
         }}
-    }, 'No SKU revenue data available');
+    });
+  } else if (cats.length) {
+    // Fallback 1: Category sell-through horizontal bar
+    const catST = cats.filter(c=>c.sell_through!=null);
+    if (catST.length) {
+      charts.maTop = safeChart('ma-top-chart', {
+        type:'bar',
+        data:{
+          labels: catST.map(c=>c.category||'Other'),
+          datasets:[{
+            label:'Sell-Through %',
+            data: catST.map(c=>c.sell_through||0),
+            backgroundColor: catST.map(c=> (c.sell_through||0)>=50?'#7DAA75CC':'#F4C0A8CC'),
+            borderRadius:4, borderSkipped:false
+          }]
+        },
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.x.toFixed(1)+'%'}}},
+          scales:{
+            x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>v+'%'},max:100},
+            y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
+          }}
+      });
+    } else {
+      // Category revenue horizontal bar as fallback
+      charts.maTop = safeChart('ma-top-chart', {
+        type:'bar',
+        data:{
+          labels: cats.map(c=>c.category||'Other'),
+          datasets:[{data:cats.map(c=>c.revenue||0),
+            backgroundColor:PALETTE.map(c=>c+'CC'), borderRadius:4, borderSkipped:false}]
+        },
+        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
+          scales:{
+            x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+            y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
+          }}
+      });
+    }
+  } else if (mdRisk.length) {
+    // Fallback 2: Markdown risk severity donut
+    const high = mdRisk.filter(m=>m.severity==='HIGH').length;
+    const med  = mdRisk.filter(m=>m.severity==='MEDIUM').length;
+    const low  = mdRisk.filter(m=>m.severity==='LOW').length;
+    charts.maTop = safeChart('ma-top-chart', {
+      type:'doughnut',
+      data:{
+        labels:['High Risk','Medium Risk','Low Risk'],
+        datasets:[{data:[high,med,low],
+          backgroundColor:['#E05050CC','#F4C0A8CC','#7DAA75CC'],
+          borderWidth:2,borderColor:'rgba(255,255,255,0.8)'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+        plugins:{legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
+          tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+' SKUs'}}}}
+    });
   } else {
     renderEmptyChart('ma-top-chart', 'Upload a trading file to see top SKUs');
   }
@@ -1292,7 +1372,7 @@ function renderAM() {
   const amTopSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
   const AM_PAL = ['#8A9DD8','#A8C5A0','#F4C0A8','#B8C4E8','#E3A08E','#C8DFBF','#D4DCEF','#F0C4A0'];
 
-  // Overview: weekly trend OR top-SKU donut as fallback
+  // Overview: weekly trend → category bar → top-SKU bar
   if (amWt.length) {
     charts.amTrend = safeChart('am-trend-chart', {
       type:'line',
@@ -1309,10 +1389,25 @@ function renderAM() {
           x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:8}},
           y:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
         }}
-    }, 'No weekly trend data');
+    });
+  } else if (cats.length) {
+    // Fallback: category revenue bar
+    const catColors = cats.map(c=>c.health==='STRONG'?'#7DAA75BB':c.health==='HEALTHY'?'#A8C5A0BB':c.health==='AT RISK'?'#F0C4A0BB':'#E3A08EBB');
+    charts.amTrend = safeChart('am-trend-chart', {
+      type:'bar',
+      data:{
+        labels: cats.map(c=>c.category||'Other'),
+        datasets:[{label:'Revenue by Category', data:cats.map(c=>c.revenue||0),
+          backgroundColor:catColors, borderRadius:5, borderSkipped:false}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Rev: '+fmtCurr(ctx.parsed.y)}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}},
+          y:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
   } else if (amTopSkus.length) {
-    const el = document.querySelector('#view-am [data-section="overview"] .card-title');
-    if (el) el.textContent = 'Top SKUs by Revenue';
     charts.amTrend = safeChart('am-trend-chart', {
       type:'bar',
       data:{
@@ -1326,7 +1421,7 @@ function renderAM() {
           x:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
           y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A',maxTicksLimit:8}}
         }}
-    }, 'No revenue data');
+    });
   } else {
     renderEmptyChart('am-trend-chart', 'Upload a trading file to see data');
   }
@@ -1563,6 +1658,22 @@ function renderMerch() {
           y:{grid:{color:'rgba(227,160,142,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
         }}
     }, 'No trend data');
+  } else if (cats.length) {
+    // Fallback: category revenue bar
+    charts.mcTrend = safeChart('mc-trend-chart', {
+      type:'bar',
+      data:{
+        labels: cats.map(c=>c.category||'Other'),
+        datasets:[{label:'Revenue', data:cats.map(c=>c.revenue||0),
+          backgroundColor:MC_PAL.map(c=>c+'BB'), borderRadius:5, borderSkipped:false}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Rev: '+fmtCurr(ctx.parsed.y)}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}},
+          y:{grid:{color:'rgba(227,160,142,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    });
   } else if (mcTopSkus.length) {
     // Revenue by SKU donut as fallback
     charts.mcTrend = safeChart('mc-trend-chart', {
@@ -1572,7 +1683,7 @@ function renderMerch() {
           backgroundColor:MC_PAL.slice(0,5), borderWidth:2, borderColor:'rgba(255,255,255,0.8)'}]},
       options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
         plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed)}}}}
-    }, 'No data');
+    });
   } else {
     renderEmptyChart('mc-trend-chart', 'Upload data to see revenue trend');
   }
