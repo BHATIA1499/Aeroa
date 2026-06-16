@@ -930,12 +930,36 @@ function deriveCats() {
   }).sort((a,b) => b.revenue-a.revenue);
 }
 
+function safeChart(canvasId, config, emptyMsg) {
+  try {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) { console.warn('Canvas not found:', canvasId); return null; }
+    // Reset canvas visibility (in case renderEmptyChart hid it before)
+    canvas.style.display = 'block';
+    const emp = document.getElementById(canvasId + '-empty');
+    if (emp) emp.style.display = 'none';
+    const ctx = canvas.getContext('2d');
+    return new Chart(ctx, config);
+  } catch (e) {
+    console.error('Chart error on', canvasId, e);
+    renderEmptyChart(canvasId, emptyMsg || 'Chart failed to render');
+    return null;
+  }
+}
+
 function renderEmptyChart(canvasId, message) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  const parent = canvas.parentElement;
   canvas.style.display = 'none';
-  parent.innerHTML = `<div class="chart-empty"><div class="chart-empty-icon">📊</div><div>${message}</div></div>`;
+  // Insert sibling empty-state div (preserves canvas in DOM for future re-renders)
+  const existing = document.getElementById(canvasId + '-empty');
+  if (existing) { existing.style.display = 'flex'; return; }
+  const div = document.createElement('div');
+  div.id = canvasId + '-empty';
+  div.className = 'chart-empty';
+  div.innerHTML = `<div class="chart-empty-icon">📊</div><div style="padding:0 12px;text-align:center">${message}</div>`;
+  div.style.height = '100%';
+  canvas.parentElement.appendChild(div);
 }
 
 function switchSection(sectionName) {
@@ -1006,14 +1030,17 @@ function showRoleView() {
   Object.values(charts).forEach(c => { try { c.destroy(); } catch {} });
   charts = {};
 
-  // Render
-  if (currentRole === 'MA')               renderMA();
-  else if (currentRole === 'AM')          renderAM();
-  else if (currentRole === 'Merchandiser') renderMerch();
-  else if (currentRole === 'Director')    renderDirector();
-
-  // Always start on overview section
+  // Switch to overview FIRST so chart containers are visible when Chart.js initialises
+  // (charts in display:none containers render with 0 dimensions)
   switchSection('overview');
+
+  // Render after section is visible
+  requestAnimationFrame(() => {
+    if (currentRole === 'MA')               renderMA();
+    else if (currentRole === 'AM')          renderAM();
+    else if (currentRole === 'Merchandiser') renderMerch();
+    else if (currentRole === 'Director')    renderDirector();
+  });
 }
 
 // ═══════════════════════════════════════
@@ -1047,57 +1074,68 @@ function renderMA() {
     document.getElementById('ma-st-bar').style.width    = Math.min(avgST,100)+'%';
   }, 100);
 
-  // Overview Charts — always use weekly_trend + best_sellers (never category-dependent)
+  // Overview Charts ─ always-available data only
+  const topSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
   const wt = analysisData.weekly_trend || [];
+  const PALETTE = ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#A8C5A0','#B8C4E8','#C8DFBF'];
+
+  // Chart 1: weekly trend if available, else top-SKU bar rotated 90°
   if (wt.length) {
-    const trendCtx = document.getElementById('ma-trend-chart').getContext('2d');
-    charts.maTrend = new Chart(trendCtx, {
+    charts.maTrend = safeChart('ma-trend-chart', {
       type:'line',
       data:{
         labels: wt.map((w,i) => w.week || w.period || `W${i+1}`),
-        datasets:[{
-          data: wt.map(w => w.revenue || 0),
-          borderColor:'#7DAA75', backgroundColor:'rgba(125,170,117,0.10)',
-          fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#7DAA75',
-          pointBorderColor:'white', pointBorderWidth:1.5, borderWidth:2.5
-        }]
+        datasets:[{data:wt.map(w=>w.revenue||0), borderColor:'#7DAA75',
+          backgroundColor:'rgba(125,170,117,0.10)', fill:true, tension:0.4,
+          pointRadius:3, pointBackgroundColor:'#7DAA75', pointBorderColor:'#fff',
+          pointBorderWidth:1.5, borderWidth:2.5}]
       },
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Revenue: '+fmtCurr(ctx.parsed.y)}}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Rev: '+fmtCurr(c.parsed.y)}}},
         scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:8}},
           y:{grid:{color:'rgba(125,170,117,0.12)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
         }}
-    });
+    }, 'No date column found — trend chart needs a date field');
+  } else if (topSkus.length) {
+    // Fallback: donut of revenue split — top 3 SKUs vs rest
+    const top3Rev   = topSkus.slice(0,3).reduce((s,x)=>s+(x.revenue||0),0);
+    const restRev   = (k.total_revenue||0) - top3Rev;
+    charts.maTrend = safeChart('ma-trend-chart', {
+      type:'doughnut',
+      data:{
+        labels:[...(topSkus.slice(0,3).map(s=>s.sku||'SKU')),'Other SKUs'],
+        datasets:[{data:[...topSkus.slice(0,3).map(s=>s.revenue||0), Math.max(restRev,0)],
+          backgroundColor:[...PALETTE.slice(0,3),'rgba(200,200,200,0.5)'],
+          borderWidth:2, borderColor:'rgba(255,255,255,0.8)'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
+        plugins:{legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
+          tooltip:{callbacks:{label:c=>fmtCurr(c.parsed)}}}}
+    }, 'No chart data available');
   } else {
-    renderEmptyChart('ma-trend-chart', 'No weekly trend data — check your file has a date column');
+    renderEmptyChart('ma-trend-chart', 'Upload data to see charts');
   }
 
-  const topSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  // Chart 2: Top SKUs horizontal bar — always has data
   if (topSkus.length) {
-    const topCtx = document.getElementById('ma-top-chart').getContext('2d');
-    charts.maTop = new Chart(topCtx, {
+    charts.maTop = safeChart('ma-top-chart', {
       type:'bar',
       data:{
-        labels: topSkus.map(s => s.sku || s.name || 'SKU'),
-        datasets:[{
-          data: topSkus.map(s => s.revenue || 0),
-          backgroundColor: topSkus.map((_,i) =>
-            ['rgba(125,170,117,0.80)','rgba(168,197,160,0.75)','rgba(138,157,216,0.75)',
-             'rgba(240,196,160,0.80)','rgba(184,196,232,0.75)','rgba(200,223,191,0.80)',
-             'rgba(227,160,142,0.70)','rgba(184,153,106,0.65)'][i % 8]),
-          borderRadius:4, borderSkipped:false
-        }]
+        labels: topSkus.map(s=>s.sku||s.name||'SKU'),
+        datasets:[{data:topSkus.map(s=>s.revenue||0),
+          backgroundColor:PALETTE.map(c=>c+'CC'),
+          borderRadius:4, borderSkipped:false}]
       },
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmtCurr(ctx.parsed.x)}}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
         scales:{
           x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
-          y:{grid:{display:false},ticks:{font:{size:9},color:'#4A4A5A',maxTicksLimit:8}}
+          y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A',maxTicksLimit:8}}
         }}
-    });
+    }, 'No SKU revenue data available');
   } else {
-    renderEmptyChart('ma-top-chart', 'No SKU data available');
+    renderEmptyChart('ma-top-chart', 'Upload a trading file to see top SKUs');
   }
 
   // AI Executive Summary
@@ -1221,70 +1259,86 @@ function renderAM() {
     document.getElementById('am-margin-bar').style.width = Math.min(avgMg,100)+'%';
   }, 100);
 
-  // Category performance chart — use weekly_trend as primary, category bar as fallback if available
+  // AM Charts — category bar (sell-through section) + revenue trend (overview section)
   const cats = deriveCats();
   const amWt = analysisData.weekly_trend || [];
-  const amCatCtx = document.getElementById('am-cat-chart').getContext('2d');
-  if (cats.length) {
-    const catColors = cats.map(c => c.health==='STRONG'?'#7DAA75':c.health==='HEALTHY'?'#A8C5A0':c.health==='AT RISK'?'#F0C4A0':'#E3A08E');
-    charts.amCat = new Chart(amCatCtx, {
+  const amTopSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  const AM_PAL = ['#8A9DD8','#A8C5A0','#F4C0A8','#B8C4E8','#E3A08E','#C8DFBF','#D4DCEF','#F0C4A0'];
+
+  // Overview: weekly trend OR top-SKU donut as fallback
+  if (amWt.length) {
+    charts.amTrend = safeChart('am-trend-chart', {
+      type:'line',
+      data:{
+        labels: amWt.map((w,i)=>w.week||w.period||`W${i+1}`),
+        datasets:[{data:amWt.map(w=>w.revenue||0), borderColor:'#8A9DD8',
+          backgroundColor:'rgba(138,157,216,0.10)', fill:true, tension:0.4,
+          pointRadius:3, pointBackgroundColor:'#8A9DD8', pointBorderColor:'#fff',
+          pointBorderWidth:1.5, borderWidth:2.5}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Rev: '+fmtCurr(c.parsed.y)}}},
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:8}},
+          y:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+        }}
+    }, 'No weekly trend data');
+  } else if (amTopSkus.length) {
+    const el = document.querySelector('#view-am [data-section="overview"] .card-title');
+    if (el) el.textContent = 'Top SKUs by Revenue';
+    charts.amTrend = safeChart('am-trend-chart', {
       type:'bar',
       data:{
-        labels: cats.map(c=>c.category),
+        labels:amTopSkus.map(s=>s.sku||s.name||'SKU'),
+        datasets:[{data:amTopSkus.map(s=>s.revenue||0), backgroundColor:AM_PAL.map(c=>c+'BB'),
+          borderRadius:4, borderSkipped:false}]
+      },
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
+        scales:{
+          x:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+          y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A',maxTicksLimit:8}}
+        }}
+    }, 'No revenue data');
+  } else {
+    renderEmptyChart('am-trend-chart', 'Upload a trading file to see data');
+  }
+
+  // Sell-through section: category bar if available, else top-SKU horizontal bar
+  if (cats.length) {
+    const catColors = cats.map(c=>c.health==='STRONG'?'#7DAA75':c.health==='HEALTHY'?'#A8C5A0':c.health==='AT RISK'?'#F0C4A0':'#E3A08E');
+    charts.amCat = safeChart('am-cat-chart', {
+      type:'bar',
+      data:{
+        labels:cats.map(c=>c.category),
         datasets:[{data:cats.map(c=>c.revenue), backgroundColor:catColors, borderRadius:4, borderSkipped:false}]
       },
       options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmtCurr(ctx.parsed.x)}}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
         scales:{
-          x:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+          x:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
           y:{grid:{display:false},ticks:{font:{size:9},color:'#4A4A5A'}}
         }}
-    });
-  } else if (amWt.length) {
-    // No category data — show weekly revenue trend instead
-    const catTitle = document.querySelector('#am-sec-cat .card-title');
-    if (catTitle) catTitle.textContent = 'Weekly Revenue Trend';
-    charts.amCat = new Chart(amCatCtx, {
-      type:'line',
+    }, 'No category data');
+  } else if (amTopSkus.length) {
+    const title = document.querySelector('#am-sec-cat .card-title');
+    if (title) title.textContent = 'Top SKUs — Revenue';
+    charts.amCat = safeChart('am-cat-chart', {
+      type:'bar',
       data:{
-        labels: amWt.map((w,i) => w.week || w.period || `W${i+1}`),
-        datasets:[{data:amWt.map(w=>w.revenue||0), borderColor:'#8A9DD8', backgroundColor:'rgba(138,157,216,0.10)',
-          fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#8A9DD8',
-          pointBorderColor:'white', pointBorderWidth:1.5, borderWidth:2.5}]
+        labels:amTopSkus.map(s=>s.sku||s.name||'SKU'),
+        datasets:[{data:amTopSkus.map(s=>s.revenue||0), backgroundColor:AM_PAL.map(c=>c+'BB'),
+          borderRadius:4, borderSkipped:false}]
       },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Revenue: '+fmtCurr(ctx.parsed.y)}}},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
         scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
-          y:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+          x:{grid:{color:'rgba(138,157,216,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+          y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
         }}
-    });
+    }, 'No revenue data');
   } else {
-    renderEmptyChart('am-cat-chart', 'Upload a file with date and revenue data to see trends');
-  }
-
-  // Sell-through trend chart — use weekly_trend (more reliable than sparkline)
-  const sparkline = rd.weekly_sparkline || [];
-  const amTrendData = sparkline.length ? sparkline : amWt.map(w => w.revenue || 0);
-  const amTrendLabels = sparkline.length ? sparkline.map((_,i)=>`W${i+1}`) : amWt.map((w,i) => w.week || `W${i+1}`);
-  if (amTrendData.length) {
-    const amTrendCtx = document.getElementById('am-trend-chart').getContext('2d');
-    charts.amTrend = new Chart(amTrendCtx, {
-      type:'line',
-      data:{
-        labels: amTrendLabels,
-        datasets:[{data:amTrendData, borderColor:'#8A9DD8', backgroundColor:'rgba(138,157,216,0.08)',
-          fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#8A9DD8', borderWidth:2}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Revenue: '+fmtCurr(ctx.parsed.y)}}},
-        scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
-          y:{grid:{color:'rgba(138,157,216,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
-        }}
-    });
-  } else {
-    renderEmptyChart('am-trend-chart', 'Upload a file with date data to see the weekly trend');
+    renderEmptyChart('am-cat-chart', 'Upload a file to see category performance');
   }
 
   // AI Executive Summary for AM view
@@ -1424,62 +1478,76 @@ function renderMerch() {
   document.getElementById('mc-otb').textContent    = otbPct+'%';
   document.getElementById('mc-fmargin').textContent= (avgMg*1.02).toFixed(1)+'%';
 
-  // Scatter chart (Category Matrix)
+  // Merch charts — use safeChart with always-available fallbacks
+  const MC_PAL = ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#B8C4E8','#C8DFBF','#D4DCEF'];
+  const mcTopSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  const mcWt = analysisData.weekly_trend || [];
+  const mcSparkline = rd.weekly_sparkline || [];
 
-  const scatterData = cats.map((c,i) => ({
-    x: c.avg_sell_through||0,
-    y: c.avg_margin_pct||0,
-    r: Math.max(4, Math.min(20, (c.revenue/totalRev)*80)),
-    label: c.category,
-    color: ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#B8C4E8','#C8DFBF','#D4DCEF'][i%8]
-  }));
+  // Scatter (Category Matrix)
   if (cats.length) {
-    const scatterCtx = document.getElementById('mc-scatter-chart').getContext('2d');
-    charts.mcScatter = new Chart(scatterCtx, {
+    const scatterData = cats.map((c,i) => ({
+      x: c.avg_sell_through||0, y: c.avg_margin_pct||0,
+      r: Math.max(4, Math.min(20,(c.revenue/totalRev)*80)),
+      label: c.category, color: MC_PAL[i%8]
+    }));
+    charts.mcScatter = safeChart('mc-scatter-chart', {
       type:'bubble',
-      data:{
-        datasets: scatterData.map(p => ({
-          label: p.label, data:[{x:p.x, y:p.y, r:p.r}],
-          backgroundColor: p.color+'88', borderColor: p.color, borderWidth:1.5
-        }))
-      },
+      data:{datasets:scatterData.map(p=>({label:p.label, data:[{x:p.x,y:p.y,r:p.r}],
+        backgroundColor:p.color+'88', borderColor:p.color, borderWidth:1.5}))},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},
-          tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ST ${ctx.parsed.x.toFixed(0)}% | Margin ${ctx.parsed.y.toFixed(0)}%`}}
-        },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ST ${c.parsed.x.toFixed(0)}% | Mg ${c.parsed.y.toFixed(0)}%`}}},
         scales:{
           x:{min:0,max:100,grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Sell-Through %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}},
           y:{grid:{color:'rgba(0,0,0,0.05)'},title:{display:true,text:'Margin %',font:{size:9},color:'#8A8A9A'},ticks:{font:{size:9},color:'#8A8A9A'}}
         }}
-    });
+    }, 'No category data for matrix');
+  } else if (mcTopSkus.length) {
+    // Fallback: horizontal bar of top SKUs
+    charts.mcScatter = safeChart('mc-scatter-chart', {
+      type:'bar',
+      data:{labels:mcTopSkus.map(s=>s.sku||'SKU'),
+        datasets:[{data:mcTopSkus.map(s=>s.revenue||0), backgroundColor:MC_PAL.map(c=>c+'BB'),
+          borderRadius:4, borderSkipped:false}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
+        scales:{
+          x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
+          y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
+        }}
+    }, 'No data');
   } else {
-    renderEmptyChart('mc-scatter-chart', 'Add a Category column to your file to see the category matrix');
+    renderEmptyChart('mc-scatter-chart', 'Upload data to see performance matrix');
   }
 
-  // Trend chart — use weekly_trend as primary, sparkline as fallback
-  const mcSparkline = rd.weekly_sparkline || [];
-  const mcWt = analysisData.weekly_trend || [];
-  const mcTrendData = mcSparkline.length ? mcSparkline : mcWt.map(w => w.revenue || 0);
-  const mcTrendLabels = mcSparkline.length ? mcSparkline.map((_,i)=>`W${i+1}`) : mcWt.map((w,i) => w.week || `W${i+1}`);
+  // Trend chart
+  const mcTrendData = mcSparkline.length ? mcSparkline : mcWt.map(w=>w.revenue||0);
+  const mcTrendLabels = mcSparkline.length ? mcSparkline.map((_,i)=>`W${i+1}`) : mcWt.map((w,i)=>w.week||`W${i+1}`);
   if (mcTrendData.length) {
-    const mcTrendCtx = document.getElementById('mc-trend-chart').getContext('2d');
-    charts.mcTrend = new Chart(mcTrendCtx, {
+    charts.mcTrend = safeChart('mc-trend-chart', {
       type:'line',
-      data:{
-        labels: mcTrendLabels,
-        datasets:[{data:mcTrendData, borderColor:'#E3A08E', backgroundColor:'rgba(227,160,142,0.12)',
-          fill:true, tension:0.4, pointRadius:2, pointBackgroundColor:'#E3A08E',
-          pointBorderColor:'white', pointBorderWidth:1.5, borderWidth:2}]
-      },
+      data:{labels:mcTrendLabels,datasets:[{data:mcTrendData, borderColor:'#E3A08E',
+        backgroundColor:'rgba(227,160,142,0.12)', fill:true, tension:0.4,
+        pointRadius:2, pointBackgroundColor:'#E3A08E', pointBorderColor:'#fff', borderWidth:2}]},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Revenue: '+fmtCurr(ctx.parsed.y)}}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Rev: '+fmtCurr(c.parsed.y)}}},
         scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A'}},
-          y:{grid:{color:'rgba(227,160,142,0.1)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
+          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:6}},
+          y:{grid:{color:'rgba(227,160,142,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
         }}
-    });
+    }, 'No trend data');
+  } else if (mcTopSkus.length) {
+    // Revenue by SKU donut as fallback
+    charts.mcTrend = safeChart('mc-trend-chart', {
+      type:'doughnut',
+      data:{labels:mcTopSkus.slice(0,5).map(s=>s.sku||'SKU'),
+        datasets:[{data:mcTopSkus.slice(0,5).map(s=>s.revenue||0),
+          backgroundColor:MC_PAL.slice(0,5), borderWidth:2, borderColor:'rgba(255,255,255,0.8)'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed)}}}}
+    }, 'No data');
   } else {
-    renderEmptyChart('mc-trend-chart', 'Upload a file with date data to see weekly trend');
+    renderEmptyChart('mc-trend-chart', 'Upload data to see revenue trend');
   }
 
   // AI Executive Summary for Merch view
@@ -1490,23 +1558,33 @@ function renderMerch() {
   const mcSumEl = document.getElementById('mc-summary');
   if (mcSumEl) mcSumEl.textContent = mcSummaryText;
 
-  // Donut chart
+  // Donut chart (category mix)
   if (cats.length) {
-    const donutCtx = document.getElementById('mc-donut-chart').getContext('2d');
-    charts.mcDonut = new Chart(donutCtx, {
+    charts.mcDonut = safeChart('mc-donut-chart', {
       type:'doughnut',
-      data:{
-        labels:cats.map(c=>c.category),
+      data:{labels:cats.map(c=>c.category),
         datasets:[{data:cats.map(c=>c.revenue),
           backgroundColor:['#A8C5A0','#B8C4E8','#F4C0A8','#F0C4A0','#E3A08E','#C8DFBF','#D4DCEF','#E8D4C0'],
-          borderWidth:1, borderColor:'rgba(255,255,255,0.5)'}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmtCurr(ctx.parsed)}`}}},
-        cutout:'60%'}
-    });
+          borderWidth:1, borderColor:'rgba(255,255,255,0.5)'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtCurr(c.parsed)}`}}}}
+    }, 'No category data');
+  } else if (mcTopSkus.length) {
+    const mdCount2 = (analysisData.markdown_risk||[]).length;
+    const roCount2 = (analysisData.reorder_alerts||[]).length;
+    const healthyCount = Math.max(0, (analysisData.meta||{}).sku_count||0 - mdCount2 - roCount2);
+    charts.mcDonut = safeChart('mc-donut-chart', {
+      type:'doughnut',
+      data:{labels:['Healthy','Markdown Risk','Reorder Needed'],
+        datasets:[{data:[healthyCount, mdCount2, roCount2],
+          backgroundColor:['#7DAA75','#E3A08E','#F0C4A0'],
+          borderWidth:2, borderColor:'rgba(255,255,255,0.8)'}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{display:true,position:'bottom',labels:{font:{size:8},boxWidth:8,color:'#4A4A5A'}},
+          tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed} SKUs`}}}}
+    }, 'No data');
   } else {
-    renderEmptyChart('mc-donut-chart', 'No category data');
+    renderEmptyChart('mc-donut-chart', 'Upload data for portfolio mix');
   }
 
   // AI Actions — populate both overview list and full section list
