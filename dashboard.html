@@ -102,6 +102,33 @@ body{font-family:var(--body);background:var(--bg-grad);background-attachment:fix
 .drop-zone-sub{font-size:12px;color:var(--text3)}
 .upload-progress{font-size:13px;color:var(--mint-d);margin-top:12px;display:none}
 
+/* ── UPLOAD TOAST ── */
+#upload-toast{
+  position:fixed;top:68px;right:20px;z-index:9999;
+  min-width:280px;max-width:420px;
+  background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);
+  padding:14px 16px 14px 14px;
+  display:none;align-items:flex-start;gap:12px;
+  transform:translateY(-8px);opacity:0;
+  transition:transform 0.25s ease,opacity 0.25s ease;
+}
+#upload-toast.show{display:flex;transform:translateY(0);opacity:1}
+#upload-toast .toast-icon{font-size:20px;flex-shrink:0;line-height:1.2}
+#upload-toast .toast-body{flex:1;min-width:0}
+#upload-toast .toast-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+#upload-toast .toast-msg{font-size:12px;color:var(--text2);line-height:1.5;word-break:break-word}
+#upload-toast .toast-close{background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:0 0 0 4px;line-height:1;flex-shrink:0;margin-top:-2px}
+#upload-toast.toast-error{border-color:rgba(220,60,60,0.25);background:rgba(255,248,248,0.97)}
+#upload-toast.toast-error .toast-title{color:#C0392B}
+#upload-toast.toast-success{border-color:rgba(125,170,117,0.35);background:rgba(248,255,248,0.97)}
+#upload-toast.toast-success .toast-title{color:#4A7A42}
+#upload-toast.toast-loading{border-color:rgba(125,170,117,0.25)}
+.toast-progress-bar{height:3px;border-radius:2px;background:linear-gradient(90deg,#A8C5A0,#7DAA75);
+  margin-top:8px;animation:toast-load 1.5s ease-in-out infinite;background-size:200% 100%}
+@keyframes toast-load{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
 /* ── GLASS CARD ── */
 .glass{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--shadow)}
 
@@ -1837,30 +1864,77 @@ function doDragLeave(){ document.getElementById('drop-zone').classList.remove('d
 function doDrop(e){ e.preventDefault(); doDragLeave(); const f=e.dataTransfer.files[0]; if(f) doUpload(f); }
 function handleFileSelect(inp){ if(inp.files[0]) doUpload(inp.files[0]); }
 
+// ── Upload Toast helpers ──────────────────────────────────────
+let _toastTimer = null;
+function showUploadToast(type, title, msg, autoDismiss) {
+  const toast = document.getElementById('upload-toast');
+  const icon  = document.getElementById('upload-toast-icon');
+  const ttl   = document.getElementById('upload-toast-title');
+  const tmsg  = document.getElementById('upload-toast-msg');
+  const tbar  = document.getElementById('upload-toast-bar');
+  toast.className = 'show toast-' + type;
+  icon.textContent  = type === 'loading' ? '⏳' : type === 'success' ? '✅' : '❌';
+  ttl.textContent   = title;
+  tmsg.textContent  = msg || '';
+  tbar.style.display = type === 'loading' ? 'block' : 'none';
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  if (autoDismiss) { _toastTimer = setTimeout(hideUploadToast, autoDismiss); }
+}
+function hideUploadToast() {
+  const toast = document.getElementById('upload-toast');
+  toast.style.opacity = '0';
+  toast.style.transform = 'translateY(-8px)';
+  setTimeout(() => { toast.className = ''; toast.style.opacity = ''; toast.style.transform = ''; }, 250);
+}
+
 async function doUpload(file) {
+  // Keep legacy progress hidden (it's inside empty-state which may be hidden)
   const prog = document.getElementById('upload-progress');
-  prog.style.display = 'block';
-  prog.textContent = 'Analysing your data…';
+  if (prog) { prog.style.display = 'none'; }
+
+  // Validate file type client-side first
+  const allowed = ['csv','xlsx','xls','numbers','ods','tsv','txt'];
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!allowed.includes(ext)) {
+    showUploadToast('error', 'File type not supported', `Please upload a CSV or Excel file (got .${ext})`, 8000);
+    return;
+  }
+
+  showUploadToast('loading', 'Uploading your data…', `${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`);
 
   const form = new FormData();
   form.append('file', file);
 
   try {
     const res  = await fetch('/api/upload', {method:'POST', credentials:'include', body:form});
-    const data = await res.json();
+    let data = {};
+    try { data = await res.json(); } catch(e) {}
+
     if (!res.ok) {
-      prog.textContent = data.error || 'Upload failed';
+      const errMsg = data.error || `Upload failed (${res.status})`;
+      const isLimit = data.upgrade_required || (errMsg && errMsg.toLowerCase().includes('plan'));
+      showUploadToast(
+        'error',
+        isLimit ? 'Plan limit reached' : 'Upload failed',
+        isLimit
+          ? errMsg + ' — contact support to upgrade.'
+          : errMsg,
+        12000
+      );
       return;
     }
-    prog.style.display = 'none';
+
+    showUploadToast('loading', 'Analysing your data…', 'Building insights for your team…');
 
     // Load analysis + role data
     const aRes = await fetch(`/api/analysis${data.upload_id?'?upload_id='+data.upload_id:''}`, {credentials:'include'});
     if (aRes.ok) { analysisData = await aRes.json(); }
     await loadRoleData();
     showRoleView();
+
+    showUploadToast('success', 'Data loaded!', `${file.name} — dashboard updated.`, 4000);
   } catch(err) {
-    prog.textContent = err.message;
+    showUploadToast('error', 'Upload error', err.message || 'Something went wrong. Please try again.', 10000);
   }
 }
 
@@ -1966,6 +2040,17 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
     <circle cx="16" cy="10" r="1" fill="white" stroke="none"/>
   </svg>
 </button>
+
+<!-- Upload Toast -->
+<div id="upload-toast">
+  <div class="toast-icon" id="upload-toast-icon">⏳</div>
+  <div class="toast-body">
+    <div class="toast-title" id="upload-toast-title">Uploading…</div>
+    <div class="toast-msg" id="upload-toast-msg"></div>
+    <div class="toast-progress-bar" id="upload-toast-bar" style="display:none"></div>
+  </div>
+  <button class="toast-close" onclick="hideUploadToast()">✕</button>
+</div>
 
 <!-- AI Chat Panel -->
 <div id="ai-chat-panel">

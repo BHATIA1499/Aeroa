@@ -1275,25 +1275,32 @@ def upload(user):
 def get_analysis(user):
     upload_id = request.args.get("upload_id") or session.get("current_upload_id")
     db = get_user_db()
+    company_id = user.get("company_id")
+
     if upload_id:
         try:
-            res = db.table("uploads").select("analysis") \
-                .eq("id", upload_id).eq("user_id", user["id"]).eq("company_id", str(user.get("company_id", ""))).single().execute()
+            q = db.table("uploads").select("analysis").eq("id", upload_id).eq("user_id", user["id"])
+            # Only filter by company_id when it is actually set (avoids "None" string mismatch)
+            if company_id is not None:
+                q = q.eq("company_id", company_id)
+            res = q.single().execute()
             if res.data:
                 audit.log(DATA_EXPORT, request=request, user_id=user["id"],
-                          company_id=user.get("company_id"),
+                          company_id=company_id,
                           resource=f"analysis:{upload_id or 'latest'}")
                 return jsonify(res.data["analysis"])
         except Exception:
             pass
 
-    # Fallback: return latest upload
+    # Fallback: return latest upload for this user
     try:
-        res = db.table("uploads").select("analysis") \
-            .eq("user_id", user["id"]).eq("company_id", str(user.get("company_id", ""))).order("created_at", desc=True).limit(1).execute()
+        q = db.table("uploads").select("analysis").eq("user_id", user["id"])
+        if company_id is not None:
+            q = q.eq("company_id", company_id)
+        res = q.order("created_at", desc=True).limit(1).execute()
         if res.data:
             audit.log(DATA_EXPORT, request=request, user_id=user["id"],
-                      company_id=user.get("company_id"),
+                      company_id=company_id,
                       resource=f"analysis:{upload_id or 'latest'}")
             return jsonify(res.data[0]["analysis"])
     except Exception:
