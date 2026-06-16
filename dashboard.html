@@ -836,6 +836,7 @@ let currentRole = 'AM';
 let analysisData = null;
 let roleData = null;
 let charts = {};
+let csrfToken = '';
 
 // ── Nav configs per role ──────────────────────────────────────
 const NAV = {
@@ -893,6 +894,8 @@ async function loadUser() {
     const res = await fetch('/auth/me', {credentials:'include'});
     if (res.status === 401) { window.location.href='/login'; return; }
     const user = await res.json();
+    // Capture CSRF token for all subsequent POST requests
+    if (user.csrf_token) csrfToken = user.csrf_token;
     const initials = (user.full_name || user.email || '?').charAt(0).toUpperCase();
     document.getElementById('sb-avatar').textContent = initials;
     document.getElementById('sb-name').textContent   = user.full_name || user.email;
@@ -916,7 +919,7 @@ async function switchRole(role) {
   try {
     await fetch('/api/user/role', {
       method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json', ...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},
       body: JSON.stringify({role})
     });
   } catch {}
@@ -2029,7 +2032,10 @@ async function doUpload(file) {
   form.append('file', file);
 
   try {
-    const res  = await fetch('/api/upload', {method:'POST', credentials:'include', body:form});
+    const res  = await fetch('/api/upload', {
+      method:'POST', credentials:'include', body:form,
+      headers: csrfToken ? {'X-CSRF-Token': csrfToken} : {}
+    });
     let data = {};
     try { data = await res.json(); } catch(e) {}
 
@@ -2063,7 +2069,7 @@ async function doUpload(file) {
 
 // ── Auth ──────────────────────────────────────────────────────
 async function logout() {
-  await fetch('/auth/logout', {method:'POST', credentials:'include'});
+  await fetch('/auth/logout', {method:'POST', credentials:'include', headers: csrfToken?{'X-CSRF-Token':csrfToken}:{}});
   window.location.href = '/login';
 }
 
@@ -2091,7 +2097,7 @@ async function sendChat() {
     const context = analysisData ? JSON.stringify({kpis:analysisData.kpis, category_scorecard:analysisData.category_scorecard, reorder_count:(analysisData.reorder_alerts||[]).length, markdown_count:(analysisData.markdown_risk||[]).length}) : '';
     const res = await fetch('/api/chat', {
       method:'POST', credentials:'include',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json', ...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},
       body: JSON.stringify({message: msg, context, history: chatHistory.slice(-6)})
     });
     const data = await res.json();
