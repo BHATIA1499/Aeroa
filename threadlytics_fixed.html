@@ -1910,7 +1910,7 @@ document.querySelectorAll('.counter').forEach(el=>co.observe(el));
     }, 38);
   }
   function runStep() {
-    if (step >= CONVO.length) { step = 0; msgs.innerHTML = ''; addMsg('usr','Which products should I reorder this week?'); addMsg('ai','You have <strong>37 OOS SKUs</strong> with sell-through above 50%. Most urgent: JAC0475 Brixton Trench (£48K revenue, sold out). Raise POs today — 8-week Italian lead time.'); setTimeout(runStep, 1200); return; }
+    if (step >= CONVO.length) { step = 0; msgs.innerHTML = ''; addMsg('usr','Which products should I reorder this week?'); addMsg('ai','You have <strong>37 OOS SKUs</strong> with sell-through above 50%. Most urgent: JAC0475 Brixton Trench (£48K revenue, sold out). Raise POs today — 8-week Italian lead time.'); setTimeout(runStep, 600); return; }
     const m = CONVO[step++];
     if (m.role === 'usr') {
       typeInInput(m.text, () => {
@@ -1926,8 +1926,8 @@ document.querySelectorAll('.counter').forEach(el=>co.observe(el));
       setTimeout(() => {
         typing.remove();
         addMsg('ai', m.text);
-        setTimeout(runStep, 1800);
-      }, 1400);
+        setTimeout(runStep, 900);
+      }, 700);
     }
   }
   // Show first Q&A statically on load
