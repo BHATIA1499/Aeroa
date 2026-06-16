@@ -972,20 +972,27 @@ def auth_signup():
         return jsonify({"error": "Password must be at least 8 characters"}), 400
 
     try:
-        # Use admin API to create a pre-confirmed user (no email verification step)
-        res = supabase.auth.admin.create_user({
+        # Use sign_up (not admin.create_user) so Supabase sends the OTP verification email
+        res = supabase.auth.sign_up({
             "email": email,
             "password": password,
-            "email_confirm": False,
-            "user_metadata": {"full_name": name},
+            "options": {
+                "data": {"full_name": name},
+            },
         })
         if not res.user:
             return jsonify({"error": "Signup failed — please try again"}), 400
+
+        # Supabase returns an identities list — if empty, the email is already registered
+        identities = getattr(res.user, "identities", None)
+        if identities is not None and len(identities) == 0:
+            return jsonify({"error": "An account with this email already exists. Please log in."}), 409
+
         return jsonify({"ok": True, "verify": True, "message": "Check your email for a 6-digit verification code"})
     except Exception as e:
         msg = str(e)
         if "already registered" in msg.lower() or "already been registered" in msg.lower() or "duplicate" in msg.lower():
-            return jsonify({"error": "An account with this email already exists"}), 409
+            return jsonify({"error": "An account with this email already exists. Please log in."}), 409
         app.logger.error(f"Signup error: {e}", exc_info=True)
         return jsonify({"error": "Signup failed — please try again"}), 500
 
@@ -1081,10 +1088,32 @@ def auth_verify_email():
     if not email or not token:
         return jsonify({"error": "Email and verification code are required"}), 400
     try:
-        res = supabase.auth.verify_otp({"email": email, "token": token, "type": "email"})
-        if res.user and res.session:
+        # Try "signup" type first (Supabase v2 sends OTP with type=signup for new accounts)
+        res = None
+        last_error = None
+        for otp_type in ("signup", "email"):
+            try:
+                res = supabase.auth.verify_otp({"email": email, "token": token, "type": otp_type})
+                if res.user and res.session:
+                    break
+            except Exception as e2:
+                last_error = e2
+                continue
+
+        if res and res.user and res.session:
             from datetime import timezone
             trial_ends = (datetime.now(timezone.utc) + __import__('datetime').timedelta(days=14)).isoformat()
+            # Create or update profile in DB
+            try:
+                get_user_db().table("profiles").upsert({
+                    "id": res.user.id,
+                    "email": email,
+                    "full_name": name or email.split("@")[0],
+                    "plan": "trial",
+                    "trial_ends": trial_ends,
+                }).execute()
+            except Exception:
+                pass
             session["user_id"]         = res.user.id
             session["user_email"]      = email
             session["user_name"]       = name or email.split("@")[0]
@@ -1092,7 +1121,8 @@ def auth_verify_email():
             session["user_trial_ends"] = trial_ends
             session["access_token"]    = res.session.access_token
             session["refresh_token"]   = res.session.refresh_token
-            return jsonify({"ok": True, "redirect": "/dashboard"})
+            csrf_token = generate_csrf_token()
+            return jsonify({"ok": True, "redirect": "/dashboard", "csrf_token": csrf_token})
         return jsonify({"error": "Invalid or expired code — try again"}), 400
     except Exception as e:
         app.logger.error(f"Verify email error: {e}")
