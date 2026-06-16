@@ -960,15 +960,23 @@ function deriveCats() {
 function safeChart(canvasId, config, emptyMsg) {
   try {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) { console.warn('Canvas not found:', canvasId); return null; }
+    if (!canvas) { console.warn('safeChart: canvas not found:', canvasId); return null; }
+
+    // Chart.js 4 keeps an internal registry per canvas — always destroy before re-creating
+    const existing = Chart.getChart(canvas);
+    if (existing) { try { existing.destroy(); } catch {} }
+
     // Reset canvas visibility (in case renderEmptyChart hid it before)
     canvas.style.display = 'block';
     const emp = document.getElementById(canvasId + '-empty');
     if (emp) emp.style.display = 'none';
+
     const ctx = canvas.getContext('2d');
+    if (!ctx) { renderEmptyChart(canvasId, emptyMsg || 'Chart failed to render'); return null; }
+
     return new Chart(ctx, config);
   } catch (e) {
-    console.error('Chart error on', canvasId, e);
+    console.error('safeChart error on', canvasId, ':', e.message);
     renderEmptyChart(canvasId, emptyMsg || 'Chart failed to render');
     return null;
   }
@@ -1053,9 +1061,13 @@ function showRoleView() {
   view.style.display = 'block';
   requestAnimationFrame(() => view.classList.add('active'));
 
-  // Destroy existing charts
-  Object.values(charts).forEach(c => { try { c.destroy(); } catch {} });
+  // Destroy existing Chart.js instances — both from our registry and Chart.js's internal one
+  Object.values(charts).forEach(c => { try { if (c && c.destroy) c.destroy(); } catch {} });
   charts = {};
+  // Belt-and-suspenders: destroy any remaining registered charts in the entire document
+  document.querySelectorAll('canvas[id]').forEach(cvs => {
+    try { const ch = Chart.getChart(cvs); if (ch) ch.destroy(); } catch {}
+  });
 
   // Switch to overview FIRST so chart containers are visible when Chart.js initialises
   // (charts in display:none containers render with 0 dimensions)
