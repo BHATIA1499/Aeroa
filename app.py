@@ -952,7 +952,22 @@ def signup_page():
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    key_preview = (key[:12] + "...") if len(key) > 12 else f"MISSING or too short ({len(key)} chars)"
+    return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat(), "ai_key": key_preview, "ai_model": MODEL})
+
+
+@app.route("/api/test-ai")
+def test_ai():
+    """Diagnostic: test Anthropic connectivity."""
+    try:
+        resp = ai_client.messages.create(
+            model=MODEL, max_tokens=20,
+            messages=[{"role": "user", "content": "Say hi"}]
+        )
+        return jsonify({"ok": True, "reply": resp.content[0].text, "model": MODEL})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e), "model": MODEL}), 500
 
 
 # ═══════════════════════════════════════════════════════════════
