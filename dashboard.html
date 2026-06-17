@@ -2101,7 +2101,7 @@ async function sendChat() {
       body: JSON.stringify({message: msg, context, history: chatHistory.slice(-6)})
     });
     const data = await res.json();
-    const reply = data.reply || data.message || 'Sorry, I could not get a response.';
+    const reply = data.reply || data.message || data.error || 'Sorry, I could not get a response.';
     typingEl.textContent = reply;
     typingEl.classList.remove('chat-typing');
     chatHistory.push({role:'assistant', content:reply});

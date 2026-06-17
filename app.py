@@ -1394,15 +1394,21 @@ def _get_analysis_for_user(user, upload_id=None):
     try:
         db = get_user_db()
         uid = upload_id or session.get("current_upload_id")
-        company_id = str(user.get("company_id", ""))
+        company_id = user.get("company_id")  # keep as None if not set — don't cast to string
         if uid:
-            res = db.table("uploads").select("analysis, id") \
-                .eq("id", uid).eq("user_id", user["id"]).eq("company_id", company_id).single().execute()
+            q = db.table("uploads").select("analysis, id") \
+                .eq("id", uid).eq("user_id", user["id"])
+            if company_id is not None:
+                q = q.eq("company_id", str(company_id))
+            res = q.single().execute()
             if res.data:
                 return res.data["analysis"], res.data["id"]
 
-        res = db.table("uploads").select("analysis, id") \
-            .eq("user_id", user["id"]).eq("company_id", company_id).order("created_at", desc=True).limit(1).execute()
+        q = db.table("uploads").select("analysis, id") \
+            .eq("user_id", user["id"]).order("created_at", desc=True).limit(1)
+        if company_id is not None:
+            q = q.eq("company_id", str(company_id))
+        res = q.execute()
         if res.data:
             return res.data[0]["analysis"], res.data[0]["id"]
     except Exception:
