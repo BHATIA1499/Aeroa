@@ -5,7 +5,7 @@ Encrypts uploaded files and sensitive database records at rest.
 
 Key management
 --------------
-Set THREADLYTICS_ENCRYPTION_KEY env var to a base64-encoded 32-byte key.
+Set AEROA_ENCRYPTION_KEY env var to a base64-encoded 32-byte key.
 Generate one with:  python -c "import secrets,base64; print(base64.b64encode(secrets.token_bytes(32)).decode())"
 
 If the key is missing in development, a random ephemeral key is used
@@ -27,19 +27,19 @@ _KEY_LEN   = 32   # 256-bit key
 
 def _get_master_key() -> bytes:
     """Load encryption key from environment. Fails loudly in production."""
-    b64 = os.environ.get("THREADLYTICS_ENCRYPTION_KEY", "")
+    b64 = os.environ.get("AEROA_ENCRYPTION_KEY", "")
     if b64:
         key = base64.b64decode(b64)
         if len(key) != _KEY_LEN:
             raise RuntimeError(
-                f"THREADLYTICS_ENCRYPTION_KEY must be {_KEY_LEN} bytes "
+                f"AEROA_ENCRYPTION_KEY must be {_KEY_LEN} bytes "
                 f"(got {len(key)}). Regenerate with the command in encryption.py."
             )
         return key
 
     if os.environ.get("FLASK_ENV") == "production":
         raise RuntimeError(
-            "THREADLYTICS_ENCRYPTION_KEY is required in production. "
+            "AEROA_ENCRYPTION_KEY is required in production. "
             "Set it in your Railway environment variables."
         )
 
@@ -47,7 +47,7 @@ def _get_master_key() -> bytes:
     secret = os.environ.get("FLASK_SECRET_KEY", "dev-only-insecure")
     key = hashlib.sha256(secret.encode()).digest()
     log.warning(
-        "⚠️  No THREADLYTICS_ENCRYPTION_KEY set — using derived dev key. "
+        "⚠️  No AEROA_ENCRYPTION_KEY set — using derived dev key. "
         "DO NOT use this in production."
     )
     return key

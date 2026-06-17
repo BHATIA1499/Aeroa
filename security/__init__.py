@@ -1,5 +1,5 @@
 """
-Threadlytics Security Package
+Aeroa Security Package
 ==============================
 Enterprise-grade security layer for fashion retail data protection.
 

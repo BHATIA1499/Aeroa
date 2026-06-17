@@ -1,5 +1,5 @@
 """
-Threadlytics — Flask backend (Phase 1: Auth + Supabase)
+Aeroa — Flask backend (Phase 1: Auth + Supabase)
 ========================================================
 Routes:
   Public
@@ -413,7 +413,7 @@ def analyse(df):
         raise ValueError(
             f"Missing required columns: {', '.join(missing)}. "
             f"Found columns: {', '.join(str(c) for c in found)}{'...' if len(df.columns)>10 else ''}. "
-            f"Threadlytics needs at least SKU, UnitsSold/Units/Qty, and Revenue/Sales columns."
+            f"Aeroa needs at least SKU, UnitsSold/Units/Qty, and Revenue/Sales columns."
         )
 
     # ── Clean numerics — strips £$€, commas, % signs ──────────
@@ -548,7 +548,7 @@ def analyse(df):
 
 def build_system_prompt(analysis):
     k = analysis.get("kpis", {})
-    return f"""You are a senior fashion merchandiser and buying director inside Threadlytics.
+    return f"""You are a senior fashion merchandiser and buying director inside Aeroa.
 
 TRADING DATA
 ============
@@ -936,7 +936,7 @@ def _build_role_analysis(analysis):
 
 @app.route("/")
 def index():
-    return send_from_directory(".", "threadlytics_fixed.html")
+    return send_from_directory(".", "aeroa_fixed.html")
 
 @app.route("/login")
 def login_page():
@@ -1046,7 +1046,7 @@ def auth_forgot_password():
     if not email:
         return jsonify({"error": "Email is required"}), 400
     try:
-        redirect_url = "https://threadlytics-ai.up.railway.app/reset-password"
+        redirect_url = "https://aeroa-ai.up.railway.app/reset-password"
         supabase.auth.reset_password_for_email(email, {"redirect_to": redirect_url})
         return jsonify({"ok": True, "message": "Password reset email sent — check your inbox"})
     except Exception as e:
@@ -2464,7 +2464,7 @@ def _build_pptx(report, analysis):
     def slide_header(slide, title, subtitle=None):
         """Add standard header bar."""
         add_rect(slide, 0, 0, 13.33, 1.1, fill_rgb=DARK)
-        add_text(slide, "THREADLYTICS", 0.35, 0.12, 3, 0.4,
+        add_text(slide, "AEROA", 0.35, 0.12, 3, 0.4,
                  font_size=10, bold=True, color=MINT_L, font_name="Calibri")
         add_text(slide, title, 0.35, 0.45, 10, 0.55,
                  font_size=22, bold=True, color=WHITE, font_name="Calibri")
@@ -2489,7 +2489,7 @@ def _build_pptx(report, analysis):
     add_rect(s, 0, 5.8, 13.33, 1.7, fill_rgb=RGBColor(0x12,0x16,0x20))
     # Accent bar
     add_rect(s, 0, 2.9, 0.06, 1.8, fill_rgb=MINT)
-    add_text(s, "THREADLYTICS", 0.35, 1.2, 12, 0.6,
+    add_text(s, "AEROA", 0.35, 1.2, 12, 0.6,
              font_size=13, bold=True, color=MINT_L, font_name="Calibri")
     add_text(s, "AI Trade Report", 0.35, 2.0, 12, 1.2,
              font_size=46, bold=True, color=WHITE, font_name="Calibri")
@@ -2683,11 +2683,11 @@ def _build_pptx(report, analysis):
     s = add_slide()
     add_rect(s, 0, 0, 13.33, 7.5, fill_rgb=DARK)
     add_rect(s, 0, 3.4, 13.33, 0.06, fill_rgb=MINT)
-    add_text(s, "THREADLYTICS", 0, 3.6, 13.33, 1.2,
+    add_text(s, "AEROA", 0, 3.6, 13.33, 1.2,
              font_size=36, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
     add_text(s, "AI Merchandising Intelligence", 0, 4.8, 13.33, 0.6,
              font_size=14, color=MINT_L, align=PP_ALIGN.CENTER)
-    add_text(s, f"Report generated {today} · threadlytics-ai.up.railway.app",
+    add_text(s, f"Report generated {today} · aeroa-ai.up.railway.app",
              0, 6.5, 13.33, 0.5, font_size=10,
              color=RGBColor(0x55,0x66,0x77), align=PP_ALIGN.CENTER)
 
@@ -2842,7 +2842,7 @@ def download_pptx(user):
     try:
         buf = _build_pptx(report, analysis)
         from datetime import date as _d
-        fname = f"Threadlytics_Trade_Report_{_d.today().strftime('%Y%m%d')}.pptx"
+        fname = f"Aeroa_Trade_Report_{_d.today().strftime('%Y%m%d')}.pptx"
         audit.log(DATA_EXPORT, request=request, user_id=user["id"],
                   company_id=user.get("company_id"),
                   resource="report:pptx")
@@ -3049,7 +3049,7 @@ def toggle_private_mode(user):
             "private_mode": enabled,
             "message": (
                 "Private Processing Mode enabled. AI will only receive aggregated metrics — "
-                "no SKU codes, product names, or supplier data will leave Threadlytics servers."
+                "no SKU codes, product names, or supplier data will leave Aeroa servers."
                 if enabled else
                 "Private Processing Mode disabled. Standard AI analysis with supplier masking is active."
             ),
@@ -3068,5 +3068,5 @@ except Exception as e:
 if __name__ == "__main__":
     port  = int(os.environ.get("PORT", 5000))
     debug = os.environ.get("FLASK_ENV", "development") == "development"
-    print(f"\n🧵 Threadlytics running → http://localhost:{port}\n")
+    print(f"\n🧵 Aeroa running → http://localhost:{port}\n")
     app.run(host="0.0.0.0", port=port, debug=debug)
