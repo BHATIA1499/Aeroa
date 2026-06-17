@@ -76,7 +76,7 @@ CORS(app, supports_credentials=True)
 
 # ── Clients ───────────────────────────────────────────────────
 ai_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-MODEL = "claude-sonnet-4-5"
+MODEL = "claude-3-5-sonnet-20241022"
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
@@ -1489,9 +1489,15 @@ def chat(user):
                   metadata={"private_mode": private_mode})
         return jsonify({"reply": reply})
 
+    except anthropic.AuthenticationError as e:
+        app.logger.error(f"Anthropic auth error (bad API key?): {e}")
+        return jsonify({"error": "AI configuration error — please contact support."}), 502
     except anthropic.APIError as e:
-        app.logger.error(f"Anthropic error: {e}")
-        return jsonify({"error": "AI service error. Please try again."}), 502
+        app.logger.error(f"Anthropic API error: {e}")
+        return jsonify({"error": f"AI service error: {e}"}), 502
+    except Exception as e:
+        app.logger.error(f"Chat unexpected error: {e}")
+        return jsonify({"error": f"Unexpected error: {e}"}), 500
 
 
 @app.route("/api/chat/stream", methods=["POST"])
