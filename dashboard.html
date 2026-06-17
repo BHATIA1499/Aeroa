@@ -1078,6 +1078,11 @@ function safeChart(canvasId, config, emptyMsg) {
     const emp = document.getElementById(canvasId + '-empty');
     if (emp) emp.style.display = 'none';
 
+    // Ensure canvas has dimensions before rendering
+    if (!canvas.offsetParent && !canvas.offsetWidth) {
+      canvas.style.width  = canvas.style.width  || '100%';
+      canvas.style.height = canvas.style.height || '100px';
+    }
     const ctx = canvas.getContext('2d');
     if (!ctx) { renderEmptyChart(canvasId, emptyMsg || 'Chart failed to render'); return null; }
 
@@ -1224,11 +1229,12 @@ function renderMA() {
     if (dqEl) dqEl.style.width = Math.min(rd.data_quality_pct||0,100)+'%';
   }, 120);
 
-  // Overview Charts ─ use best available data with robust fallbacks
-  const topSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
-  const wt = analysisData.weekly_trend || [];
-  const cats = [...(analysisData.category_scorecard||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
-  const mdRisk = [...(analysisData.markdown_risk||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  // Overview Charts ─ sanitise all data before passing to Chart.js
+  const _clean = v => (typeof v === 'number' && isFinite(v) ? v : 0);
+  const topSkus = [...(analysisData.best_sellers||[])].filter(s=>s&&_clean(s.revenue)>0).sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  const wt      = (analysisData.weekly_trend||[]).filter(w=>w&&_clean(w.revenue)>=0);
+  const cats    = [...(analysisData.category_scorecard||[])].filter(c=>c&&_clean(c.revenue)>0).sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+  const mdRisk  = [...(analysisData.markdown_risk||[])].filter(m=>m).sort((a,b)=>_clean(b.revenue)-_clean(a.revenue)).slice(0,8);
   const PALETTE = ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#A8C5A0','#B8C4E8','#C8DFBF'];
 
   // ── Chart 1: Revenue overview ─────────────────────────────────
