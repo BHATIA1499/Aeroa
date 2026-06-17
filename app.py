@@ -76,7 +76,7 @@ CORS(app, supports_credentials=True)
 
 # ── Clients ───────────────────────────────────────────────────
 ai_client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-MODEL = "claude-3-haiku-20240307"
+MODEL = "claude-sonnet-4-5"
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
