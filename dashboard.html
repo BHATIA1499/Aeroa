@@ -345,6 +345,52 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;
   color:rgba(184,153,106,0.8);border:1px solid rgba(184,153,106,0.25);padding:3px 10px;border-radius:5px;letter-spacing:0.06em}
 
+/* ── HEALTH DASHBOARD OVERVIEW ── */
+.hd-banner{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-radius:14px;margin-bottom:14px;
+  background:linear-gradient(135deg,rgba(125,170,117,0.09),rgba(168,197,160,0.05));border:1px solid rgba(125,170,117,0.18)}
+.hd-banner-sub{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:3px}
+.hd-banner-title{font-size:18px;font-weight:700;font-family:var(--serif);color:var(--text)}
+.hs-pill{display:flex;flex-direction:column;align-items:center;background:linear-gradient(135deg,rgba(125,170,117,0.16),rgba(168,197,160,0.08));
+  border:1.5px solid rgba(125,170,117,0.28);border-radius:12px;padding:10px 22px}
+.hs-label{font-size:9px;font-weight:700;color:var(--mint-d);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:2px}
+.hs-value{font-size:30px;font-weight:800;font-family:var(--serif);color:var(--mint-d);line-height:1}
+.hd-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.hd-card{border-radius:14px;padding:16px 18px}
+.hd-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.hd-card-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.09em;margin-bottom:4px}
+.hd-card-val{font-size:24px;font-weight:800;font-family:var(--serif);color:var(--text);line-height:1;margin-bottom:3px}
+.hd-card-sub{font-size:11px;color:var(--text2)}
+.hd-card-badge{padding:4px 10px;border-radius:99px;font-size:10px;font-weight:700;white-space:nowrap}
+.hd-chart{height:115px;position:relative;margin-top:6px}
+.hd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.hd-stat-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px}
+.hd-stat-value{font-size:16px;font-weight:700;font-family:var(--serif);color:var(--text)}
+.hd-bottom{display:grid;grid-template-columns:1fr 1.15fr;gap:12px;margin-bottom:12px}
+.hd-cat-wrap{height:155px;position:relative}
+.hd-cat-legend{display:flex;flex-direction:column;gap:5px;margin-top:10px}
+.hd-cat-leg{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2)}
+.hd-cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;margin-right:5px}
+.rec-panel{padding:16px 18px}
+.rec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.rec-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,rgba(125,170,117,0.18),rgba(168,197,160,0.08));
+  border:1px solid rgba(125,170,117,0.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:var(--mint-d)}
+.rec-list{display:flex;flex-direction:column;gap:7px}
+.rec-item{display:flex;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.55);border-radius:10px;border:1px solid var(--border);align-items:flex-start}
+.rec-item-ic{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.rec-item-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.rec-item-detail{font-size:11px;color:var(--text3);line-height:1.4}
+.rec-item-val{font-size:11px;font-weight:700;margin-top:3px}
+.dq-strip{display:flex;align-items:center;gap:12px;padding:11px 18px;margin-bottom:14px}
+.dq-lbl{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap}
+.dq-bar-wrap{flex:1;max-width:100px;height:5px;background:rgba(0,0,0,0.07);border-radius:99px;overflow:hidden}
+.dq-bar-fill{height:100%;border-radius:99px;transition:width 1s ease}
+.dq-val{font-size:12px;font-weight:700;white-space:nowrap}
+.dq-sep{width:1px;height:16px;background:var(--border)}
+@media(max-width:900px){
+  .hd-cards,.hd-bottom{grid-template-columns:1fr}
+  .hd-banner{flex-direction:column;align-items:flex-start;gap:10px}
+}
+
 /* ── KPI ACCORDION ── */
 .kpi-accordion{margin-bottom:18px}
 .kpi-accordion-header{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;
@@ -471,41 +517,99 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
         <!-- SECTION: Overview -->
         <div class="role-section active" data-section="overview">
-          <!-- Row 1: Operational KPIs -->
-          <div class="kpi-grid kpi-grid-6" style="margin-bottom:12px">
-            <div class="kpi glass" id="ma-kpi-1"><div class="kpi-label">Today's Sales Est.</div><div class="kpi-value" id="ma-sales">—</div><div class="kpi-sub">weekly run-rate</div></div>
-            <div class="kpi glass" id="ma-kpi-2"><div class="kpi-label">Units Sold</div><div class="kpi-value" id="ma-units">—</div><div class="kpi-sub">total range</div></div>
-            <div class="kpi glass" id="ma-kpi-3"><div class="kpi-label">Stock On Hand</div><div class="kpi-value" id="ma-stock">—</div><div class="kpi-sub">units across range</div></div>
-            <div class="kpi glass" id="ma-kpi-4"><div class="kpi-label">Open POs</div><div class="kpi-value" id="ma-po">—</div><div class="kpi-sub">critical / urgent</div></div>
-            <div class="kpi glass" id="ma-kpi-5"><div class="kpi-label">Missing Data</div><div class="kpi-value" id="ma-missing">—</div><div class="kpi-sub" id="ma-missing-sub">SKUs incomplete</div></div>
-            <div class="kpi glass" id="ma-kpi-6"><div class="kpi-label">Low Stock</div><div class="kpi-value" id="ma-low-stock">—</div><div class="kpi-sub">SKUs need action</div></div>
-          </div>
-          <!-- Row 2: Commercial KPIs -->
-          <div class="kpi-grid kpi-grid-4" style="margin-bottom:18px">
-            <div class="kpi glass" style="border-top-color:#7DAA75"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="ma-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
-            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="ma-kpi-margin">—</div><div class="kpi-sub">avg across range</div><div class="kpi-bar"><div class="kpi-bar-fill" id="ma-margin-bar" style="width:0%"></div></div></div>
-            <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="ma-kpi-st">—</div><div class="kpi-sub">all SKUs</div><div class="kpi-bar"><div class="kpi-bar-fill" id="ma-st-bar" style="width:0%;background:#8A9DD8"></div></div></div>
-            <div class="kpi glass" style="border-top-color:#E3A08E"><div class="kpi-label">Markdown Candidates</div><div class="kpi-value" id="ma-kpi-markdowns">—</div><div class="kpi-sub" id="ma-kpi-md-sub">at risk</div></div>
-          </div>
-          <!-- Overview Charts: Weekly Revenue Trend + Top SKUs Bar -->
-          <div class="two-col" style="margin-bottom:14px">
-            <div class="glass" style="padding:18px">
-              <div class="card-title">Weekly Revenue Trend</div>
-              <div class="chart-wrap"><canvas id="ma-trend-chart"></canvas></div>
+
+          <!-- Health Banner -->
+          <div class="hd-banner">
+            <div>
+              <div class="hd-banner-sub">Condition of Your Business</div>
+              <div class="hd-banner-title">Business Health Dashboard</div>
             </div>
-            <div class="glass" style="padding:18px">
-              <div class="card-title">Top SKUs by Revenue</div>
-              <div class="chart-wrap"><canvas id="ma-top-chart"></canvas></div>
+            <div class="hs-pill">
+              <div class="hs-label">Health Score</div>
+              <div class="hs-value" id="ma-health-score">—</div>
             </div>
           </div>
-          <!-- AI Executive Summary -->
-          <div class="glass exec-summary-card" style="margin-bottom:14px">
-            <div class="card-title" style="color:rgba(184,153,106,0.8);margin-bottom:14px">AI Executive Summary</div>
-            <div class="exec-summary-quote" id="ma-summary">Loading executive summary…</div>
-            <div class="ai-badge">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-              Generated by Aeroa AI
+
+          <!-- Two large chart cards -->
+          <div class="hd-cards">
+            <!-- Revenue Card -->
+            <div class="glass hd-card">
+              <div class="hd-card-top">
+                <div>
+                  <div class="hd-card-label">Revenue Health</div>
+                  <div class="hd-card-val" id="ma-kpi-revenue">—</div>
+                  <div class="hd-card-sub">total trading period</div>
+                </div>
+                <div class="hd-card-badge badge-green" id="ma-revenue-badge">—</div>
+              </div>
+              <div class="hd-chart"><canvas id="ma-trend-chart"></canvas></div>
+              <div class="hd-stats">
+                <div><div class="hd-stat-label">Today's Est.</div><div class="hd-stat-value" id="ma-sales">—</div></div>
+                <div><div class="hd-stat-label">Units Sold</div><div class="hd-stat-value" id="ma-units">—</div></div>
+                <div><div class="hd-stat-label">Markdown Risk</div><div class="hd-stat-value" id="ma-kpi-markdowns">—</div></div>
+              </div>
             </div>
+
+            <!-- Inventory Card -->
+            <div class="glass hd-card">
+              <div class="hd-card-top">
+                <div>
+                  <div class="hd-card-label">Inventory Levels</div>
+                  <div class="hd-card-val" id="ma-stock">—</div>
+                  <div class="hd-card-sub">units on hand</div>
+                </div>
+                <div class="hd-card-badge badge-amber" id="ma-inv-badge">—</div>
+              </div>
+              <div class="hd-chart"><canvas id="ma-top-chart"></canvas></div>
+              <div class="hd-stats">
+                <div><div class="hd-stat-label">Low Stock</div><div class="hd-stat-value" id="ma-low-stock">—</div></div>
+                <div><div class="hd-stat-label">Open POs</div><div class="hd-stat-value" id="ma-po">—</div></div>
+                <div><div class="hd-stat-label">Missing Data</div><div class="hd-stat-value" id="ma-missing">—</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom row: Category donut + AI Recommendations -->
+          <div class="hd-bottom">
+            <div class="glass" style="padding:16px 18px">
+              <div class="card-title">Category Performance</div>
+              <div class="hd-cat-wrap"><canvas id="ma-cat-donut"></canvas></div>
+              <div class="hd-cat-legend" id="ma-cat-legend"></div>
+            </div>
+            <div class="glass rec-panel">
+              <div class="rec-hdr">
+                <div class="rec-icon">✦</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text);font-family:var(--serif)">AI Recommendations</div>
+                  <div style="font-size:10px;color:var(--text3);margin-top:1px">Aeroa AI · based on your trading data</div>
+                </div>
+              </div>
+              <div class="rec-list" id="ma-recommendations">
+                <div style="font-size:12px;color:var(--text3);padding:8px 0">Analysing your data…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics strip -->
+          <div class="glass dq-strip">
+            <div class="dq-lbl">Data Quality</div>
+            <div class="dq-bar-wrap"><div class="dq-bar-fill" id="ma-dq-bar" style="width:0%;background:linear-gradient(90deg,#7DAA75,#A8C5A0)"></div></div>
+            <div class="dq-val" style="color:var(--mint-d)" id="ma-missing-sub">—</div>
+            <div class="dq-sep"></div>
+            <div class="dq-lbl">Sell-Through</div>
+            <div class="dq-bar-wrap"><div class="dq-bar-fill" id="ma-st-bar" style="width:0%;background:linear-gradient(90deg,#8A9DD8,#B8C4E8)"></div></div>
+            <div class="dq-val" style="color:#8A9DD8" id="ma-kpi-st">—</div>
+            <div class="dq-sep"></div>
+            <div class="dq-lbl">Gross Margin</div>
+            <div class="dq-val" style="color:#E3A08E" id="ma-kpi-margin">—</div>
+            <div class="dq-sep"></div>
+            <div class="dq-val" style="font-weight:400;color:var(--text3);font-size:11px" id="ma-kpi-md-sub"></div>
+          </div>
+
+          <!-- Hidden fields for JS compatibility -->
+          <div style="display:none">
+            <span id="ma-margin-bar"></span>
+            <span id="ma-summary"></span>
           </div>
         </div>
 
@@ -1112,9 +1216,13 @@ function renderMA() {
   document.getElementById('ma-kpi-markdowns').textContent = mdCount;
   document.getElementById('ma-kpi-md-sub').textContent    = mdCount > 0 ? `${mdCount} SKU${mdCount>1?'s':''} at risk` : 'No markdown risk';
   setTimeout(() => {
-    document.getElementById('ma-margin-bar').style.width = Math.min(avgMg,100)+'%';
-    document.getElementById('ma-st-bar').style.width    = Math.min(avgST,100)+'%';
-  }, 100);
+    const mbEl = document.getElementById('ma-margin-bar');
+    if (mbEl && mbEl.style) mbEl.style.width = Math.min(avgMg,100)+'%';
+    const stEl = document.getElementById('ma-st-bar');
+    if (stEl) stEl.style.width = Math.min(avgST,100)+'%';
+    const dqEl = document.getElementById('ma-dq-bar');
+    if (dqEl) dqEl.style.width = Math.min(rd.data_quality_pct||0,100)+'%';
+  }, 120);
 
   // Overview Charts ─ use best available data with robust fallbacks
   const topSkus = [...(analysisData.best_sellers||[])].sort((a,b)=>b.revenue-a.revenue).slice(0,8);
@@ -1260,7 +1368,7 @@ function renderMA() {
     renderEmptyChart('ma-top-chart', 'Upload a trading file to see top SKUs');
   }
 
-  // AI Executive Summary
+  // AI Executive Summary (hidden, for context)
   const summaryText = (rd.executive_summary) ||
     `${(analysisData.meta||{}).sku_count||0} SKUs analysed. ` +
     `${k.avg_sell_through?.toFixed(1)||0}% average sell-through. ` +
@@ -1268,6 +1376,110 @@ function renderMA() {
     `${(analysisData.markdown_risk||[]).length} markdown candidates identified.`;
   const sumEl = document.getElementById('ma-summary');
   if (sumEl) sumEl.textContent = summaryText;
+
+  // ── Health Score ──────────────────────────────────────────────
+  const dqPct = rd.data_quality_pct || 0;
+  const hsScore = Math.min(100, Math.round(
+    (Math.min(avgST,100)/100)*40 + (Math.min(avgMg,50)/50)*30 + (dqPct/100)*30
+  ));
+  const hsEl = document.getElementById('ma-health-score');
+  if (hsEl) hsEl.textContent = hsScore + '%';
+
+  // Revenue trend badge
+  const revBadge = document.getElementById('ma-revenue-badge');
+  if (revBadge) {
+    const wtArr = analysisData.weekly_trend || [];
+    if (wtArr.length >= 2) {
+      const last = wtArr[wtArr.length-1]?.revenue||0, prev = wtArr[wtArr.length-2]?.revenue||0;
+      const up = last > prev * 1.02;
+      revBadge.textContent = up ? '↑ Trending Up' : (last < prev * 0.98 ? '↓ Declining' : '→ Stable');
+      revBadge.className   = 'hd-card-badge ' + (up ? 'badge-green' : (last < prev * 0.98 ? 'badge-red' : 'badge-teal'));
+    } else {
+      revBadge.textContent = 'Revenue'; revBadge.className = 'hd-card-badge badge-green';
+    }
+  }
+
+  // Inventory badge
+  const invBadge = document.getElementById('ma-inv-badge');
+  if (invBadge) {
+    const ls = k.reorder_count||0;
+    invBadge.textContent = ls > 0 ? `${ls} Low Stock` : '✓ Stock OK';
+    invBadge.className   = 'hd-card-badge ' + (ls > 0 ? 'badge-amber' : 'badge-green');
+  }
+
+  // ── Category Performance Donut ────────────────────────────────
+  if (cats.length) {
+    charts.maCatDonut = safeChart('ma-cat-donut', {
+      type: 'doughnut',
+      data: {
+        labels: cats.slice(0,6).map(c=>c.category||'Other'),
+        datasets:[{data:cats.slice(0,6).map(c=>c.revenue||0),
+          backgroundColor:PALETTE.slice(0,6).map(c=>c+'CC'),
+          borderWidth:2, borderColor:'rgba(255,255,255,0.9)'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmtCurr(c.parsed)}}}}
+    });
+    const totalRev = cats.reduce((s,c)=>s+(c.revenue||0),0);
+    const legEl = document.getElementById('ma-cat-legend');
+    if (legEl) legEl.innerHTML = cats.slice(0,6).map((c,i)=>`
+      <div class="hd-cat-leg">
+        <div><span class="hd-cat-dot" style="background:${PALETTE[i]}"></span>${c.category||'Other'}</div>
+        <span style="font-weight:600;color:var(--text)">${totalRev>0?Math.round((c.revenue||0)/totalRev*100):0}%</span>
+      </div>`).join('');
+  } else {
+    renderEmptyChart('ma-cat-donut','Upload data to see categories');
+  }
+
+  // ── AI Recommendations ────────────────────────────────────────
+  const recEl = document.getElementById('ma-recommendations');
+  if (recEl) {
+    const roCount = (analysisData.reorder_alerts||[]).length;
+    const critRo  = (analysisData.reorder_alerts||[]).filter(r=>r.urgency==='CRITICAL'||r.urgency==='URGENT').length;
+    const recs = [];
+    if (critRo > 0) recs.push({
+      ic:'📦', bg:'rgba(227,160,142,0.15)',
+      title:`Reorder ${critRo} Critical SKU${critRo>1?'s':''}`,
+      detail:'Stock levels critical — risk of lost sales this week',
+      val:'URGENT ACTION', col:'#D05040'
+    });
+    if (mdCount > 0) {
+      const mdRev = (analysisData.markdown_risk||[]).reduce((s,m)=>s+(m.revenue||0),0);
+      recs.push({
+        ic:'🏷️', bg:'rgba(240,196,160,0.15)',
+        title:`Markdown ${mdCount} SKU${mdCount>1?'s':''}`,
+        detail:'Below sell-through target — apply price action to clear stock',
+        val:'Potential recovery: '+fmtCurr(mdRev*0.12), col:'#7DAA75'
+      });
+    }
+    if (cats[0]) recs.push({
+      ic:'📈', bg:'rgba(125,170,117,0.12)',
+      title:`Invest in ${cats[0].category||'Top Category'}`,
+      detail:'Highest revenue category — increase buying depth for next season',
+      val:'+'+fmtCurr((cats[0].revenue||0)*0.10)+' est. upside', col:'#7DAA75'
+    });
+    if (avgST < 35 && recs.length < 4) recs.push({
+      ic:'⚠️', bg:'rgba(184,196,232,0.15)',
+      title:'Low Sell-Through Alert',
+      detail:`${avgST.toFixed(1)}% avg — review pricing and promotional strategy`,
+      val:'Action Required', col:'#8A9DD8'
+    });
+    if (roCount === 0 && mdCount === 0 && avgST >= 50) recs.push({
+      ic:'✓', bg:'rgba(125,170,117,0.10)',
+      title:'Business Running Smoothly',
+      detail:'No critical alerts — maintain current strategy',
+      val:'All Clear', col:'#7DAA75'
+    });
+    recEl.innerHTML = recs.slice(0,4).map(r=>`
+      <div class="rec-item">
+        <div class="rec-item-ic" style="background:${r.bg}">${r.ic}</div>
+        <div style="flex:1;min-width:0">
+          <div class="rec-item-title">${r.title}</div>
+          <div class="rec-item-detail">${r.detail}</div>
+          <div class="rec-item-val" style="color:${r.col}">${r.val}</div>
+        </div>
+      </div>`).join('');
+  }
 
   // Reorder alerts table
   const reorders = analysisData.reorder_alerts || [];
