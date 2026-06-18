@@ -1089,7 +1089,7 @@ function safeChart(canvasId, config, emptyMsg) {
     return new Chart(ctx, config);
   } catch (e) {
     console.error('safeChart error on', canvasId, ':', e.message);
-    renderEmptyChart(canvasId, emptyMsg || 'Chart failed to render');
+    renderEmptyChart(canvasId, e.message || emptyMsg || 'Chart failed to render');
     return null;
   }
 }
