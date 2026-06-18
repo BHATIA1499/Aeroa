@@ -542,7 +542,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
                 </div>
                 <div class="hd-card-badge badge-green" id="ma-revenue-badge">—</div>
               </div>
-              <div class="hd-chart"><canvas id="ma-trend-chart"></canvas></div>
+              <div class="hd-chart" id="ma-trend-chart"></div>
               <div class="hd-stats">
                 <div><div class="hd-stat-label">Today's Est.</div><div class="hd-stat-value" id="ma-sales">—</div></div>
                 <div><div class="hd-stat-label">Units Sold</div><div class="hd-stat-value" id="ma-units">—</div></div>
@@ -560,7 +560,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
                 </div>
                 <div class="hd-card-badge badge-amber" id="ma-inv-badge">—</div>
               </div>
-              <div class="hd-chart"><canvas id="ma-top-chart"></canvas></div>
+              <div class="hd-chart" id="ma-top-chart"></div>
               <div class="hd-stats">
                 <div><div class="hd-stat-label">Low Stock</div><div class="hd-stat-value" id="ma-low-stock">—</div></div>
                 <div><div class="hd-stat-label">Open POs</div><div class="hd-stat-value" id="ma-po">—</div></div>
@@ -573,7 +573,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <div class="hd-bottom">
             <div class="glass" style="padding:16px 18px">
               <div class="card-title">Category Performance</div>
-              <div class="hd-cat-wrap"><canvas id="ma-cat-donut"></canvas></div>
+              <div class="hd-cat-wrap" id="ma-cat-donut"></div>
               <div class="hd-cat-legend" id="ma-cat-legend"></div>
             </div>
             <div class="glass rec-panel">
@@ -1241,142 +1241,23 @@ function renderMA() {
   const mdRisk  = [...(analysisData.markdown_risk||[])].filter(m=>m).sort((a,b)=>_clean(b.revenue)-_clean(a.revenue)).slice(0,8);
   const PALETTE = ['#7DAA75','#8A9DD8','#F4C0A8','#F0C4A0','#E3A08E','#A8C5A0','#B8C4E8','#C8DFBF'];
 
-  // ── Chart 1: Revenue overview ─────────────────────────────────
-  // Priority: weekly trend line → category bar → donut from KPIs
+  // ── Chart 1: Revenue Trend (SVG sparkline — no library needed) ──
+  const trendEl = document.getElementById('ma-trend-chart');
   if (wt.length) {
-    charts.maTrend = safeChart('ma-trend-chart', {
-      type:'line',
-      data:{
-        labels: wt.map((w,i) => w.week || w.period || `W${i+1}`),
-        datasets:[{data:wt.map(w=>w.revenue||0), borderColor:'#7DAA75',
-          backgroundColor:'rgba(125,170,117,0.10)', fill:true, tension:0.4,
-          pointRadius:3, pointBackgroundColor:'#7DAA75', pointBorderColor:'#fff',
-          pointBorderWidth:1.5, borderWidth:2.5}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Rev: '+fmtCurr(c.parsed.y)}}},
-        scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#8A8A9A',maxTicksLimit:8}},
-          y:{grid:{color:'rgba(125,170,117,0.12)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
-        }}
-    });
+    svgLine(trendEl, wt.map(w=>w.revenue||0), '#7DAA75');
   } else if (cats.length) {
-    // Fallback 1: Category revenue bar chart
-    charts.maTrend = safeChart('ma-trend-chart', {
-      type:'bar',
-      data:{
-        labels: cats.map(c=>c.category||'Other'),
-        datasets:[{
-          label:'Revenue by Category',
-          data: cats.map(c=>c.revenue||0),
-          backgroundColor: PALETTE.map(c=>c+'CC'),
-          borderRadius:5, borderSkipped:false
-        }]
-      },
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Rev: '+fmtCurr(ctx.parsed.y)}}},
-        scales:{
-          x:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}},
-          y:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}}
-        }}
-    });
+    svgHBars(trendEl, cats.map(c=>c.category||'Other'), cats.map(c=>c.revenue||0), PALETTE);
   } else if (topSkus.length) {
-    // Fallback 2: top SKU donut
-    const top3Rev = topSkus.slice(0,3).reduce((s,x)=>s+(x.revenue||0),0);
-    const restRev = (k.total_revenue||0) - top3Rev;
-    charts.maTrend = safeChart('ma-trend-chart', {
-      type:'doughnut',
-      data:{
-        labels:[...(topSkus.slice(0,3).map(s=>s.sku||'SKU')),'Other SKUs'],
-        datasets:[{data:[...topSkus.slice(0,3).map(s=>s.revenue||0), Math.max(restRev,0)],
-          backgroundColor:[...PALETTE.slice(0,3),'rgba(200,200,200,0.5)'],
-          borderWidth:2, borderColor:'rgba(255,255,255,0.8)'}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'52%',
-        plugins:{legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
-          tooltip:{callbacks:{label:c=>fmtCurr(c.parsed)}}}}
-    });
-  } else {
-    renderEmptyChart('ma-trend-chart', 'Upload data to see charts');
-  }
+    svgHBars(trendEl, topSkus.map(s=>s.sku||'SKU'), topSkus.map(s=>s.revenue||0), PALETTE);
+  } else { svgEmpty(trendEl); }
 
-  // ── Chart 2: Performance breakdown ───────────────────────────
-  // Priority: top SKUs bar → category sell-through bar → markdown severity pie
+  // ── Chart 2: Inventory / Top SKUs (SVG bars) ─────────────────
+  const topEl = document.getElementById('ma-top-chart');
   if (topSkus.length) {
-    charts.maTop = safeChart('ma-top-chart', {
-      type:'bar',
-      data:{
-        labels: topSkus.map(s=>s.sku||s.name||'SKU'),
-        datasets:[{data:topSkus.map(s=>s.revenue||0),
-          backgroundColor:PALETTE.map(c=>c+'CC'),
-          borderRadius:4, borderSkipped:false}]
-      },
-      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
-        scales:{
-          x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
-          y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A',maxTicksLimit:8}}
-        }}
-    });
+    svgHBars(topEl, topSkus.map(s=>s.sku||s.name||'SKU'), topSkus.map(s=>s.revenue||0), PALETTE);
   } else if (cats.length) {
-    // Fallback 1: Category sell-through horizontal bar
-    const catST = cats.filter(c=>c.sell_through!=null);
-    if (catST.length) {
-      charts.maTop = safeChart('ma-top-chart', {
-        type:'bar',
-        data:{
-          labels: catST.map(c=>c.category||'Other'),
-          datasets:[{
-            label:'Sell-Through %',
-            data: catST.map(c=>c.sell_through||0),
-            backgroundColor: catST.map(c=> (c.sell_through||0)>=50?'#7DAA75CC':'#F4C0A8CC'),
-            borderRadius:4, borderSkipped:false
-          }]
-        },
-        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.x.toFixed(1)+'%'}}},
-          scales:{
-            x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>v+'%'},max:100},
-            y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
-          }}
-      });
-    } else {
-      // Category revenue horizontal bar as fallback
-      charts.maTop = safeChart('ma-top-chart', {
-        type:'bar',
-        data:{
-          labels: cats.map(c=>c.category||'Other'),
-          datasets:[{data:cats.map(c=>c.revenue||0),
-            backgroundColor:PALETTE.map(c=>c+'CC'), borderRadius:4, borderSkipped:false}]
-        },
-        options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-          plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtCurr(c.parsed.x)}}},
-          scales:{
-            x:{grid:{color:'rgba(125,170,117,0.10)'},ticks:{font:{size:9},color:'#8A8A9A',callback:v=>'£'+fmtK(v)}},
-            y:{grid:{display:false},ticks:{font:{size:9},color:'#3A3A4A'}}
-          }}
-      });
-    }
-  } else if (mdRisk.length) {
-    // Fallback 2: Markdown risk severity donut
-    const high = mdRisk.filter(m=>m.severity==='HIGH').length;
-    const med  = mdRisk.filter(m=>m.severity==='MEDIUM').length;
-    const low  = mdRisk.filter(m=>m.severity==='LOW').length;
-    charts.maTop = safeChart('ma-top-chart', {
-      type:'doughnut',
-      data:{
-        labels:['High Risk','Medium Risk','Low Risk'],
-        datasets:[{data:[high,med,low],
-          backgroundColor:['#E05050CC','#F4C0A8CC','#7DAA75CC'],
-          borderWidth:2,borderColor:'rgba(255,255,255,0.8)'}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
-        plugins:{legend:{display:true,position:'right',labels:{font:{size:9},boxWidth:10,color:'#4A4A5A'}},
-          tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+' SKUs'}}}}
-    });
-  } else {
-    renderEmptyChart('ma-top-chart', 'Upload a trading file to see top SKUs');
-  }
+    svgHBars(topEl, cats.map(c=>c.category||'Other'), cats.map(c=>c.revenue||0), PALETTE);
+  } else { svgEmpty(topEl); }
 
   // AI Executive Summary (hidden, for context)
   const summaryText = (rd.executive_summary) ||
@@ -1417,19 +1298,10 @@ function renderMA() {
     invBadge.className   = 'hd-card-badge ' + (ls > 0 ? 'badge-amber' : 'badge-green');
   }
 
-  // ── Category Performance Donut ────────────────────────────────
+  // ── Category Performance Donut (SVG — no library needed) ────────
+  const catEl = document.getElementById('ma-cat-donut');
   if (cats.length) {
-    charts.maCatDonut = safeChart('ma-cat-donut', {
-      type: 'doughnut',
-      data: {
-        labels: cats.slice(0,6).map(c=>c.category||'Other'),
-        datasets:[{data:cats.slice(0,6).map(c=>c.revenue||0),
-          backgroundColor:PALETTE.slice(0,6).map(c=>c+'CC'),
-          borderWidth:2, borderColor:'rgba(255,255,255,0.9)'}]
-      },
-      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+fmtCurr(c.parsed)}}}}
-    });
+    svgDonut(catEl, cats.slice(0,6).map(c=>c.revenue||0), PALETTE.slice(0,6));
     const totalRev = cats.reduce((s,c)=>s+(c.revenue||0),0);
     const legEl = document.getElementById('ma-cat-legend');
     if (legEl) legEl.innerHTML = cats.slice(0,6).map((c,i)=>`
@@ -1437,9 +1309,7 @@ function renderMA() {
         <div><span class="hd-cat-dot" style="background:${PALETTE[i]}"></span>${c.category||'Other'}</div>
         <span style="font-weight:600;color:var(--text)">${totalRev>0?Math.round((c.revenue||0)/totalRev*100):0}%</span>
       </div>`).join('');
-  } else {
-    renderEmptyChart('ma-cat-donut','Upload data to see categories');
-  }
+  } else { if(catEl) svgEmpty(catEl); }
 
   // ── AI Recommendations ────────────────────────────────────────
   const recEl = document.getElementById('ma-recommendations');
@@ -2349,6 +2219,62 @@ function esc(t='') { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function fmtNum(n){ return Math.round(n||0).toLocaleString('en-GB'); }
 function fmtCurr(n){ n=n||0; if(n>=1e6) return '£'+(n/1e6).toFixed(2)+'M'; if(n>=1e3) return '£'+(n/1e3).toFixed(1)+'K'; return '£'+Math.round(n).toLocaleString('en-GB'); }
 function fmtK(n){ n=n||0; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n).toString(); }
+
+/* ── Pure SVG chart helpers (no library needed) ── */
+function svgEmpty(el){el.innerHTML='<div class="chart-empty"><div class="chart-empty-icon">📊</div><div>No data available</div></div>';}
+
+function svgLine(el, values, color){
+  color=color||'#7DAA75';
+  if(!el||!values||!values.length){if(el)svgEmpty(el);return;}
+  const W=300,H=90,P=6;
+  const min=Math.min(...values),max=Math.max(...values),rng=max-min||1;
+  const xs=values.map((_,i)=>P+i/(Math.max(values.length-1,1))*(W-P*2));
+  const ys=values.map(v=>P+(1-(v-min)/rng)*(H-P*2));
+  const pts=xs.map((x,i)=>x.toFixed(1)+','+ys[i].toFixed(1)).join(' ');
+  const area=xs[0].toFixed(1)+','+(H-P)+' '+pts+' '+xs[xs.length-1].toFixed(1)+','+(H-P);
+  const id='svg'+Math.random().toString(36).slice(2,7);
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%" preserveAspectRatio="none">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    <polygon points="${area}" fill="url(#${id})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${xs.map((x,i)=>`<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`).join('')}
+  </svg>`;
+}
+
+function svgHBars(el, labels, values, colors){
+  if(!el||!values||!values.length){if(el)svgEmpty(el);return;}
+  const max=Math.max(...values)||1,bH=13,gap=7,lW=56,W=280,P=4;
+  const H=values.length*(bH+gap)+P*2;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:100%" preserveAspectRatio="xMinYMid meet">
+    ${values.map((v,i)=>{
+      const y=P+i*(bH+gap),bw=Math.max(3,(v/max)*(W-lW-8)),col=colors[i%colors.length];
+      const lbl=(labels[i]||'').toString().slice(0,9);
+      return `<text x="${lW-3}" y="${(y+bH*0.78).toFixed(1)}" font-size="8.5" fill="#6A6A7A" text-anchor="end" font-family="Inter,sans-serif">${lbl}</text>
+        <rect x="${lW}" y="${y}" width="${bw.toFixed(1)}" height="${bH}" rx="3" fill="${col}DD"/>`;
+    }).join('')}
+  </svg>`;
+}
+
+function svgDonut(el, values, colors){
+  if(!el||!values||!values.length||values.every(v=>!v)){if(el)svgEmpty(el);return;}
+  const total=values.reduce((s,v)=>s+(v||0),0)||1;
+  const cx=80,cy=80,R=65,ir=40;
+  let ang=-Math.PI/2;
+  const paths=values.map((v,i)=>{
+    const sl=(v/total)*Math.PI*2;
+    const x1=cx+R*Math.cos(ang),y1=cy+R*Math.sin(ang);
+    ang+=sl;
+    const x2=cx+R*Math.cos(ang),y2=cy+R*Math.sin(ang);
+    const ix1=cx+ir*Math.cos(ang-sl),iy1=cy+ir*Math.sin(ang-sl);
+    const ix2=cx+ir*Math.cos(ang),iy2=cy+ir*Math.sin(ang);
+    const lg=sl>Math.PI?1:0;
+    return `<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${R},${R} 0 ${lg} 1 ${x2.toFixed(1)},${y2.toFixed(1)} L${ix2.toFixed(1)},${iy2.toFixed(1)} A${ir},${ir} 0 ${lg} 0 ${ix1.toFixed(1)},${iy1.toFixed(1)} Z" fill="${colors[i%colors.length]}"/>`;
+  }).join('');
+  el.innerHTML=`<svg viewBox="0 0 160 160" style="width:100%;height:100%">${paths}</svg>`;
+}
 function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return n; }
 </script>
 
