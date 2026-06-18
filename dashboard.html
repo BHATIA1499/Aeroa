@@ -2344,6 +2344,7 @@ function appendChatMsg(role, text, typing=false) {
 function esc(t='') { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtNum(n){ return Math.round(n||0).toLocaleString('en-GB'); }
 function fmtCurr(n){ n=n||0; if(n>=1e6) return '£'+(n/1e6).toFixed(2)+'M'; if(n>=1e3) return '£'+(n/1e3).toFixed(1)+'K'; return '£'+Math.round(n).toLocaleString('en-GB'); }
+function fmtK(n){ n=n||0; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n).toString(); }
 function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return n; }
 </script>
 
