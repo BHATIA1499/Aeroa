@@ -1843,7 +1843,7 @@ def workspace_command(user):
     """
     try:
         upload_id = request.args.get("upload_id") or session.get("current_upload_id")
-        analysis = _get_analysis_for_user(user, upload_id)
+        analysis, upload_id = _get_analysis_for_user(user, upload_id)
         if not analysis or not analysis.get("kpis"):
             return jsonify({"error": "No analysis available for this dataset"}), 404
 
@@ -1899,7 +1899,7 @@ def workspace_command(user):
             if upload_id in ids:
                 i = ids.index(upload_id)
                 if i > 0:
-                    prev_analysis = _get_analysis_for_user(user, ids[i - 1])
+                    prev_analysis, _ = _get_analysis_for_user(user, ids[i - 1])
             if prev_analysis:
                 pk = prev_analysis.get("kpis") or {}
                 cur_m, prev_m = _ws_compare_metrics(kpis), _ws_compare_metrics(pk)
