@@ -561,6 +561,26 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-keyrec .kr-ic{font-size:12px;flex-shrink:0}
 .ws-keyrec b{color:var(--text);font-weight:700}
 .ws-stats{grid-template-columns:repeat(4,1fr)}
+.ws-stats.ws-stats-6{grid-template-columns:repeat(3,1fr);gap:8px 10px}
+@media(max-width:600px){.ws-stats.ws-stats-6{grid-template-columns:repeat(2,1fr)}}
+/* dataset-type + status chips on file cards */
+.ws-card-chips{display:flex;gap:7px;flex-wrap:wrap;margin:-2px 0 11px}
+.ws-chip{font-size:10.5px;font-weight:700;letter-spacing:.2px;border-radius:7px;padding:4px 9px;display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border)}
+.ws-chip.type{background:rgba(91,107,181,.10);color:#5B6BB5;border-color:rgba(91,107,181,.22)}
+.ws-chip.status.ok{background:rgba(46,139,87,.10);color:#2E8B57;border-color:rgba(46,139,87,.22)}
+.ws-chip.status.pend{background:rgba(199,122,56,.10);color:#C77A38;border-color:rgba(199,122,56,.22)}
+/* detail-panel rich data: KPI grid + data tables */
+.ws-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ws-kpi{background:var(--bg2,rgba(0,0,0,.02));border:1px solid var(--border);border-radius:9px;padding:9px 10px;text-align:center}
+.ws-kpi .v{font-weight:800;font-size:15px;color:var(--text)}
+.ws-kpi .l{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
+.ws-dtable{width:100%;border-collapse:collapse;font-size:11.5px}
+.ws-dtable th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);padding:5px 7px;border-bottom:1px solid var(--border);font-weight:700}
+.ws-dtable td{padding:6px 7px;border-bottom:1px solid var(--border);color:var(--text2)}
+.ws-dtable td:first-child{color:var(--text);font-weight:600}
+.ws-dtable tr:last-child td{border-bottom:none}
+.ws-flag{font-size:9.5px;font-weight:700;border:1px solid;border-radius:5px;padding:2px 6px;background:transparent}
+@media(max-width:600px){.ws-kpis{grid-template-columns:repeat(2,1fr)}}
 
 /* onboarding empty state */
 .ws-onboard{grid-column:1/-1;text-align:center;padding:52px 24px;max-width:560px;margin:0 auto}
@@ -646,6 +666,17 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-mode.active#wsmode-decision{background:#5B6BB5;box-shadow:0 3px 10px rgba(91,107,181,.32)}
 .ws-modehint{font-size:12.5px;color:var(--text2);margin:-4px 0 16px;line-height:1.5}
 .ws-modehint b{color:var(--text)}
+/* top-level workspace switcher */
+.ws-topnav{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 14px}
+.ws-navbtn{display:flex;align-items:center;gap:11px;text-align:left;background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:13px 16px;cursor:pointer;transition:all .16s;box-shadow:var(--shadow)}
+.ws-navbtn:hover{transform:translateY(-1px);border-color:rgba(91,107,181,.35)}
+.ws-navbtn .nv-ic{font-size:20px;flex-shrink:0}
+.ws-navbtn .nv-tx{display:flex;flex-direction:column;min-width:0}
+.ws-navbtn .nv-tx b{font-size:14px;font-weight:800;color:var(--text);line-height:1.2}
+.ws-navbtn .nv-tx em{font-size:11px;font-style:normal;color:var(--text3);margin-top:2px}
+.ws-navbtn.active{background:linear-gradient(135deg,rgba(91,107,181,.14),rgba(125,170,117,.10));border-color:#5B6BB5;box-shadow:0 4px 16px rgba(91,107,181,.22)}
+.ws-navbtn.active .nv-tx b{color:#5B6BB5}
+@media(max-width:760px){.ws-topnav{grid-template-columns:1fr}.ws-navbtn{padding:11px 13px}}
 
 /* Command Centre */
 .cc-wrap{display:flex;flex-direction:column;gap:18px}
@@ -688,6 +719,8 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .cc-sim-row input[type=range]{width:100%;accent-color:#5B6BB5}
 .cc-sim-row .sim-val{font-size:13px;font-weight:800;color:#5B6BB5;text-align:right;font-variant-numeric:tabular-nums}
 .cc-sim-out{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.cc-sim-out.cc-sim-out-5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:760px){.cc-sim-out.cc-sim-out-5{grid-template-columns:repeat(2,1fr)}}
 .cc-sim-stat{background:rgba(91,107,181,.06);border:1px solid rgba(91,107,181,.16);border-radius:11px;padding:13px;text-align:center}
 .cc-sim-stat .v{font-family:var(--serif);font-size:21px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums}
 .cc-sim-stat .l{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:3px}
@@ -1259,11 +1292,26 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
         </div>
         <div class="ws-head-controls">
           <button class="ws-sample-toggle" id="ws-sample-toggle" onclick="toggleSampleMode()" title="Switch between your data and a demo dataset">🧪 Try Sample Data</button>
-          <div class="ws-modeswitch" id="ws-modeswitch">
-            <button class="ws-mode active" id="wsmode-analysis" onclick="wsMode('analysis')">📊 Analysis Mode</button>
-            <button class="ws-mode"        id="wsmode-decision" onclick="wsMode('decision')">🧭 Decision Mode</button>
-          </div>
         </div>
+      </div>
+
+      <!-- Top-level workspace switcher: Analytics · Command Centre · Data Workspace -->
+      <div class="ws-topnav" id="ws-topnav" role="tablist" aria-label="Workspace sections">
+        <button class="ws-navbtn" id="ws-nav-analytics" onclick="wsNav('analytics')" role="tab">
+          <span class="nv-ic">📊</span><span class="nv-tx"><b>Analytics</b><em>Charts, KPIs &amp; category analysis</em></span>
+        </button>
+        <button class="ws-navbtn" id="ws-nav-command" onclick="wsNav('command')" role="tab">
+          <span class="nv-ic">🧭</span><span class="nv-tx"><b>Command Centre</b><em>What should I do next?</em></span>
+        </button>
+        <button class="ws-navbtn active" id="ws-nav-workspace" onclick="wsNav('workspace')" role="tab">
+          <span class="nv-ic">🗄️</span><span class="nv-tx"><b>Data Workspace</b><em>File history &amp; comparison</em></span>
+        </button>
+      </div>
+
+      <!-- legacy mode switch (kept for back-compat; hidden — driven by the top switcher above) -->
+      <div class="ws-modeswitch" id="ws-modeswitch" style="display:none">
+        <button class="ws-mode active" id="wsmode-analysis" onclick="wsMode('analysis')">📊 Analysis Mode</button>
+        <button class="ws-mode"        id="wsmode-decision" onclick="wsMode('decision')">🧭 Decision Mode</button>
       </div>
       <div class="ws-modehint" id="ws-modehint"></div>
 
@@ -2606,9 +2654,33 @@ let sampleMode = false;
 const SAMPLE_WS = {
   files: [
     { id:'s1', filename:'Wk25_Trading_Report.xlsx', display_name:'Wk25 Trading Report', file_type:'Excel',
+      dataset_type:'Trading Report',
       upload_date:'2026-06-15', analysed_date:'2026-06-15', file_size:248000, record_count:1284, status:'Analysed',
       archived:false, trashed:false, tags:['SS26','trading','womenswear'],
-      revenue:842500, margin:58, sell_through:64, health_score:82,
+      revenue:842500, margin:58, sell_through:64, health_score:82, stock_value:1280000,
+      metrics:{ orders:6420, visits:182400, conversion:3.5, aov:131, units:9870, returns_rate:8.2 },
+      categories:[
+        {name:'Dresses',   revenue:286500, margin:61, sell_through:78, stock_value:198000, trend:'up'},
+        {name:'Knitwear',  revenue:202200, margin:59, sell_through:74, stock_value:171000, trend:'up'},
+        {name:'Outerwear', revenue:109500, margin:52, sell_through:31, stock_value:402000, trend:'down'},
+        {name:'Footwear',  revenue:134800, margin:57, sell_through:66, stock_value:241000, trend:'flat'},
+        {name:'Accessories',revenue:109500,margin:63, sell_through:58, stock_value:268000, trend:'flat'}
+      ],
+      skus:[
+        {code:'DR-1182', name:'Linen Midi Dress',     revenue:48200, sell_through:82, cover_wks:3,  flag:'reorder'},
+        {code:'KN-0934', name:'Merino Crew Knit',      revenue:39100, sell_through:80, cover_wks:4,  flag:'reorder'},
+        {code:'DR-1204', name:'Poplin Shirt Dress',    revenue:31600, sell_through:71, cover_wks:6,  flag:'watch'},
+        {code:'OW-0571', name:'Wool Blend Overcoat',   revenue:18400, sell_through:29, cover_wks:21, flag:'markdown'},
+        {code:'OW-0588', name:'Quilted Parka',         revenue:14900, sell_through:33, cover_wks:18, flag:'markdown'}
+      ],
+      suppliers:[
+        {name:'Atlas Knitwear Ltd',   share:24, on_time:96, margin:60, status:'good'},
+        {name:'Lisbon Linen Co.',     share:19, on_time:91, margin:62, status:'good'},
+        {name:'Northern Outerwear',   share:17, on_time:78, margin:51, status:'watch'},
+        {name:'Verona Footwear',      share:21, on_time:88, margin:57, status:'good'},
+        {name:'Maison Accessories',   share:19, on_time:84, margin:63, status:'good'}
+      ],
+      markdown:{ on_markdown_pct:11, avg_depth:24, revenue_at_full:749800, revenue_on_markdown:92700, margin_cost:34000 },
       exec_summary:'Strong week driven by Dresses and Knitwear sell-through. Revenue +6.2% on Wk24 with margin holding at 58%. Two reorder opportunities flagged; one overstock risk building in Outerwear.',
       top_opportunity:{t:'Reorder SS26 Linen Dresses', s:'78% sell-through with 3 weeks cover left — pull forward intake to capture full-price demand.', impact:'+£62k revenue'},
       top_risk:{t:'Outerwear overstock', s:'Sell-through at 31% vs 55% plan. £88k tied in slow stock heading into clearance window.', impact:'£88k exposure'},
@@ -2619,9 +2691,26 @@ const SAMPLE_WS = {
       ],
       reports:[{n:'Wk25 Trade Pack',d:'15 Jun 2026'},{n:'Executive Summary',d:'15 Jun 2026'}] },
     { id:'s2', filename:'Wk24_Trading_Report.xlsx', display_name:'Wk24 Trading Report', file_type:'Excel',
+      dataset_type:'Trading Report',
       upload_date:'2026-06-08', analysed_date:'2026-06-08', file_size:241000, record_count:1271, status:'Analysed',
       archived:false, trashed:false, tags:['SS26','trading','womenswear'],
-      revenue:793200, margin:57, sell_through:61, health_score:78,
+      revenue:793200, margin:57, sell_through:61, health_score:78, stock_value:1210000,
+      metrics:{ orders:6080, visits:175200, conversion:3.5, aov:130, units:9310, returns_rate:8.4 },
+      categories:[
+        {name:'Dresses',   revenue:269700, margin:60, sell_through:72, stock_value:205000, trend:'up'},
+        {name:'Knitwear',  revenue:174500, margin:58, sell_through:68, stock_value:178000, trend:'up'},
+        {name:'Outerwear', revenue:142800, margin:54, sell_through:42, stock_value:351000, trend:'down'},
+        {name:'Footwear',  revenue:118900, margin:56, sell_through:62, stock_value:236000, trend:'flat'},
+        {name:'Accessories',revenue:87300, margin:62, sell_through:55, stock_value:240000, trend:'flat'}
+      ],
+      suppliers:[
+        {name:'Atlas Knitwear Ltd', share:23, on_time:95, margin:59, status:'good'},
+        {name:'Lisbon Linen Co.',   share:18, on_time:90, margin:61, status:'good'},
+        {name:'Northern Outerwear', share:19, on_time:80, margin:52, status:'watch'},
+        {name:'Verona Footwear',    share:21, on_time:87, margin:56, status:'good'},
+        {name:'Maison Accessories', share:19, on_time:85, margin:62, status:'good'}
+      ],
+      markdown:{ on_markdown_pct:9, avg_depth:21, revenue_at_full:721800, revenue_on_markdown:71400, margin_cost:26000 },
       exec_summary:'Steady trading week. Dresses leading, Outerwear softening early. Margin stable at 57%.',
       top_opportunity:{t:'Accelerate Dress intake', s:'Category outperforming plan by 12%.', impact:'+£48k revenue'},
       top_risk:{t:'Outerwear softening', s:'Early signs of slow sell-through.', impact:'£52k watch'},
@@ -2631,9 +2720,10 @@ const SAMPLE_WS = {
       ],
       reports:[{n:'Wk24 Trade Pack',d:'8 Jun 2026'}] },
     { id:'s3', filename:'SS26_Buy_Plan.csv', display_name:'SS26 Buy Plan', file_type:'CSV',
+      dataset_type:'Buy Plan',
       upload_date:'2026-05-20', analysed_date:'2026-05-20', file_size:96000, record_count:642, status:'Analysed',
       archived:false, trashed:false, tags:['SS26','buy-plan'],
-      revenue:0, margin:62, sell_through:0, health_score:71,
+      revenue:0, margin:62, sell_through:0, health_score:71, stock_value:0,
       exec_summary:'Pre-season buy plan for SS26. Investment weighted toward Dresses and Knitwear; Outerwear depth may be too high.',
       top_opportunity:{t:'Increase Knitwear depth', s:'Historic 80%+ sell-through supports deeper buy.', impact:'+£70k potential'},
       top_risk:{t:'Outerwear over-bought', s:'Planned depth exceeds last 3 seasons of demand.', impact:'£110k risk'},
@@ -2643,9 +2733,11 @@ const SAMPLE_WS = {
       ],
       reports:[{n:'SS26 Buy Plan Review',d:'20 May 2026'}] },
     { id:'s4', filename:'Wk22_Trading_Report.xlsx', display_name:'Wk22 Trading Report', file_type:'Excel',
+      dataset_type:'Trading Report',
       upload_date:'2026-05-25', analysed_date:'2026-05-25', file_size:238000, record_count:1255, status:'Analysed',
       archived:true, trashed:false, tags:['SS26','trading'],
-      revenue:761000, margin:56, sell_through:59, health_score:74,
+      revenue:761000, margin:56, sell_through:59, health_score:74, stock_value:1150000,
+      metrics:{ orders:5840, visits:168900, conversion:3.5, aov:130, units:8920, returns_rate:8.6 },
       exec_summary:'Solid early-season week. Foundation set for SS26 ramp-up.',
       top_opportunity:{t:'Build Dress momentum', s:'Early sell-through encouraging.', impact:'+£40k revenue'},
       top_risk:{t:'Knitwear slow start', s:'Below plan but seasonal.', impact:'£30k watch'},
@@ -2703,11 +2795,12 @@ function buildSampleCommand(f){
       {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1pt', confidence:66}
     ],
     simulator:{
-      base_revenue:f.revenue, base_margin:f.margin, base_health:f.health_score,
+      base_revenue:f.revenue, base_margin:f.margin, base_health:f.health_score, base_stock:f.stock_value||0,
       levers:[
-        {key:'markdown', label:'Outerwear markdown', min:0, max:40, step:5, default:20, unit:'%'},
-        {key:'reorder',  label:'Dress reorder depth', min:0, max:50, step:5, default:25, unit:'%'},
-        {key:'intake',   label:'Shift intake → Knitwear', min:0, max:30, step:5, default:10, unit:'%'}
+        {key:'markdown',  label:'Outerwear markdown depth',        min:0, max:40, step:5, default:20, unit:'%'},
+        {key:'reorder',   label:'Dress replenishment / reorder',   min:0, max:50, step:5, default:25, unit:'%'},
+        {key:'po_cancel', label:'Cancel Outerwear purchase order', min:0, max:50, step:5, default:0,  unit:'%'},
+        {key:'intake',    label:'Future intake reduction',         min:0, max:40, step:5, default:10, unit:'%'}
       ]
     },
     commercial_impact:{ revenue_at_stake:88000, margin_protect:34000, total_upside:92000 },
@@ -2922,19 +3015,29 @@ function renderFiles(list){
         `<button class="ws-btn" onclick="wsArchive('${f.id}',${!f.archived})">${f.archived?'Unarchive':'Archive'}</button>`+
         `<button class="ws-btn danger" onclick="wsTrash('${f.id}',true)">🗑 Delete</button>`;
     }
+    const dsType = f.dataset_type || 'Dataset';
+    const statusOk = /analys|ready|complete/i.test(f.status||'');
+    const statusCls = statusOk ? 'ok' : 'pend';
+    const stockTxt = (f.stock_value && f.stock_value>0) ? fmtCurr(f.stock_value) : '—';
     return `<div class="ws-card${isCur?' is-current':''}">
       <div class="ws-card-top">
         <div class="ws-ftype ${f.file_type}">${f.file_type}</div>
         <div style="min-width:0;flex:1">
           <div class="ws-fname">${escapeHtml(f.display_name)}</div>
-          <div class="ws-fmeta">Uploaded ${fmtDate(f.upload_date)} · ${fmtNum(f.record_count)} records · ${fmtSize(f.file_size)}</div>
+          <div class="ws-fmeta">Uploaded ${fmtDate(f.upload_date)} · ${fmtNum(f.record_count)} rows · ${fmtSize(f.file_size)}</div>
         </div>
         <span class="ws-health-label ${hcl}">${healthLabel(f.health_score)} ${f.health_score}</span>
       </div>
-      <div class="ws-stats">
+      <div class="ws-card-chips">
+        <span class="ws-chip type">🏷 ${escapeHtml(dsType)}</span>
+        <span class="ws-chip status ${statusCls}">${statusOk?'✓':'⏳'} ${escapeHtml(f.status||'Pending')}</span>
+      </div>
+      <div class="ws-stats ws-stats-6">
         <div class="ws-stat"><div class="v">${fmtCurr(f.revenue)}</div><div class="l">Revenue</div></div>
         <div class="ws-stat"><div class="v">${(f.margin||0).toFixed(0)}%</div><div class="l">Margin</div></div>
         <div class="ws-stat"><div class="v">${(f.sell_through||0).toFixed(0)}%</div><div class="l">Sell-Through</div></div>
+        <div class="ws-stat"><div class="v">${stockTxt}</div><div class="l">Stock Value</div></div>
+        <div class="ws-stat"><div class="v">${fmtNum(f.record_count)}</div><div class="l">Rows</div></div>
         <div class="ws-stat"><div class="v" style="color:${hc}">${f.health_score}</div><div class="l">Health</div></div>
       </div>
       <div class="ws-health">
@@ -2943,7 +3046,7 @@ function renderFiles(list){
         <span class="ws-health-val" style="color:${hc}">${f.health_score}/100</span>
       </div>
       ${keyRec?`<div class="ws-keyrec"><span class="kr-ic">💡</span><span><b>Next move:</b> ${escapeHtml(keyRec)}</span></div>`:''}
-      <div class="ws-tags-row">${tags}<span class="ws-tag" style="background:rgba(46,139,87,.1);color:#2E8B57">✓ ${escapeHtml(f.status)}</span></div>
+      ${tags?`<div class="ws-tags-row">${tags}</div>`:''}
       <div class="ws-actions">${actions}</div>
     </div>`;
   }).join('');
@@ -2954,6 +3057,44 @@ function findWsFile(id){
   return (wsFiles||[]).find(x=>x.id===id) || (wsAllFiles||[]).find(x=>x.id===id) ||
          (sampleMode ? SAMPLE_WS.files.find(x=>x.id===id) : null);
 }
+// Rich data sections (retail KPIs, categories, SKUs, suppliers, markdown) for the detail panel
+function buildRichSections(f){
+  let out = '';
+  const m = f.metrics;
+  if(m){
+    out += `<div class="ws-psec"><div class="ws-psec-h">📊 Retail KPIs</div><div class="ws-kpis">
+      <div class="ws-kpi"><div class="v">${fmtNum(m.orders)}</div><div class="l">Orders</div></div>
+      <div class="ws-kpi"><div class="v">${fmtNum(m.visits)}</div><div class="l">Visits</div></div>
+      <div class="ws-kpi"><div class="v">${m.conversion}%</div><div class="l">Conversion</div></div>
+      <div class="ws-kpi"><div class="v">${fmtCurr(m.aov)}</div><div class="l">AOV</div></div>
+      <div class="ws-kpi"><div class="v">${fmtNum(m.units)}</div><div class="l">Units Sold</div></div>
+      <div class="ws-kpi"><div class="v">${m.returns_rate}%</div><div class="l">Returns Rate</div></div>
+    </div></div>`;
+  }
+  const cats = (f.categories||[]).map(c=>{
+    const tcol = c.trend==='up'?'#2E8B57':c.trend==='down'?'#E05A4A':'var(--text3)';
+    const tic  = c.trend==='up'?'▲':c.trend==='down'?'▼':'▬';
+    return `<tr><td>${escapeHtml(c.name)}</td><td>${fmtCurr(c.revenue)}</td><td>${c.margin}%</td><td>${c.sell_through}%</td><td>${fmtCurr(c.stock_value)}</td><td style="color:${tcol};text-align:center">${tic}</td></tr>`;
+  }).join('');
+  if(cats) out += `<div class="ws-psec"><div class="ws-psec-h">🧩 Category Performance</div><table class="ws-dtable"><thead><tr><th>Category</th><th>Revenue</th><th>Margin</th><th>ST%</th><th>Stock</th><th>Trend</th></tr></thead><tbody>${cats}</tbody></table></div>`;
+  const flagMap = {reorder:['Reorder','#2E8B57'], markdown:['Markdown','#E05A4A'], watch:['Watch','#C77A38']};
+  const skus = (f.skus||[]).map(s=>{ const fl=flagMap[s.flag]||['','var(--text3)'];
+    return `<tr><td>${escapeHtml(s.code)}</td><td>${escapeHtml(s.name)}</td><td>${fmtCurr(s.revenue)}</td><td>${s.sell_through}%</td><td>${s.cover_wks}w</td><td><span class="ws-flag" style="color:${fl[1]};border-color:${fl[1]}">${fl[0]}</span></td></tr>`;
+  }).join('');
+  if(skus) out += `<div class="ws-psec"><div class="ws-psec-h">🏷 SKU Highlights</div><table class="ws-dtable"><thead><tr><th>SKU</th><th>Name</th><th>Revenue</th><th>ST%</th><th>Cover</th><th>Flag</th></tr></thead><tbody>${skus}</tbody></table></div>`;
+  const sup = (f.suppliers||[]).map(s=>{ const sc=s.status==='good'?'#2E8B57':s.status==='watch'?'#C77A38':'#E05A4A';
+    return `<tr><td>${escapeHtml(s.name)}</td><td>${s.share}%</td><td style="color:${sc}">${s.on_time}%</td><td>${s.margin}%</td></tr>`;
+  }).join('');
+  if(sup) out += `<div class="ws-psec"><div class="ws-psec-h">🏭 Supplier Performance</div><table class="ws-dtable"><thead><tr><th>Supplier</th><th>Share</th><th>On-time</th><th>Margin</th></tr></thead><tbody>${sup}</tbody></table></div>`;
+  const md = f.markdown;
+  if(md) out += `<div class="ws-psec"><div class="ws-psec-h">🔖 Markdown Exposure</div><div class="ws-kpis">
+      <div class="ws-kpi"><div class="v">${md.on_markdown_pct}%</div><div class="l">Stock on Markdown</div></div>
+      <div class="ws-kpi"><div class="v">${md.avg_depth}%</div><div class="l">Avg Depth</div></div>
+      <div class="ws-kpi"><div class="v">${fmtCurr(md.revenue_on_markdown)}</div><div class="l">Markdown Revenue</div></div>
+      <div class="ws-kpi"><div class="v" style="color:#E05A4A">${fmtCurr(md.margin_cost)}</div><div class="l">Margin Cost</div></div>
+    </div></div>`;
+  return out;
+}
 function openDetailPanel(id){
   const f = findWsFile(id);
   if(!f){ showUploadToast('error','Not found','Could not open this analysis.',4000); return; }
@@ -2962,6 +3103,7 @@ function openDetailPanel(id){
   document.getElementById('ws-panel-sub').textContent = `${f.file_type} · ${fmtDate(f.upload_date)} · ${fmtNum(f.record_count)} records`;
   const op = f.top_opportunity, rk = f.top_risk;
   const recs = (f.recs||[]).map((r,i)=>`<div class="ws-prec"><div class="pr-n">${i+1}</div><div><div class="pr-t">${escapeHtml(r.t)}</div><div class="pr-s">${escapeHtml(r.s||'')}</div>${r.impact?`<div class="pr-impact">${escapeHtml(r.impact)}</div>`:''}</div></div>`).join('');
+  const richSections = buildRichSections(f);
   const reports = (f.reports||[]).map(r=>`<div class="ws-preport"><span>📄</span><span>${escapeHtml(r.n)}</span><span style="color:var(--text3)">${escapeHtml(r.d||'')}</span><span class="rdl" onclick="wsExport('${f.id}')">Export</span></div>`).join('') || '<div class="ws-preport"><span style="color:var(--text3)">No reports generated yet.</span></div>';
   document.getElementById('ws-panel-body').innerHTML = `
     <div class="ws-panel-hero">
@@ -2980,6 +3122,7 @@ function openDetailPanel(id){
     ${op?`<div class="ws-psec"><div class="ws-psec-h" style="color:#2E8B57">📈 Top Opportunity</div><div class="ws-pcard opp"><div class="pc-t">${escapeHtml(op.t)}</div>${escapeHtml(op.s||'')}${op.impact?`<div class="pr-impact">${escapeHtml(op.impact)}</div>`:''}</div></div>`:''}
     ${rk?`<div class="ws-psec"><div class="ws-psec-h" style="color:#E05A4A">⚠️ Top Risk</div><div class="ws-pcard risk"><div class="pc-t">${escapeHtml(rk.t)}</div>${escapeHtml(rk.s||'')}${rk.impact?`<div class="pr-impact" style="color:#E05A4A">${escapeHtml(rk.impact)}</div>`:''}</div></div>`:''}
     ${recs?`<div class="ws-psec"><div class="ws-psec-h">✅ AI Recommendations</div>${recs}</div>`:''}
+    ${richSections}
     <div class="ws-psec"><div class="ws-psec-h">📦 Generated Reports</div>${reports}</div>
     <div class="ws-psec"><div class="ws-psec-h">⬇ Export Centre</div>
       <div class="ws-export-menu">
@@ -3005,8 +3148,8 @@ function wsExport(id){ openExportCentre(id); }
 let wsModeName = 'analysis';
 function wsMode(mode){
   wsModeName = mode;
-  document.getElementById('wsmode-analysis').classList.toggle('active', mode==='analysis');
-  document.getElementById('wsmode-decision').classList.toggle('active', mode==='decision');
+  const ma=document.getElementById('wsmode-analysis'); if(ma) ma.classList.toggle('active', mode==='analysis');
+  const md=document.getElementById('wsmode-decision'); if(md) md.classList.toggle('active', mode==='decision');
   const isDec = mode==='decision';
   document.getElementById('ws-tabs-analysis').style.display = isDec?'none':'flex';
   document.getElementById('wspane-command').style.display = isDec?'block':'none';
@@ -3015,9 +3158,23 @@ function wsMode(mode){
     document.getElementById('wspane-'+t).style.display = (!isDec && t===wsTabName)?'block':'none';
   });
   document.getElementById('ws-modehint').innerHTML = isDec
-    ? '🧭 <b>Decision Mode</b> — what should I do next? Prioritised actions, commercial impact, and the decision simulator.'
-    : '📊 <b>Analysis Mode</b> — explore your data: files, comparisons, and performance trends.';
+    ? '🧭 <b>Command Centre</b> — what should I do next? Prioritised actions, commercial impact, and the decision simulator.'
+    : '📊 <b>Data Workspace</b> — explore your data: files, comparisons, and performance trends.';
+  updateTopNav(isDec ? 'command' : 'workspace');
   if(isDec) loadCommandCentre();
+}
+
+// ── Top-level workspace switcher (Analytics · Command Centre · Data Workspace) ──
+function wsNav(dest){
+  if(dest==='analytics'){ updateTopNav('analytics'); closeWorkspace(); return; }
+  if(!workspaceOpen){ openWorkspace(); }
+  if(dest==='command'){ wsMode('decision'); }
+  else { wsMode('analysis'); wsTab('library'); }
+}
+function updateTopNav(dest){
+  ['analytics','command','workspace'].forEach(d=>{
+    const b=document.getElementById('ws-nav-'+d); if(b) b.classList.toggle('active', d===dest);
+  });
 }
 
 // ── Command Centre (Decision Mode) ────────────────────────────
@@ -3103,9 +3260,11 @@ function renderSimulator(sim){
       <input type="range" id="sim-${l.key}" min="${l.min}" max="${l.max}" step="${l.step}" value="${l.default}" oninput="runSimulator()">
       <div class="sim-val" id="simv-${l.key}">${l.default}${l.unit||''}</div>
     </div>`).join('') + `
-    <div class="cc-sim-out">
+    <div class="cc-sim-out cc-sim-out-5">
       <div class="cc-sim-stat"><div class="v" id="sim-rev">—</div><div class="l">Projected Revenue</div></div>
       <div class="cc-sim-stat"><div class="v" id="sim-mgn">—</div><div class="l">Projected Margin</div></div>
+      <div class="cc-sim-stat"><div class="v" id="sim-stock">—</div><div class="l">Stock Reduction</div></div>
+      <div class="cc-sim-stat"><div class="v" id="sim-cash">—</div><div class="l">Cash Recovery</div></div>
       <div class="cc-sim-stat"><div class="v" id="sim-hlt">—</div><div class="l">Projected Health</div></div>
     </div>`;
   runSimulator();
@@ -3114,15 +3273,22 @@ function runSimulator(){
   const sim = ccData && ccData.simulator; if(!sim) return;
   const get = k => { const el=document.getElementById('sim-'+k); return el?+el.value:0; };
   (sim.levers||[]).forEach(l=>{ const v=document.getElementById('simv-'+l.key); if(v) v.textContent=get(l.key)+(l.unit||''); });
-  const md=get('markdown'), ro=get('reorder'), it=get('intake');
-  // Simple commercial model (illustrative): reorders & intake lift revenue, markdown trades margin for clearance
+  const md=get('markdown'), ro=get('reorder'), pc=get('po_cancel'), it=get('intake');
   const baseR=sim.base_revenue||0, baseM=sim.base_margin||0, baseH=sim.base_health||0;
-  const rev = baseR * (1 + ro*0.004 + it*0.002 + md*0.001);
-  const mgn = baseM - md*0.06 + it*0.04;
-  const hlt = Math.max(0, Math.min(100, Math.round(baseH + ro*0.12 + it*0.10 - (md>25?(md-25)*0.2:0))));
-  const sr=document.getElementById('sim-rev'); if(sr) sr.textContent=fmtCurr(rev);
-  const sm=document.getElementById('sim-mgn'); if(sm) sm.textContent=mgn.toFixed(1)+'%';
-  const sh=document.getElementById('sim-hlt'); if(sh){ sh.textContent=hlt; sh.style.color=healthColor(hlt); }
+  const baseStock=sim.base_stock||Math.round(baseR*0.5/12);
+  // Illustrative commercial model:
+  //  reorder & markdown lift near-term revenue; PO-cancel/intake-cut trade a little revenue to free cash & protect margin.
+  const rev   = baseR * (1 + ro*0.004 + md*0.001 - pc*0.0015 - it*0.0005);
+  const mgn   = baseM - md*0.06 + ro*0.01 + pc*0.03 + it*0.02;
+  const stockRed = baseStock * (md*0.006 + pc*0.008 + it*0.004);
+  const cash     = baseStock * (md*0.005 + pc*0.007 + it*0.003) - baseR * (ro*0.002);
+  const hlt   = Math.max(0, Math.min(100, Math.round(baseH + ro*0.10 + it*0.08 + pc*0.10 - (md>25?(md-25)*0.2:0))));
+  const set=(id,txt,col)=>{ const el=document.getElementById(id); if(el){ el.textContent=txt; if(col) el.style.color=col; } };
+  set('sim-rev', fmtCurr(rev));
+  set('sim-mgn', mgn.toFixed(1)+'%');
+  set('sim-stock', '-'+fmtCurr(stockRed), '#C77A38');
+  set('sim-cash', (cash>=0?'+':'')+fmtCurr(cash), cash>=0?'#2E8B57':'#E05A4A');
+  set('sim-hlt', String(hlt), healthColor(hlt));
 }
 
 // ── Business Memory Engine (Phase 3) ──────────────────────────

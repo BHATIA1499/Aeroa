@@ -1437,6 +1437,37 @@ def _ws_health_score(kpis: dict) -> int:
     return int(round(max(0, min(100, score))))
 
 
+def _dataset_type_from_name(fname: str, tags=None) -> str:
+    """Infer the semantic dataset type (not the file extension) from name/tags."""
+    n = (fname or "").lower()
+    tagset = " ".join(tags or []).lower()
+    hay = n + " " + tagset
+    if "buy" in hay and "plan" in hay:
+        return "Buy Plan"
+    if "markdown" in hay or "clearance" in hay:
+        return "Markdown Plan"
+    if "supplier" in hay or "sourcing" in hay:
+        return "Supplier Report"
+    if "stock" in hay or "inventory" in hay:
+        return "Stock Report"
+    if "range" in hay or "assortment" in hay:
+        return "Range Plan"
+    if "trad" in hay or "weekly" in hay or "wk" in hay or "week" in hay:
+        return "Trading Report"
+    return "Trading Report"
+
+
+def _ws_stock_value(kpis: dict) -> int:
+    """Stock value at cost for a dataset (uses computed KPI, else derives from revenue)."""
+    if not isinstance(kpis, dict):
+        return 0
+    sv = kpis.get("total_stock_value")
+    if sv:
+        return int(round(sv))
+    rev = float(kpis.get("total_revenue") or 0)
+    return int(round(rev * 0.5 / 12)) if rev else 0
+
+
 def _ws_row_to_card(row: dict) -> dict:
     """Map a uploads row (with analysis->_workspace + analysis->kpis) to a file card."""
     ws    = row.get("_workspace") or row.get("ws") or {}
@@ -1446,6 +1477,7 @@ def _ws_row_to_card(row: dict) -> dict:
     if not isinstance(kpis, dict):
         kpis = {}
     fname = row.get("filename") or "Untitled"
+    tags  = ws.get("tags") or []
     return {
         "id":            row.get("id"),
         "filename":      fname,
@@ -1453,15 +1485,17 @@ def _ws_row_to_card(row: dict) -> dict:
         "upload_date":   row.get("created_at"),
         "analysed_date": ws.get("analysed_at") or row.get("created_at"),
         "file_type":     _file_type_from_name(fname),
+        "dataset_type":  ws.get("dataset_type") or _dataset_type_from_name(fname, tags),
         "record_count":  row.get("sku_count") or 0,
         "file_size":     row.get("file_size") or 0,
         "status":        ws.get("status") or "Analysed",
-        "tags":          ws.get("tags") or [],
+        "tags":          tags,
         "archived":      bool(ws.get("archived")),
         "trashed":       bool(ws.get("trashed")),
         "revenue":       kpis.get("total_revenue") or 0,
         "margin":        kpis.get("avg_margin_pct") or 0,
         "sell_through":  kpis.get("avg_sell_through") or 0,
+        "stock_value":   _ws_stock_value(kpis),
         "health_score":  _ws_health_score(kpis),
     }
 
@@ -1908,10 +1942,12 @@ def workspace_command(user):
                 "base_revenue": kpis.get("total_revenue", 0),
                 "base_margin":  kpis.get("avg_margin_pct", 0),
                 "base_health":  health,
+                "base_stock":   _ws_stock_value(kpis),
                 "levers": [
-                    {"key": "markdown", "label": "Markdown depth",        "min": 0, "max": 40, "step": 5, "default": 20, "unit": "%"},
-                    {"key": "reorder",  "label": "Reorder depth",         "min": 0, "max": 50, "step": 5, "default": 25, "unit": "%"},
-                    {"key": "intake",   "label": "Shift intake → winners", "min": 0, "max": 30, "step": 5, "default": 10, "unit": "%"},
+                    {"key": "markdown", "label": "Markdown depth",              "min": 0, "max": 40, "step": 5, "default": 20, "unit": "%"},
+                    {"key": "reorder",  "label": "Replenishment / reorder depth", "min": 0, "max": 50, "step": 5, "default": 25, "unit": "%"},
+                    {"key": "po_cancel", "label": "Purchase order cancellation",  "min": 0, "max": 50, "step": 5, "default": 0,  "unit": "%"},
+                    {"key": "intake",   "label": "Future intake reduction",      "min": 0, "max": 40, "step": 5, "default": 10, "unit": "%"},
                 ],
             },
             "commercial_impact": commercial,
