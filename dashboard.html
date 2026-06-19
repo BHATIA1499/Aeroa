@@ -427,6 +427,302 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
   .kpi-grid-3,.kpi-grid-4,.kpi-grid-5,.kpi-grid-6{grid-template-columns:1fr}
   #content{padding:14px}
 }
+
+/* ── DATA WORKSPACE ── */
+.ds-switcher{position:relative;display:flex;align-items:center}
+.ds-switcher select{appearance:none;-webkit-appearance:none;font-family:var(--body);font-size:12.5px;font-weight:600;
+  color:var(--text);background:var(--glass);border:1px solid var(--border);border-radius:9px;
+  padding:8px 30px 8px 12px;cursor:pointer;max-width:230px;text-overflow:ellipsis}
+.ds-switcher::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--text3);pointer-events:none}
+.ds-switcher .ds-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text3);position:absolute;left:12px;top:-7px;background:rgba(255,255,255,.92);padding:0 4px;border-radius:4px}
+
+.ws-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+.ws-title{font-family:var(--serif);font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.ws-sub{font-size:13px;color:var(--text2);margin-top:3px;max-width:560px}
+.ws-tabs{display:flex;gap:4px;background:rgba(255,255,255,.55);border:1px solid var(--border);
+  border-radius:11px;padding:4px}
+.ws-tab{font-size:12.5px;font-weight:600;color:var(--text2);padding:8px 16px;border-radius:8px;cursor:pointer;
+  border:none;background:transparent;transition:all .15s;white-space:nowrap}
+.ws-tab:hover{color:var(--text)}
+.ws-tab.active{background:var(--mint-d);color:#fff;box-shadow:0 2px 8px rgba(125,170,117,.3)}
+
+.ws-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.ws-search{flex:1;min-width:200px;position:relative}
+.ws-search input{width:100%;font-family:var(--body);font-size:13px;color:var(--text);
+  background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:10px 12px 10px 34px}
+.ws-search input:focus{outline:none;border-color:var(--mint-d)}
+.ws-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.ws-segment{display:flex;gap:3px;background:rgba(255,255,255,.55);border:1px solid var(--border);border-radius:10px;padding:3px}
+.ws-seg-btn{font-size:12px;font-weight:600;color:var(--text2);padding:7px 13px;border:none;background:transparent;border-radius:7px;cursor:pointer}
+.ws-seg-btn.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ws-seg-btn .cnt{font-size:10px;opacity:.6;margin-left:4px}
+.ws-tagbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ws-tagchip{font-size:11px;font-weight:600;color:var(--mint-d);background:rgba(125,170,117,.1);
+  border:1px solid rgba(125,170,117,.2);border-radius:99px;padding:4px 11px;cursor:pointer}
+.ws-tagchip.active{background:var(--mint-d);color:#fff}
+
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.ws-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:16px;
+  box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s;position:relative}
+.ws-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.09)}
+.ws-card.is-current{border-color:var(--mint-d);box-shadow:0 0 0 2px rgba(125,170,117,.25)}
+.ws-card-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:12px}
+.ws-ftype{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:.02em}
+.ws-ftype.CSV{background:#7DAA75}.ws-ftype.Excel{background:#2E8B57}.ws-ftype.Numbers{background:#E0975A}
+.ws-ftype.TSV,.ws-ftype.Text,.ws-ftype.File,.ws-ftype.Spreadsheet{background:#8A8A9A}
+.ws-fname{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;word-break:break-word}
+.ws-fmeta{font-size:11px;color:var(--text3);margin-top:2px}
+.ws-curbadge{font-size:9px;font-weight:800;letter-spacing:.05em;color:#fff;background:var(--mint-d);
+  border-radius:99px;padding:2px 8px;margin-left:auto;flex-shrink:0}
+.ws-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.ws-stat{background:rgba(255,255,255,.5);border-radius:8px;padding:7px 9px}
+.ws-stat .v{font-size:14px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.ws-stat .l{font-size:9.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-top:1px}
+.ws-health{display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.ws-health-bar{flex:1;height:6px;border-radius:99px;background:rgba(0,0,0,.07);overflow:hidden}
+.ws-health-fill{height:100%;border-radius:99px;transition:width .5s}
+.ws-health-val{font-size:11px;font-weight:700;color:var(--text2)}
+.ws-tags-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;min-height:4px}
+.ws-tag{font-size:10px;font-weight:600;color:var(--text2);background:rgba(0,0,0,.05);border-radius:99px;padding:2px 8px}
+.ws-actions{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:11px}
+.ws-btn{font-size:11.5px;font-weight:600;border-radius:8px;padding:7px 11px;cursor:pointer;border:1px solid var(--border);
+  background:#fff;color:var(--text2);transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.ws-btn:hover{border-color:var(--mint-d);color:var(--mint-d)}
+.ws-btn.primary{background:var(--mint-d);color:#fff;border-color:var(--mint-d)}
+.ws-btn.primary:hover{background:#6b9764;color:#fff}
+.ws-btn.danger:hover{border-color:#E05A4A;color:#E05A4A}
+.ws-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.ws-empty .ic{font-size:40px;margin-bottom:12px}
+.ws-empty .t{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:6px}
+
+/* Compare */
+.ws-cmp-pick{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;margin-bottom:20px}
+.ws-cmp-pick select{width:100%;font-family:var(--body);font-size:13px;color:var(--text);background:var(--glass);
+  border:1px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer}
+.ws-cmp-vs{font-family:var(--serif);font-weight:800;color:var(--text3);font-size:14px;padding-bottom:9px}
+.ws-cmp-field-l{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:block}
+.ws-cmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:22px}
+.ws-cmp-metric{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.ws-cmp-metric .ml{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.ws-cmp-vals{display:flex;align-items:baseline;gap:8px;margin:7px 0 4px}
+.ws-cmp-a{font-size:15px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums}
+.ws-cmp-arrow{color:var(--text3);font-size:12px}
+.ws-cmp-b{font-size:19px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.ws-cmp-delta{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.ws-cmp-delta.up{color:#2E8B57}.ws-cmp-delta.down{color:#E05A4A}.ws-cmp-delta.flat{color:var(--text3)}
+.ws-cmp-table{width:100%;border-collapse:collapse;background:var(--glass);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.ws-cmp-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);
+  text-align:left;padding:11px 14px;border-bottom:1px solid var(--border)}
+.ws-cmp-table td{font-size:13px;padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);font-variant-numeric:tabular-nums}
+.ws-cmp-table td.num{text-align:right}
+.ws-cmp-table tr:last-child td{border-bottom:none}
+.ws-movebadge{font-size:10px;font-weight:700;border-radius:99px;padding:2px 8px}
+.ws-movebadge.new{background:rgba(46,139,87,.12);color:#2E8B57}
+.ws-movebadge.dropped{background:rgba(224,90,74,.12);color:#E05A4A}
+.ws-movebadge.changed{background:rgba(138,138,154,.12);color:var(--text2)}
+
+/* Timeline */
+.ws-tl-commentary{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.ws-tl-item{background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.ws-tl-item .tm{font-size:12px;font-weight:600;color:var(--text3)}
+.ws-tl-item .tv{font-size:20px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.ws-tl-item .tv.up{color:#2E8B57}.ws-tl-item .tv.down{color:#E05A4A}.ws-tl-item .tv.flat{color:var(--text2)}
+.ws-tl-track{display:flex;gap:0;align-items:stretch;overflow-x:auto;padding:8px 0 16px}
+.ws-tl-node{flex:0 0 auto;min-width:150px;cursor:pointer;text-align:center;position:relative;padding:0 8px}
+.ws-tl-node:not(:last-child)::after{content:'';position:absolute;top:24px;right:0;width:100%;height:2px;background:var(--border);z-index:0}
+.ws-tl-dot{width:14px;height:14px;border-radius:50%;background:var(--mint-d);margin:18px auto 10px;position:relative;z-index:1;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.ws-tl-node.is-current .ws-tl-dot{background:#E0975A;transform:scale(1.25)}
+.ws-tl-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:11px;padding:11px;box-shadow:var(--shadow);transition:transform .15s}
+.ws-tl-node:hover .ws-tl-card{transform:translateY(-2px)}
+.ws-tl-card .d{font-size:10px;color:var(--text3);font-weight:600}
+.ws-tl-card .n{font-size:12px;font-weight:700;color:var(--text);margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ws-tl-card .r{font-size:14px;font-weight:800;color:var(--mint-d);font-variant-numeric:tabular-nums}
+
+.sb-nav-static{padding:2px 8px 8px}
+.sb-ws-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:8px;cursor:pointer;
+  border:none;background:transparent;font-family:var(--body);font-size:13px;font-weight:600;color:var(--text2);text-align:left;transition:all .15s}
+.sb-ws-btn:hover{background:rgba(125,170,117,.08);color:var(--text)}
+.sb-ws-btn.active{background:rgba(125,170,117,.14);color:var(--mint-d)}
+.sb-ws-btn .icon{width:16px;text-align:center;font-size:14px}
+.sb-ws-btn .new-pill{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;background:rgba(125,170,117,.18);color:var(--mint-d)}
+@media(max-width:760px){.ws-cmp-pick{grid-template-columns:1fr}.ws-cmp-vs{text-align:center;padding:0}}
+
+/* ── DATA WORKSPACE v2 ── */
+.ws-health-label{font-size:10px;font-weight:800;letter-spacing:.03em;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.ws-health-label.green{background:rgba(46,139,87,.12);color:#2E8B57}
+.ws-health-label.amber{background:rgba(224,151,90,.14);color:#C77A38}
+.ws-health-label.red{background:rgba(224,90,74,.12);color:#E05A4A}
+.ws-health-score-big{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.ws-keyrec{display:flex;align-items:flex-start;gap:7px;background:rgba(125,170,117,.07);border:1px solid rgba(125,170,117,.16);
+  border-radius:9px;padding:8px 10px;margin-bottom:11px;font-size:11.5px;color:var(--text2);line-height:1.4}
+.ws-keyrec .kr-ic{font-size:12px;flex-shrink:0}
+.ws-keyrec b{color:var(--text);font-weight:700}
+.ws-stats{grid-template-columns:repeat(4,1fr)}
+
+/* onboarding empty state */
+.ws-onboard{grid-column:1/-1;text-align:center;padding:52px 24px;max-width:560px;margin:0 auto}
+.ws-onboard .ic{font-size:48px;margin-bottom:16px}
+.ws-onboard .t{font-family:var(--serif);font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px}
+.ws-onboard .s{font-size:13.5px;color:var(--text2);line-height:1.6;margin-bottom:22px}
+.ws-onboard-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.ws-cta{font-size:13.5px;font-weight:700;border-radius:11px;padding:12px 22px;cursor:pointer;border:1px solid var(--border);display:inline-flex;align-items:center;gap:8px;transition:all .15s}
+.ws-cta.primary{background:var(--mint-d);color:#fff;border-color:var(--mint-d);box-shadow:0 4px 14px rgba(125,170,117,.3)}
+.ws-cta.primary:hover{background:#6b9764;transform:translateY(-1px)}
+.ws-cta.ghost{background:#fff;color:var(--text)}
+.ws-cta.ghost:hover{border-color:var(--mint-d);color:var(--mint-d)}
+
+/* sample-mode banner */
+.ws-sample-banner{display:none;align-items:center;gap:12px;background:linear-gradient(90deg,rgba(184,196,232,.18),rgba(125,170,117,.12));
+  border:1px solid rgba(125,170,117,.28);border-radius:12px;padding:11px 16px;margin-bottom:16px}
+.ws-sample-banner.show{display:flex}
+.ws-sample-banner .sb-ic{font-size:18px}
+.ws-sample-banner .sb-txt{font-size:12.5px;color:var(--text2);font-weight:500}
+.ws-sample-banner .sb-txt b{color:var(--text);font-weight:700}
+.ws-sample-banner .sb-exit{margin-left:auto;font-size:12px;font-weight:700;color:var(--mint-d);background:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 13px;cursor:pointer}
+.ws-sample-banner .sb-exit:hover{border-color:var(--mint-d)}
+
+/* compare commentary */
+.ws-cmp-commentary{background:linear-gradient(135deg,rgba(125,170,117,.08),rgba(184,196,232,.08));
+  border:1px solid var(--glass-border);border-radius:13px;padding:16px 18px;margin-bottom:22px;box-shadow:var(--shadow)}
+.ws-cmp-commentary .cc-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--mint-d);margin-bottom:10px}
+.ws-cmp-commentary ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.ws-cmp-commentary li{font-size:13.5px;color:var(--text);line-height:1.5;padding-left:20px;position:relative}
+.ws-cmp-commentary li::before{content:'';position:absolute;left:4px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--mint-d)}
+.ws-cmp-commentary li.warn::before{background:#E0975A}
+.ws-cmp-commentary li.bad::before{background:#E05A4A}
+
+.ws-tl-card .kr{font-size:10px;color:var(--text2);margin-top:5px;line-height:1.35;border-top:1px solid var(--border);padding-top:5px}
+.ws-tl-card .kr b{color:var(--mint-d)}
+
+/* detail side panel */
+.ws-panel-overlay{position:fixed;inset:0;background:rgba(20,20,35,.32);backdrop-filter:blur(2px);z-index:900;opacity:0;
+  pointer-events:none;transition:opacity .22s}
+.ws-panel-overlay.open{opacity:1;pointer-events:auto}
+.ws-panel{position:fixed;top:0;right:0;height:100vh;width:min(460px,92vw);background:var(--bg-grad);background-attachment:fixed;
+  z-index:901;box-shadow:-8px 0 40px rgba(0,0,0,.18);transform:translateX(100%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column}
+.ws-panel.open{transform:translateX(0)}
+.ws-panel-head{display:flex;align-items:flex-start;gap:12px;padding:20px 22px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.6)}
+.ws-panel-head .pt{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text);line-height:1.25}
+.ws-panel-head .ps{font-size:11.5px;color:var(--text3);margin-top:3px}
+.ws-panel-close{margin-left:auto;font-size:20px;line-height:1;background:none;border:none;cursor:pointer;color:var(--text3);padding:2px 6px}
+.ws-panel-close:hover{color:var(--text)}
+.ws-panel-body{flex:1;overflow-y:auto;padding:20px 22px 40px}
+.ws-panel-hero{display:flex;align-items:center;gap:14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:15px;margin-bottom:18px;box-shadow:var(--shadow)}
+.ws-panel-hero .hs{font-family:var(--serif);font-size:30px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.ws-panel-hero .hl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.ws-psec{margin-bottom:18px}
+.ws-psec-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:9px}
+.ws-pcard{border-radius:11px;padding:13px 14px;font-size:13px;line-height:1.5;color:var(--text)}
+.ws-pcard.opp{background:rgba(46,139,87,.08);border:1px solid rgba(46,139,87,.18)}
+.ws-pcard.risk{background:rgba(224,90,74,.07);border:1px solid rgba(224,90,74,.18)}
+.ws-pcard.sum{background:var(--glass);border:1px solid var(--glass-border)}
+.ws-pcard .pc-t{font-weight:700;margin-bottom:3px}
+.ws-prec{display:flex;gap:10px;align-items:flex-start;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:11px 12px;margin-bottom:8px}
+.ws-prec .pr-n{width:22px;height:22px;border-radius:6px;background:var(--mint-d);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ws-prec .pr-t{font-size:12.5px;font-weight:700;color:var(--text)}
+.ws-prec .pr-s{font-size:11.5px;color:var(--text2);margin-top:2px}
+.ws-prec .pr-impact{font-size:11px;font-weight:700;color:#2E8B57;margin-top:4px}
+.ws-preport{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text2);padding:8px 0;border-bottom:1px solid var(--border)}
+.ws-preport:last-child{border-bottom:none}
+.ws-preport .rdl{margin-left:auto;font-size:11px;font-weight:700;color:var(--mint-d);cursor:pointer}
+.ws-export-menu{display:flex;flex-direction:column;gap:7px}
+@media(max-width:600px){.ws-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ── DATA WORKSPACE v3 — Decision Mode / Command Centre / Memory / Export ── */
+.ws-head-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+.ws-sample-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--text2);
+  background:var(--glass);border:1px solid var(--glass-border);border-radius:11px;padding:9px 14px;cursor:pointer;
+  box-shadow:var(--shadow);transition:all .15s;white-space:nowrap}
+.ws-sample-toggle:hover{border-color:#5B6BB5;color:#5B6BB5}
+.ws-sample-toggle.active{background:linear-gradient(90deg,rgba(184,196,232,.3),rgba(125,170,117,.2));border-color:#5B6BB5;color:#3F4E8C}
+.ws-modeswitch{display:inline-flex;background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:4px;gap:4px;box-shadow:var(--shadow)}
+.ws-mode{font-size:13px;font-weight:700;border:none;background:none;color:var(--text2);border-radius:9px;padding:9px 16px;cursor:pointer;transition:all .16s;white-space:nowrap}
+.ws-mode.active{background:var(--mint-d);color:#fff;box-shadow:0 3px 10px rgba(125,170,117,.32)}
+.ws-mode.active#wsmode-decision{background:#5B6BB5;box-shadow:0 3px 10px rgba(91,107,181,.32)}
+.ws-modehint{font-size:12.5px;color:var(--text2);margin:-4px 0 16px;line-height:1.5}
+.ws-modehint b{color:var(--text)}
+
+/* Command Centre */
+.cc-wrap{display:flex;flex-direction:column;gap:18px}
+.cc-hero{display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;background:linear-gradient(135deg,rgba(91,107,181,.10),rgba(125,170,117,.08));
+  border:1px solid var(--glass-border);border-radius:16px;padding:20px 24px;box-shadow:var(--shadow)}
+.cc-hero .cc-score{font-family:var(--serif);font-size:46px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.cc-hero .cc-score-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-top:4px}
+.cc-hero .cc-q{font-family:var(--serif);font-size:19px;font-weight:800;color:var(--text);line-height:1.3}
+.cc-hero .cc-qs{font-size:13px;color:var(--text2);margin-top:4px;line-height:1.5}
+.cc-hero .cc-cta{display:flex;flex-direction:column;gap:8px}
+.cc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.cc-grid2{grid-template-columns:1fr}.cc-hero{grid-template-columns:1fr;text-align:center}.cc-hero .cc-cta{flex-direction:row;justify-content:center;flex-wrap:wrap}}
+.cc-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.cc-card-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.cc-bigcard{border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+.cc-bigcard.opp{background:linear-gradient(135deg,rgba(46,139,87,.10),rgba(125,170,117,.05));border:1px solid rgba(46,139,87,.2)}
+.cc-bigcard.risk{background:linear-gradient(135deg,rgba(224,90,74,.09),rgba(224,151,90,.05));border:1px solid rgba(224,90,74,.2)}
+.cc-bigcard .bc-t{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text);margin:4px 0 6px}
+.cc-bigcard .bc-s{font-size:13px;color:var(--text2);line-height:1.55}
+.cc-bigcard .bc-impact{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:800;padding:5px 11px;border-radius:8px}
+.cc-bigcard.opp .bc-impact{background:rgba(46,139,87,.14);color:#2E8B57}
+.cc-bigcard.risk .bc-impact{background:rgba(224,90,74,.14);color:#E05A4A}
+
+/* Top actions table */
+.cc-action{display:grid;grid-template-columns:30px 1fr auto;gap:13px;align-items:start;padding:14px 0;border-bottom:1px solid var(--border)}
+.cc-action:last-child{border-bottom:none}
+.cc-action .ca-n{width:30px;height:30px;border-radius:9px;background:#5B6BB5;color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.cc-action .ca-t{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.35}
+.cc-action .ca-why{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.45}
+.cc-action .ca-metrics{display:flex;gap:14px;margin-top:7px;flex-wrap:wrap}
+.cc-action .ca-m{font-size:11.5px;font-weight:700}
+.cc-action .ca-m .lbl{color:var(--text3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.03em;display:block}
+.cc-conf{text-align:right;min-width:62px}
+.cc-conf .cf-ring{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
+.cc-conf .cf-l{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+
+/* Decision Simulator */
+.cc-sim-row{display:grid;grid-template-columns:160px 1fr 70px;gap:14px;align-items:center;margin-bottom:14px}
+.cc-sim-row label{font-size:12.5px;font-weight:700;color:var(--text2)}
+.cc-sim-row input[type=range]{width:100%;accent-color:#5B6BB5}
+.cc-sim-row .sim-val{font-size:13px;font-weight:800;color:#5B6BB5;text-align:right;font-variant-numeric:tabular-nums}
+.cc-sim-out{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.cc-sim-stat{background:rgba(91,107,181,.06);border:1px solid rgba(91,107,181,.16);border-radius:11px;padding:13px;text-align:center}
+.cc-sim-stat .v{font-family:var(--serif);font-size:21px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums}
+.cc-sim-stat .l{font-size:10.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:3px}
+
+/* Business Memory */
+.cc-mem-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:820px){.cc-mem-grid{grid-template-columns:1fr}.cc-sim-row{grid-template-columns:1fr}.cc-sim-row .sim-val{text-align:left}}
+.cc-mem{border-radius:12px;padding:13px 15px;border:1px solid var(--border)}
+.cc-mem-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;margin-bottom:8px}
+.cc-mem.up{background:rgba(46,139,87,.06);border-color:rgba(46,139,87,.18)} .cc-mem.up .cc-mem-h{color:#2E8B57}
+.cc-mem.down{background:rgba(224,90,74,.06);border-color:rgba(224,90,74,.18)} .cc-mem.down .cc-mem-h{color:#E05A4A}
+.cc-mem.warn{background:rgba(224,151,90,.07);border-color:rgba(224,151,90,.2)} .cc-mem.warn .cc-mem-h{color:#C77A38}
+.cc-mem.info{background:var(--glass);border-color:var(--glass-border)} .cc-mem.info .cc-mem-h{color:#5B6BB5}
+.cc-mem ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.cc-mem li{font-size:12.5px;color:var(--text);line-height:1.45;padding-left:16px;position:relative}
+.cc-mem li::before{content:'›';position:absolute;left:2px;color:var(--text3);font-weight:800}
+.cc-mem .empty{font-size:12px;color:var(--text3);font-style:italic}
+.cc-recur{display:flex;align-items:center;gap:9px;background:rgba(224,151,90,.08);border:1px solid rgba(224,151,90,.22);border-radius:10px;padding:10px 13px;margin-top:8px;font-size:12.5px;color:var(--text)}
+.cc-recur .badge{font-size:10px;font-weight:800;background:#C77A38;color:#fff;border-radius:99px;padding:3px 9px;white-space:nowrap}
+
+/* Export Centre */
+.ws-export-overlay{position:fixed;inset:0;background:rgba(20,20,35,.4);backdrop-filter:blur(3px);z-index:950;display:none;align-items:center;justify-content:center;padding:24px}
+.ws-export-overlay.open{display:flex}
+.ws-export-modal{background:var(--bg-grad);background-attachment:fixed;border-radius:18px;width:min(640px,96vw);max-height:88vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.3);border:1px solid var(--glass-border)}
+.ws-export-head{display:flex;align-items:flex-start;gap:12px;padding:22px 24px 14px;border-bottom:1px solid var(--border)}
+.ws-export-t{font-family:var(--serif);font-size:19px;font-weight:800;color:var(--text)}
+.ws-export-s{font-size:12.5px;color:var(--text3);margin-top:3px}
+.ws-export-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px 24px 26px}
+@media(max-width:560px){.ws-export-grid{grid-template-columns:1fr}}
+.ws-exp-card{display:flex;gap:13px;align-items:flex-start;background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:15px;cursor:pointer;transition:all .15s;text-align:left}
+.ws-exp-card:hover{border-color:var(--mint-d);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.1)}
+.ws-exp-card .ec-ic{font-size:24px;flex-shrink:0}
+.ws-exp-card .ec-t{font-size:13.5px;font-weight:800;color:var(--text)}
+.ws-exp-card .ec-d{font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.4}
+.ws-exp-card .ec-fmt{display:inline-block;margin-top:6px;font-size:10px;font-weight:800;color:#5B6BB5;background:rgba(91,107,181,.1);border-radius:6px;padding:2px 7px;letter-spacing:.03em}
 </style>
 </head>
 <body>
@@ -440,6 +736,14 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
   <div class="sb-nav" id="sb-nav">
     <!-- Injected by JS per role -->
+  </div>
+
+  <!-- Data Workspace (global, cross-role) -->
+  <div class="sb-nav-static">
+    <button class="sb-ws-btn" id="sb-ws-btn" onclick="openWorkspace()">
+      <span class="icon">🗄️</span>Data Workspace
+      <span class="new-pill">NEW</span>
+    </button>
   </div>
 
   <!-- Role Switcher -->
@@ -482,6 +786,10 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
       <div class="role-badge AM" id="role-badge">AM</div>
     </div>
     <div class="topbar-right">
+      <div class="ds-switcher" id="ds-switcher" style="display:none">
+        <span class="ds-label">Dataset</span>
+        <select id="ds-select" onchange="switchDataset(this.value)" title="Switch active dataset"></select>
+      </div>
       <button class="notif-btn" title="Notifications">🔔</button>
       <button class="upload-btn" onclick="document.getElementById('file-input').click()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -936,6 +1244,114 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
       </div>
 
     </div><!-- /role-views -->
+
+    <!-- ══════════════ DATA WORKSPACE ══════════════ -->
+    <div id="workspace-view" style="display:none">
+      <div class="ws-sample-banner" id="ws-sample-banner">
+        <span class="sb-ic">🧪</span>
+        <span class="sb-txt"><b>Sample data</b> — you're exploring Aeroa with a realistic demo dataset. Upload your own file to replace it.</span>
+        <button class="sb-exit" onclick="exitSampleMode()">Exit sample mode</button>
+      </div>
+      <div class="ws-head">
+        <div>
+          <div class="ws-title">🗄️ Data Workspace</div>
+          <div class="ws-sub">Every file you upload is saved here — reopen past analyses, compare datasets, and track performance over time. Never upload the same file twice.</div>
+        </div>
+        <div class="ws-head-controls">
+          <button class="ws-sample-toggle" id="ws-sample-toggle" onclick="toggleSampleMode()" title="Switch between your data and a demo dataset">🧪 Try Sample Data</button>
+          <div class="ws-modeswitch" id="ws-modeswitch">
+            <button class="ws-mode active" id="wsmode-analysis" onclick="wsMode('analysis')">📊 Analysis Mode</button>
+            <button class="ws-mode"        id="wsmode-decision" onclick="wsMode('decision')">🧭 Decision Mode</button>
+          </div>
+        </div>
+      </div>
+      <div class="ws-modehint" id="ws-modehint"></div>
+
+      <!-- Analysis-mode tabs -->
+      <div class="ws-tabs" id="ws-tabs-analysis">
+        <button class="ws-tab active" id="wstab-library"  onclick="wsTab('library')">📁 File Library</button>
+        <button class="ws-tab"        id="wstab-compare"  onclick="wsTab('compare')">⚖️ Compare</button>
+        <button class="ws-tab"        id="wstab-timeline" onclick="wsTab('timeline')">📈 Timeline</button>
+      </div>
+
+      <!-- TAB: Library -->
+      <div id="wspane-library">
+        <div class="ws-toolbar">
+          <div class="ws-search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+            <input id="ws-search-input" placeholder="Search files by name or tag…" oninput="wsApplyFilters()">
+          </div>
+          <div class="ws-segment" id="ws-view-seg">
+            <button class="ws-seg-btn active" data-view="active"   onclick="wsSetView('active')">Active <span class="cnt" id="ws-cnt-active"></span></button>
+            <button class="ws-seg-btn"        data-view="archived" onclick="wsSetView('archived')">Archived <span class="cnt" id="ws-cnt-archived"></span></button>
+            <button class="ws-seg-btn"        data-view="trash"    onclick="wsSetView('trash')">Trash <span class="cnt" id="ws-cnt-trash"></span></button>
+          </div>
+        </div>
+        <div class="ws-tagbar" id="ws-tagbar"></div>
+        <div class="ws-grid" id="ws-grid"></div>
+      </div>
+
+      <!-- TAB: Compare -->
+      <div id="wspane-compare" style="display:none">
+        <div class="ws-cmp-pick">
+          <div>
+            <label class="ws-cmp-field-l">Dataset A (baseline)</label>
+            <select id="ws-cmp-a"></select>
+          </div>
+          <div class="ws-cmp-vs">vs</div>
+          <div>
+            <label class="ws-cmp-field-l">Dataset B (comparison)</label>
+            <select id="ws-cmp-b"></select>
+          </div>
+        </div>
+        <div style="margin-bottom:18px">
+          <button class="ws-btn primary" onclick="wsRunCompare()">Compare datasets →</button>
+        </div>
+        <div id="ws-cmp-results"></div>
+      </div>
+
+      <!-- TAB: Timeline -->
+      <div id="wspane-timeline" style="display:none">
+        <div id="ws-tl-commentary" class="ws-tl-commentary"></div>
+        <div class="glass" style="padding:20px;margin-bottom:18px">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">Performance Trend — Revenue</div>
+          <div id="ws-tl-chart" style="height:160px"></div>
+        </div>
+        <div class="ws-tl-track" id="ws-tl-track"></div>
+      </div>
+
+      <!-- DECISION MODE: Command Centre -->
+      <div id="wspane-command" style="display:none">
+        <div class="cc-wrap" id="cc-wrap"></div>
+      </div>
+
+      <!-- Detail side panel -->
+      <div class="ws-panel-overlay" id="ws-panel-overlay" onclick="closeDetailPanel()"></div>
+      <div class="ws-panel" id="ws-panel" role="dialog" aria-modal="true" aria-labelledby="ws-panel-title">
+        <div class="ws-panel-head">
+          <div>
+            <div class="pt" id="ws-panel-title">Analysis</div>
+            <div class="ps" id="ws-panel-sub"></div>
+          </div>
+          <button class="ws-panel-close" onclick="closeDetailPanel()" aria-label="Close panel">×</button>
+        </div>
+        <div class="ws-panel-body" id="ws-panel-body"></div>
+      </div>
+
+      <!-- Export Centre modal -->
+      <div class="ws-export-overlay" id="ws-export-overlay" onclick="closeExportCentre()">
+        <div class="ws-export-modal" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="ws-export-title">
+          <div class="ws-export-head">
+            <div>
+              <div class="ws-export-t" id="ws-export-title">⬇ Export Centre</div>
+              <div class="ws-export-s" id="ws-export-sub">Presentation-ready outputs from your analysis</div>
+            </div>
+            <button class="ws-panel-close" onclick="closeExportCentre()" aria-label="Close">×</button>
+          </div>
+          <div class="ws-export-grid" id="ws-export-grid"></div>
+        </div>
+      </div>
+    </div><!-- /workspace-view -->
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -996,6 +1412,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   } catch {}
+  // Populate the Data Workspace dataset switcher (non-blocking)
+  refreshDatasetSwitcher();
 });
 
 async function loadUser() {
@@ -1168,6 +1586,12 @@ function showRoleView() {
   if (!analysisData) return;
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('role-views').style.display = 'block';
+  // Leaving the Data Workspace if it was open
+  const wv = document.getElementById('workspace-view');
+  if (wv) wv.style.display = 'none';
+  const wsBtn = document.getElementById('sb-ws-btn');
+  if (wsBtn) wsBtn.classList.remove('active');
+  workspaceOpen = false;
 
   // Hide all views
   document.querySelectorAll('.role-view').forEach(v => {
@@ -2156,12 +2580,771 @@ async function doUpload(file) {
     const aRes = await fetch(`/api/analysis${data.upload_id?'?upload_id='+data.upload_id:''}`, {credentials:'include'});
     if (aRes.ok) { analysisData = await aRes.json(); }
     await loadRoleData();
+    if (data.upload_id) currentUploadId = data.upload_id;
     showRoleView();
+    refreshDatasetSwitcher();
 
-    showUploadToast('success', 'Data loaded!', `${file.name} — dashboard updated.`, 4000);
+    showUploadToast('success', 'Data loaded!', `${file.name} — saved to your Data Workspace.`, 4000);
   } catch(err) {
     showUploadToast('error', 'Upload error', err.message || 'Something went wrong. Please try again.', 10000);
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA WORKSPACE — file library, switcher, compare, timeline
+// ═══════════════════════════════════════════════════════════════
+let currentUploadId = null;
+let wsFiles = [];          // last fetched cards (current view)
+let wsAllFiles = [];       // for switcher / compare pickers (active+archived)
+let wsView = 'active';
+let wsActiveTag = '';
+let wsTabName = 'library';
+let workspaceOpen = false;
+let sampleMode = false;
+
+// ── Sample dataset (demo experience for new users) ────────────
+const SAMPLE_WS = {
+  files: [
+    { id:'s1', filename:'Wk25_Trading_Report.xlsx', display_name:'Wk25 Trading Report', file_type:'Excel',
+      upload_date:'2026-06-15', analysed_date:'2026-06-15', file_size:248000, record_count:1284, status:'Analysed',
+      archived:false, trashed:false, tags:['SS26','trading','womenswear'],
+      revenue:842500, margin:58, sell_through:64, health_score:82,
+      exec_summary:'Strong week driven by Dresses and Knitwear sell-through. Revenue +6.2% on Wk24 with margin holding at 58%. Two reorder opportunities flagged; one overstock risk building in Outerwear.',
+      top_opportunity:{t:'Reorder SS26 Linen Dresses', s:'78% sell-through with 3 weeks cover left — pull forward intake to capture full-price demand.', impact:'+£62k revenue'},
+      top_risk:{t:'Outerwear overstock', s:'Sell-through at 31% vs 55% plan. £88k tied in slow stock heading into clearance window.', impact:'£88k exposure'},
+      recs:[
+        {t:'Reorder Linen Dress range', s:'Place top-up order before supplier cutoff Fri.', impact:'+£62k revenue'},
+        {t:'Markdown Outerwear 20%', s:'Trigger early markdown to clear ageing stock.', impact:'Protect £34k margin'},
+        {t:'Push Knitwear in email', s:'Feature best-sellers in Thu campaign while momentum holds.', impact:'+£18k revenue'}
+      ],
+      reports:[{n:'Wk25 Trade Pack',d:'15 Jun 2026'},{n:'Executive Summary',d:'15 Jun 2026'}] },
+    { id:'s2', filename:'Wk24_Trading_Report.xlsx', display_name:'Wk24 Trading Report', file_type:'Excel',
+      upload_date:'2026-06-08', analysed_date:'2026-06-08', file_size:241000, record_count:1271, status:'Analysed',
+      archived:false, trashed:false, tags:['SS26','trading','womenswear'],
+      revenue:793200, margin:57, sell_through:61, health_score:78,
+      exec_summary:'Steady trading week. Dresses leading, Outerwear softening early. Margin stable at 57%.',
+      top_opportunity:{t:'Accelerate Dress intake', s:'Category outperforming plan by 12%.', impact:'+£48k revenue'},
+      top_risk:{t:'Outerwear softening', s:'Early signs of slow sell-through.', impact:'£52k watch'},
+      recs:[
+        {t:'Monitor Outerwear', s:'Review again next week before action.', impact:'Risk watch'},
+        {t:'Reorder core Dresses', s:'Protect availability on best-sellers.', impact:'+£48k revenue'}
+      ],
+      reports:[{n:'Wk24 Trade Pack',d:'8 Jun 2026'}] },
+    { id:'s3', filename:'SS26_Buy_Plan.csv', display_name:'SS26 Buy Plan', file_type:'CSV',
+      upload_date:'2026-05-20', analysed_date:'2026-05-20', file_size:96000, record_count:642, status:'Analysed',
+      archived:false, trashed:false, tags:['SS26','buy-plan'],
+      revenue:0, margin:62, sell_through:0, health_score:71,
+      exec_summary:'Pre-season buy plan for SS26. Investment weighted toward Dresses and Knitwear; Outerwear depth may be too high.',
+      top_opportunity:{t:'Increase Knitwear depth', s:'Historic 80%+ sell-through supports deeper buy.', impact:'+£70k potential'},
+      top_risk:{t:'Outerwear over-bought', s:'Planned depth exceeds last 3 seasons of demand.', impact:'£110k risk'},
+      recs:[
+        {t:'Trim Outerwear buy 15%', s:'Reallocate open-to-buy to Knitwear.', impact:'Avoid £110k overstock'},
+        {t:'Lock Knitwear suppliers early', s:'Secure capacity before peak.', impact:'Protect intake'}
+      ],
+      reports:[{n:'SS26 Buy Plan Review',d:'20 May 2026'}] },
+    { id:'s4', filename:'Wk22_Trading_Report.xlsx', display_name:'Wk22 Trading Report', file_type:'Excel',
+      upload_date:'2026-05-25', analysed_date:'2026-05-25', file_size:238000, record_count:1255, status:'Analysed',
+      archived:true, trashed:false, tags:['SS26','trading'],
+      revenue:761000, margin:56, sell_through:59, health_score:74,
+      exec_summary:'Solid early-season week. Foundation set for SS26 ramp-up.',
+      top_opportunity:{t:'Build Dress momentum', s:'Early sell-through encouraging.', impact:'+£40k revenue'},
+      top_risk:{t:'Knitwear slow start', s:'Below plan but seasonal.', impact:'£30k watch'},
+      recs:[{t:'Hold Knitwear', s:'Seasonal — review in 2 weeks.', impact:'Risk watch'}],
+      reports:[{n:'Wk22 Trade Pack',d:'25 May 2026'}] }
+  ],
+  tags:['SS26','trading','womenswear','buy-plan'],
+  current_upload_id:'s1',
+  counts:{active:3,archived:1,trash:0}
+};
+
+function sampleApi(method, url, body){
+  // Mirror the real workspace API shape using SAMPLE_WS in-memory.
+  const u = url.split('?')[0];
+  const qs = new URLSearchParams((url.split('?')[1]||''));
+  if (u==='/api/workspace/files'){
+    const view = qs.get('view')||'active';
+    let files = SAMPLE_WS.files.filter(f=>{
+      if(view==='all') return !f.trashed;
+      if(view==='archived') return f.archived && !f.trashed;
+      if(view==='trash') return f.trashed;
+      return !f.archived && !f.trashed; // active
+    });
+    const tag = qs.get('tag'); if(tag) files = files.filter(f=>(f.tags||[]).includes(tag));
+    return Promise.resolve({ files, tags:SAMPLE_WS.tags, current_upload_id:SAMPLE_WS.current_upload_id, counts:SAMPLE_WS.counts });
+  }
+  if (u==='/api/workspace/compare'){
+    const fa = SAMPLE_WS.files.find(f=>f.id===qs.get('a'));
+    const fb = SAMPLE_WS.files.find(f=>f.id===qs.get('b'));
+    return Promise.resolve(buildSampleCompare(fa,fb));
+  }
+  if (u==='/api/workspace/timeline'){
+    return Promise.resolve(buildSampleTimeline());
+  }
+  if (u==='/api/workspace/command'){
+    const f = SAMPLE_WS.files.find(x=>x.id===qs.get('upload_id')) || SAMPLE_WS.files.find(x=>x.id===SAMPLE_WS.current_upload_id);
+    return Promise.resolve(buildSampleCommand(f));
+  }
+  // mutations (rename/tag/archive/trash/switch) are no-ops in sample mode
+  return Promise.resolve({ ok:true });
+}
+
+function buildSampleCommand(f){
+  if(!f) return {};
+  return {
+    upload_id:f.id, dataset_label:f.display_name, dataset_date:f.upload_date,
+    health_score:f.health_score, health_label:healthLabel(f.health_score),
+    revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
+    exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
+    actions:[
+      {rank:1, action:'Reorder SS26 Linen Dress range', reason:'78% sell-through with 3 weeks cover left — supplier cutoff Friday.', rev_impact:62000, margin_impact:'+0.4pt', confidence:92},
+      {rank:2, action:'Trigger 20% markdown on ageing Outerwear', reason:'Sell-through stuck at 31% vs 55% plan; clear before the markdown window closes.', rev_impact:34000, margin_impact:'-1.2pt', confidence:84},
+      {rank:3, action:'Feature Knitwear best-sellers in Thursday email', reason:'Category momentum building — capture full-price demand while it lasts.', rev_impact:18000, margin_impact:'+0.2pt', confidence:78},
+      {rank:4, action:'Hold Dresses intake at current depth', reason:'Performing to plan; no action needed beyond the linen reorder.', rev_impact:0, margin_impact:'0pt', confidence:71},
+      {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1pt', confidence:66}
+    ],
+    simulator:{
+      base_revenue:f.revenue, base_margin:f.margin, base_health:f.health_score,
+      levers:[
+        {key:'markdown', label:'Outerwear markdown', min:0, max:40, step:5, default:20, unit:'%'},
+        {key:'reorder',  label:'Dress reorder depth', min:0, max:50, step:5, default:25, unit:'%'},
+        {key:'intake',   label:'Shift intake → Knitwear', min:0, max:30, step:5, default:10, unit:'%'}
+      ]
+    },
+    commercial_impact:{ revenue_at_stake:88000, margin_protect:34000, total_upside:92000 },
+    memory:{
+      improved:['Revenue +6.2% (£793k → £843k)','Sell-through +3pts to 64%','Business Health 78 → 82'],
+      declined:['Outerwear revenue share fell 18% → 13%'],
+      new_risks:['Outerwear overstock — £88k now exposed at 31% sell-through'],
+      resolved_risks:['Knitwear slow-start risk from Wk22 has cleared (74% ST)'],
+      new_opportunities:['Linen Dresses reorder window opened — 78% ST'],
+      recurring:[{issue:'Outerwear overstock', weeks:3, note:'Flagged Wk22 → Wk24 → Wk25; markdown action no longer optional'}],
+      recommended:['Act on Outerwear markdown this week to stop the recurring drag','Lock Linen Dress reorder before Friday cutoff']
+    }
+  };
+}
+
+function buildSampleCompare(a,b){
+  if(!a||!b) return {deltas:{},category_movement:[],commentary:[]};
+  const mk=(ka,kb)=>{ const diff=kb-ka; const pct=ka?(diff/ka*100):null; return {a:ka,b:kb,diff,pct}; };
+  return {
+    a:{label:a.display_name,date:a.upload_date},
+    b:{label:b.display_name,date:b.upload_date},
+    deltas:{
+      revenue:mk(a.revenue,b.revenue), margin:mk(a.margin,b.margin),
+      sell_through:mk(a.sell_through,b.sell_through), health:mk(a.health_score,b.health_score),
+      units:mk(a.record_count,b.record_count), reorders:mk(2,3)
+    },
+    category_movement:[
+      {category:'Dresses',rev_a:a.revenue*0.34,rev_b:b.revenue*0.36,rev_diff:b.revenue*0.36-a.revenue*0.34,st_a:72,st_b:78,status:'up'},
+      {category:'Knitwear',rev_a:a.revenue*0.22,rev_b:b.revenue*0.24,rev_diff:b.revenue*0.24-a.revenue*0.22,st_a:68,st_b:74,status:'up'},
+      {category:'Outerwear',rev_a:a.revenue*0.18,rev_b:b.revenue*0.13,rev_diff:b.revenue*0.13-a.revenue*0.18,st_a:42,st_b:31,status:'down'}
+    ],
+    commentary:[
+      {text:`Revenue ${b.revenue>=a.revenue?'grew':'fell'} from ${fmtCurr(a.revenue)} to ${fmtCurr(b.revenue)} (${b.revenue>=a.revenue?'+':''}${(((b.revenue-a.revenue)/(a.revenue||1))*100).toFixed(1)}%).`,tone:b.revenue>=a.revenue?'good':'bad'},
+      {text:`Margin moved ${b.margin>=a.margin?'up':'down'} ${Math.abs(b.margin-a.margin).toFixed(1)}pts to ${b.margin}% — ${b.margin>=a.margin?'healthy mix shift toward full-price.':'monitor markdown depth.'}`,tone:b.margin>=a.margin?'good':'warn'},
+      {text:`Dresses and Knitwear strengthened sell-through, while Outerwear weakened — rebalance intake toward the winning categories.`,tone:'warn'},
+      {text:`Business Health ${b.health_score>=a.health_score?'improved':'declined'} from ${a.health_score} to ${b.health_score}.`,tone:b.health_score>=a.health_score?'good':'bad'}
+    ]
+  };
+}
+
+function buildSampleTimeline(){
+  const ordered=[...SAMPLE_WS.files].filter(f=>!f.trashed&&f.revenue>0).sort((x,y)=>new Date(x.upload_date)-new Date(y.upload_date));
+  const points=ordered.map(f=>({id:f.id,label:f.display_name,date:f.upload_date,revenue:f.revenue,margin:f.margin,health:f.health_score,key_rec:f.recs&&f.recs[0]?f.recs[0].t:''}));
+  const commentary=[
+    {metric:'Revenue',direction:'up',pct:6.2},
+    {metric:'Sell-Through',direction:'up',pct:4.9},
+    {metric:'Health Score',direction:'up',pct:5.1}
+  ];
+  return {points,commentary};
+}
+
+function viewSampleDataset(){
+  sampleMode = true;
+  document.getElementById('ws-sample-banner').classList.add('show');
+  updateSampleToggle();
+  wsMode('analysis');
+  wsView='active'; wsActiveTag=''; wsTab('library'); wsLoadFiles(); refreshDatasetSwitcher();
+}
+function exitSampleMode(){
+  sampleMode = false;
+  document.getElementById('ws-sample-banner').classList.remove('show');
+  updateSampleToggle();
+  closeDetailPanel();
+  wsLoadFiles(); refreshDatasetSwitcher();
+}
+function toggleSampleMode(){ if(sampleMode) exitSampleMode(); else viewSampleDataset(); }
+function updateSampleToggle(){
+  const b = document.getElementById('ws-sample-toggle');
+  if(!b) return;
+  b.classList.toggle('active', sampleMode);
+  b.innerHTML = sampleMode ? '✕ Exit Sample Data' : '🧪 Try Sample Data';
+}
+
+async function wsApi(method, url, body) {
+  if (sampleMode) return sampleApi(method, url, body);
+  const opt = { method, credentials:'include', headers:{} };
+  if (csrfToken) opt.headers['X-CSRF-Token'] = csrfToken;
+  if (body) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  const res = await fetch(url, opt);
+  let data = {}; try { data = await res.json(); } catch(e){}
+  if (!res.ok) throw new Error(data.error || ('Request failed ('+res.status+')'));
+  return data;
+}
+
+function fmtDate(iso){
+  if(!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+  catch(e){ return '—'; }
+}
+function fmtSize(b){ b=b||0; if(b>=1e6) return (b/1e6).toFixed(1)+' MB'; if(b>=1e3) return (b/1e3).toFixed(0)+' KB'; return b+' B'; }
+function healthColor(s){ return s>=80?'#2E8B57':s>=60?'#C77A38':'#E05A4A'; }
+function healthClass(s){ return s>=80?'green':s>=60?'amber':'red'; }
+function healthLabel(s){ return s>=80?'Healthy':s>=60?'Watch':'At Risk'; }
+
+// ── Open / close ──────────────────────────────────────────────
+function openWorkspace(){
+  workspaceOpen = true;
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('role-views').style.display = 'none';
+  document.getElementById('workspace-view').style.display = 'block';
+  document.getElementById('sb-ws-btn').classList.add('active');
+  document.getElementById('topbar-title').textContent = 'Data Workspace';
+  document.querySelectorAll('#sb-nav .nav-item').forEach(n=>n.classList.remove('active'));
+  window.scrollTo({top:0,behavior:'smooth'});
+  wsTab('library');
+  wsMode('analysis');
+  updateSampleToggle();
+  wsLoadFiles();
+}
+function closeWorkspace(){
+  workspaceOpen = false;
+  document.getElementById('workspace-view').style.display = 'none';
+  document.getElementById('sb-ws-btn').classList.remove('active');
+  if (analysisData) { document.getElementById('role-views').style.display='block'; showRoleView(); }
+  else document.getElementById('empty-state').style.display='block';
+}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function wsTab(name){
+  wsTabName = name;
+  ['library','compare','timeline'].forEach(t=>{
+    document.getElementById('wstab-'+t).classList.toggle('active', t===name);
+    document.getElementById('wspane-'+t).style.display = (t===name)?'block':'none';
+  });
+  if (name==='compare')  wsInitCompare();
+  if (name==='timeline') wsLoadTimeline();
+}
+
+// ── Library ───────────────────────────────────────────────────
+async function wsLoadFiles(){
+  const grid = document.getElementById('ws-grid');
+  grid.innerHTML = '<div class="ws-empty"><div class="ic">⏳</div><div class="t">Loading your files…</div></div>';
+  try {
+    const params = new URLSearchParams({ view:wsView });
+    if (wsActiveTag) params.set('tag', wsActiveTag);
+    const data = await wsApi('GET', '/api/workspace/files?'+params.toString());
+    wsFiles = data.files || [];
+    currentUploadId = data.current_upload_id || currentUploadId;
+    // counts
+    document.getElementById('ws-cnt-active').textContent   = data.counts ? '('+data.counts.active+')' : '';
+    document.getElementById('ws-cnt-archived').textContent = data.counts ? '('+data.counts.archived+')' : '';
+    document.getElementById('ws-cnt-trash').textContent    = data.counts ? '('+data.counts.trash+')' : '';
+    renderTagbar(data.tags || []);
+    wsApplyFilters();
+  } catch(e){
+    grid.innerHTML = '<div class="ws-empty"><div class="ic">⚠️</div><div class="t">Could not load files</div><div>'+e.message+'</div></div>';
+  }
+}
+
+function renderTagbar(tags){
+  const bar = document.getElementById('ws-tagbar');
+  if(!tags.length){ bar.innerHTML=''; return; }
+  bar.innerHTML = '<span class="ws-tagchip'+(!wsActiveTag?' active':'')+'" onclick="wsFilterTag(\'\')">All</span>' +
+    tags.map(t=>`<span class="ws-tagchip${wsActiveTag===t?' active':''}" onclick="wsFilterTag('${t.replace(/'/g,"\\'")}')">#${t}</span>`).join('');
+}
+function wsFilterTag(t){ wsActiveTag = (wsActiveTag===t)?'':t; wsLoadFiles(); }
+
+function wsSetView(v){
+  wsView = v;
+  document.querySelectorAll('#ws-view-seg .ws-seg-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  wsLoadFiles();
+}
+
+function wsApplyFilters(){
+  const q = (document.getElementById('ws-search-input').value||'').trim().toLowerCase();
+  const list = wsFiles.filter(f=>{
+    if(!q) return true;
+    return (f.display_name+' '+f.filename).toLowerCase().includes(q) ||
+           (f.tags||[]).some(t=>t.toLowerCase().includes(q));
+  });
+  renderFiles(list);
+}
+
+function renderFiles(list){
+  const grid = document.getElementById('ws-grid');
+  if(!list.length){
+    // Onboarding / friendly empty states (no "Failed to fetch")
+    if(wsView==='active' && !wsActiveTag && !(document.getElementById('ws-search-input').value||'').trim()){
+      grid.innerHTML = `<div class="ws-onboard">
+        <div class="ic">🗂️</div>
+        <div class="t">Welcome to your Data Workspace</div>
+        <div class="s">This is your permanent home for trading files. Upload a report and Aeroa saves the full analysis here — reopen it anytime, compare weeks, and track performance over time. You'll never need to upload the same file twice.</div>
+        <div class="ws-onboard-btns">
+          <button class="ws-cta primary" onclick="closeWorkspace();document.getElementById('file-input')&&document.getElementById('file-input').click()">⬆ Upload File</button>
+          <button class="ws-cta ghost" onclick="viewSampleDataset()">🧪 View Sample Dataset</button>
+        </div>
+      </div>`;
+      return;
+    }
+    const msg = wsView==='trash' ? 'Trash is empty' : wsView==='archived' ? 'No archived files' : 'No matching files';
+    const sub = wsView==='active' ? 'Try a different search or tag.' : '';
+    grid.innerHTML = `<div class="ws-empty" style="grid-column:1/-1"><div class="ic">📂</div><div class="t">${msg}</div><div>${sub}</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(f=>{
+    const isCur = f.id===currentUploadId;
+    const hc = healthColor(f.health_score);
+    const hcl = healthClass(f.health_score);
+    const tags = (f.tags||[]).map(t=>`<span class="ws-tag">#${t}</span>`).join('');
+    const keyRec = (f.recs && f.recs[0]) ? f.recs[0].t : (f.top_opportunity ? f.top_opportunity.t : '');
+    let actions;
+    if (wsView==='trash'){
+      actions = `<button class="ws-btn" onclick="wsTrash('${f.id}',false)">↩︎ Restore</button>`;
+    } else {
+      actions =
+        `<button class="ws-btn primary" onclick="wsSwitchTo('${f.id}')">${isCur?'✓ Active':'Open Analysis'}</button>`+
+        `<button class="ws-btn" onclick="openDetailPanel('${f.id}')">🧭 Command Centre</button>`+
+        `<button class="ws-btn" onclick="wsCompareWith('${f.id}')">⚖️ Compare</button>`+
+        `<button class="ws-btn" onclick="wsExport('${f.id}')">⬇ Export</button>`+
+        `<button class="ws-btn" onclick="wsRename('${f.id}')">✏︎ Rename</button>`+
+        `<button class="ws-btn" onclick="wsAddTag('${f.id}')">🏷 Tag</button>`+
+        `<button class="ws-btn" onclick="wsArchive('${f.id}',${!f.archived})">${f.archived?'Unarchive':'Archive'}</button>`+
+        `<button class="ws-btn danger" onclick="wsTrash('${f.id}',true)">🗑 Delete</button>`;
+    }
+    return `<div class="ws-card${isCur?' is-current':''}">
+      <div class="ws-card-top">
+        <div class="ws-ftype ${f.file_type}">${f.file_type}</div>
+        <div style="min-width:0;flex:1">
+          <div class="ws-fname">${escapeHtml(f.display_name)}</div>
+          <div class="ws-fmeta">Uploaded ${fmtDate(f.upload_date)} · ${fmtNum(f.record_count)} records · ${fmtSize(f.file_size)}</div>
+        </div>
+        <span class="ws-health-label ${hcl}">${healthLabel(f.health_score)} ${f.health_score}</span>
+      </div>
+      <div class="ws-stats">
+        <div class="ws-stat"><div class="v">${fmtCurr(f.revenue)}</div><div class="l">Revenue</div></div>
+        <div class="ws-stat"><div class="v">${(f.margin||0).toFixed(0)}%</div><div class="l">Margin</div></div>
+        <div class="ws-stat"><div class="v">${(f.sell_through||0).toFixed(0)}%</div><div class="l">Sell-Through</div></div>
+        <div class="ws-stat"><div class="v" style="color:${hc}">${f.health_score}</div><div class="l">Health</div></div>
+      </div>
+      <div class="ws-health">
+        <span class="ws-health-val">Business Health</span>
+        <div class="ws-health-bar"><div class="ws-health-fill" style="width:${f.health_score}%;background:${hc}"></div></div>
+        <span class="ws-health-val" style="color:${hc}">${f.health_score}/100</span>
+      </div>
+      ${keyRec?`<div class="ws-keyrec"><span class="kr-ic">💡</span><span><b>Next move:</b> ${escapeHtml(keyRec)}</span></div>`:''}
+      <div class="ws-tags-row">${tags}<span class="ws-tag" style="background:rgba(46,139,87,.1);color:#2E8B57">✓ ${escapeHtml(f.status)}</span></div>
+      <div class="ws-actions">${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Detail side panel (library card + timeline card) ──────────
+function findWsFile(id){
+  return (wsFiles||[]).find(x=>x.id===id) || (wsAllFiles||[]).find(x=>x.id===id) ||
+         (sampleMode ? SAMPLE_WS.files.find(x=>x.id===id) : null);
+}
+function openDetailPanel(id){
+  const f = findWsFile(id);
+  if(!f){ showUploadToast('error','Not found','Could not open this analysis.',4000); return; }
+  const hc = healthColor(f.health_score), hcl = healthClass(f.health_score);
+  document.getElementById('ws-panel-title').textContent = f.display_name;
+  document.getElementById('ws-panel-sub').textContent = `${f.file_type} · ${fmtDate(f.upload_date)} · ${fmtNum(f.record_count)} records`;
+  const op = f.top_opportunity, rk = f.top_risk;
+  const recs = (f.recs||[]).map((r,i)=>`<div class="ws-prec"><div class="pr-n">${i+1}</div><div><div class="pr-t">${escapeHtml(r.t)}</div><div class="pr-s">${escapeHtml(r.s||'')}</div>${r.impact?`<div class="pr-impact">${escapeHtml(r.impact)}</div>`:''}</div></div>`).join('');
+  const reports = (f.reports||[]).map(r=>`<div class="ws-preport"><span>📄</span><span>${escapeHtml(r.n)}</span><span style="color:var(--text3)">${escapeHtml(r.d||'')}</span><span class="rdl" onclick="wsExport('${f.id}')">Export</span></div>`).join('') || '<div class="ws-preport"><span style="color:var(--text3)">No reports generated yet.</span></div>';
+  document.getElementById('ws-panel-body').innerHTML = `
+    <div class="ws-panel-hero">
+      <div class="hs" style="color:${hc}">${f.health_score}</div>
+      <div>
+        <div class="hl">Business Health</div>
+        <span class="ws-health-label ${hcl}" style="margin-top:4px;display:inline-block">${healthLabel(f.health_score)}</span>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div class="hl">Revenue</div>
+        <div style="font-weight:800;font-size:16px;color:var(--text)">${fmtCurr(f.revenue)}</div>
+        <div style="font-size:11px;color:var(--text3)">${(f.margin||0).toFixed(0)}% margin · ${(f.sell_through||0).toFixed(0)}% ST</div>
+      </div>
+    </div>
+    ${f.exec_summary?`<div class="ws-psec"><div class="ws-psec-h">📋 Executive Summary</div><div class="ws-pcard sum">${escapeHtml(f.exec_summary)}</div></div>`:''}
+    ${op?`<div class="ws-psec"><div class="ws-psec-h" style="color:#2E8B57">📈 Top Opportunity</div><div class="ws-pcard opp"><div class="pc-t">${escapeHtml(op.t)}</div>${escapeHtml(op.s||'')}${op.impact?`<div class="pr-impact">${escapeHtml(op.impact)}</div>`:''}</div></div>`:''}
+    ${rk?`<div class="ws-psec"><div class="ws-psec-h" style="color:#E05A4A">⚠️ Top Risk</div><div class="ws-pcard risk"><div class="pc-t">${escapeHtml(rk.t)}</div>${escapeHtml(rk.s||'')}${rk.impact?`<div class="pr-impact" style="color:#E05A4A">${escapeHtml(rk.impact)}</div>`:''}</div></div>`:''}
+    ${recs?`<div class="ws-psec"><div class="ws-psec-h">✅ AI Recommendations</div>${recs}</div>`:''}
+    <div class="ws-psec"><div class="ws-psec-h">📦 Generated Reports</div>${reports}</div>
+    <div class="ws-psec"><div class="ws-psec-h">⬇ Export Centre</div>
+      <div class="ws-export-menu">
+        <button class="ws-btn" onclick="wsExport('${f.id}')">📊 PowerPoint Trade Pack</button>
+        <button class="ws-btn" onclick="wsExport('${f.id}')">📄 PDF Executive Summary</button>
+        <button class="ws-btn" onclick="wsExport('${f.id}')">📈 Excel Data Export</button>
+      </div>
+    </div>`;
+  document.getElementById('ws-panel-overlay').classList.add('open');
+  document.getElementById('ws-panel').classList.add('open');
+}
+function closeDetailPanel(){
+  document.getElementById('ws-panel-overlay').classList.remove('open');
+  document.getElementById('ws-panel').classList.remove('open');
+}
+function wsCompareWith(id){
+  wsTab('compare');
+  setTimeout(()=>{ const a=document.getElementById('ws-cmp-a'); if(a){ a.value=id; } },60);
+}
+function wsExport(id){ openExportCentre(id); }
+
+// ── Mode switch: Analysis ⇄ Decision ──────────────────────────
+let wsModeName = 'analysis';
+function wsMode(mode){
+  wsModeName = mode;
+  document.getElementById('wsmode-analysis').classList.toggle('active', mode==='analysis');
+  document.getElementById('wsmode-decision').classList.toggle('active', mode==='decision');
+  const isDec = mode==='decision';
+  document.getElementById('ws-tabs-analysis').style.display = isDec?'none':'flex';
+  document.getElementById('wspane-command').style.display = isDec?'block':'none';
+  // hide all analysis panes when in decision mode
+  ['library','compare','timeline'].forEach(t=>{
+    document.getElementById('wspane-'+t).style.display = (!isDec && t===wsTabName)?'block':'none';
+  });
+  document.getElementById('ws-modehint').innerHTML = isDec
+    ? '🧭 <b>Decision Mode</b> — what should I do next? Prioritised actions, commercial impact, and the decision simulator.'
+    : '📊 <b>Analysis Mode</b> — explore your data: files, comparisons, and performance trends.';
+  if(isDec) loadCommandCentre();
+}
+
+// ── Command Centre (Decision Mode) ────────────────────────────
+let ccData = null;
+async function loadCommandCentre(uploadId){
+  const wrap = document.getElementById('cc-wrap');
+  wrap.innerHTML = '<div class="ws-empty"><div class="ic">⏳</div><div class="t">Building your decision view…</div></div>';
+  try {
+    const id = uploadId || currentUploadId || (sampleMode?SAMPLE_WS.current_upload_id:'');
+    ccData = await wsApi('GET','/api/workspace/command'+(id?('?upload_id='+id):''));
+    renderCommandCentre(ccData);
+  } catch(e){
+    wrap.innerHTML = '<div class="ws-empty"><div class="ic">⚠️</div><div class="t">Could not build Command Centre</div><div>'+escapeHtml(e.message)+'</div></div>';
+  }
+}
+function renderCommandCentre(d){
+  if(!d || !d.actions){ document.getElementById('cc-wrap').innerHTML='<div class="ws-empty"><div class="ic">🧭</div><div class="t">No dataset selected</div><div>Open a file to see your next best actions.</div></div>'; return; }
+  const hc = healthColor(d.health_score), hcl = healthClass(d.health_score);
+  const ci = d.commercial_impact||{};
+  const actions = (d.actions||[]).map(a=>`
+    <div class="cc-action">
+      <div class="ca-n">${a.rank}</div>
+      <div>
+        <div class="ca-t">${escapeHtml(a.action)}</div>
+        <div class="ca-why">${escapeHtml(a.reason)}</div>
+        <div class="ca-metrics">
+          <div class="ca-m"><span class="lbl">Revenue impact</span><span style="color:${a.rev_impact>=0?'#2E8B57':'#E05A4A'}">${a.rev_impact>0?'+':''}${fmtCurr(a.rev_impact)}</span></div>
+          <div class="ca-m"><span class="lbl">Margin impact</span><span style="color:var(--text)">${escapeHtml(a.margin_impact)}</span></div>
+        </div>
+      </div>
+      <div class="cc-conf"><div class="cf-ring" style="color:${a.confidence>=80?'#2E8B57':a.confidence>=65?'#C77A38':'#E05A4A'}">${a.confidence}%</div><div class="cf-l">Confidence</div></div>
+    </div>`).join('');
+  const op=d.top_opportunity||{}, rk=d.top_risk||{};
+  document.getElementById('cc-wrap').innerHTML = `
+    <div class="cc-hero">
+      <div style="text-align:center"><div class="cc-score" style="color:${hc}">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')}</div></div>
+      <div>
+        <div class="cc-q">What should I do next?</div>
+        <div class="cc-qs">${escapeHtml(d.exec_summary||'')}</div>
+      </div>
+      <div class="cc-cta">
+        <button class="ws-cta primary" style="padding:10px 16px" onclick="openExportCentre('${d.upload_id}')">⬇ Export Pack</button>
+        <button class="ws-cta ghost" style="padding:10px 16px" onclick="openDetailPanel('${d.upload_id}')">📋 Full Analysis</button>
+      </div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">🎯 Top 5 Actions This Week</div>
+      ${actions}
+    </div>
+
+    <div class="cc-grid2">
+      <div class="cc-bigcard opp"><div class="cc-card-h" style="color:#2E8B57">📈 Biggest Opportunity</div><div class="bc-t">${escapeHtml(op.t||'—')}</div><div class="bc-s">${escapeHtml(op.s||'')}</div>${op.impact?`<span class="bc-impact">${escapeHtml(op.impact)}</span>`:''}</div>
+      <div class="cc-bigcard risk"><div class="cc-card-h" style="color:#E05A4A">⚠️ Biggest Risk</div><div class="bc-t">${escapeHtml(rk.t||'—')}</div><div class="bc-s">${escapeHtml(rk.s||'')}</div>${rk.impact?`<span class="bc-impact">${escapeHtml(rk.impact)}</span>`:''}</div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">🎚️ Decision Simulator</div>
+      <div id="cc-sim"></div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">💷 Commercial Impact</div>
+      <div class="cc-sim-out">
+        <div class="cc-sim-stat"><div class="v" style="color:#E05A4A">${fmtCurr(ci.revenue_at_stake||0)}</div><div class="l">Revenue at Stake</div></div>
+        <div class="cc-sim-stat"><div class="v" style="color:#C77A38">${fmtCurr(ci.margin_protect||0)}</div><div class="l">Margin to Protect</div></div>
+        <div class="cc-sim-stat"><div class="v" style="color:#2E8B57">${fmtCurr(ci.total_upside||0)}</div><div class="l">Total Upside</div></div>
+      </div>
+    </div>
+
+    ${renderMemory(d.memory)}
+  `;
+  renderSimulator(d.simulator);
+}
+
+// ── Decision Simulator ────────────────────────────────────────
+function renderSimulator(sim){
+  const box=document.getElementById('cc-sim'); if(!box||!sim){return;}
+  const levers=(sim.levers||[]);
+  box.innerHTML = levers.map(l=>`
+    <div class="cc-sim-row">
+      <label>${escapeHtml(l.label)}</label>
+      <input type="range" id="sim-${l.key}" min="${l.min}" max="${l.max}" step="${l.step}" value="${l.default}" oninput="runSimulator()">
+      <div class="sim-val" id="simv-${l.key}">${l.default}${l.unit||''}</div>
+    </div>`).join('') + `
+    <div class="cc-sim-out">
+      <div class="cc-sim-stat"><div class="v" id="sim-rev">—</div><div class="l">Projected Revenue</div></div>
+      <div class="cc-sim-stat"><div class="v" id="sim-mgn">—</div><div class="l">Projected Margin</div></div>
+      <div class="cc-sim-stat"><div class="v" id="sim-hlt">—</div><div class="l">Projected Health</div></div>
+    </div>`;
+  runSimulator();
+}
+function runSimulator(){
+  const sim = ccData && ccData.simulator; if(!sim) return;
+  const get = k => { const el=document.getElementById('sim-'+k); return el?+el.value:0; };
+  (sim.levers||[]).forEach(l=>{ const v=document.getElementById('simv-'+l.key); if(v) v.textContent=get(l.key)+(l.unit||''); });
+  const md=get('markdown'), ro=get('reorder'), it=get('intake');
+  // Simple commercial model (illustrative): reorders & intake lift revenue, markdown trades margin for clearance
+  const baseR=sim.base_revenue||0, baseM=sim.base_margin||0, baseH=sim.base_health||0;
+  const rev = baseR * (1 + ro*0.004 + it*0.002 + md*0.001);
+  const mgn = baseM - md*0.06 + it*0.04;
+  const hlt = Math.max(0, Math.min(100, Math.round(baseH + ro*0.12 + it*0.10 - (md>25?(md-25)*0.2:0))));
+  const sr=document.getElementById('sim-rev'); if(sr) sr.textContent=fmtCurr(rev);
+  const sm=document.getElementById('sim-mgn'); if(sm) sm.textContent=mgn.toFixed(1)+'%';
+  const sh=document.getElementById('sim-hlt'); if(sh){ sh.textContent=hlt; sh.style.color=healthColor(hlt); }
+}
+
+// ── Business Memory Engine (Phase 3) ──────────────────────────
+function renderMemory(m){
+  if(!m) return '';
+  const li = arr => (arr&&arr.length) ? '<ul>'+arr.map(x=>`<li>${escapeHtml(x)}</li>`).join('')+'</ul>' : '<div class="empty">Nothing to report.</div>';
+  const recur = (m.recurring||[]).map(r=>`<div class="cc-recur"><span class="badge">${r.weeks}× WEEKS</span><span><b>${escapeHtml(r.issue)}</b> — ${escapeHtml(r.note)}</span></div>`).join('');
+  return `
+    <div class="cc-card">
+      <div class="cc-card-h">🧠 Business Memory — vs previous upload</div>
+      <div class="cc-mem-grid">
+        <div class="cc-mem up"><div class="cc-mem-h">📈 What's Improved</div>${li(m.improved)}</div>
+        <div class="cc-mem down"><div class="cc-mem-h">📉 What's Declined</div>${li(m.declined)}</div>
+        <div class="cc-mem warn"><div class="cc-mem-h">🆕 New Risks</div>${li(m.new_risks)}</div>
+        <div class="cc-mem up"><div class="cc-mem-h">✅ Resolved Risks</div>${li(m.resolved_risks)}</div>
+        <div class="cc-mem info"><div class="cc-mem-h">💡 New Opportunities</div>${li(m.new_opportunities)}</div>
+        <div class="cc-mem info"><div class="cc-mem-h">🎯 Recommended Actions</div>${li(m.recommended)}</div>
+      </div>
+      ${recur?`<div style="margin-top:6px">${recur}</div>`:''}
+    </div>`;
+}
+
+// ── Export Centre (Phase 4) ───────────────────────────────────
+let exportTargetId = null;
+const EXPORT_OPTS = [
+  {fmt:'PowerPoint', ic:'📊', t:'PowerPoint Trade Pack', d:'Full weekly trade deck — KPIs, categories, actions.', ep:'pptx'},
+  {fmt:'PDF',        ic:'📄', t:'PDF Executive Summary', d:'One-page board-ready summary with health score.', ep:'pdf'},
+  {fmt:'Excel',      ic:'📈', t:'Excel Data Export', d:'Raw analysed data + KPI workbook for deeper cuts.', ep:'xlsx'},
+  {fmt:'PowerPoint', ic:'🗂️', t:'Trade Pack (Detailed)', d:'Category-by-category trade pack for the meeting.', ep:'pptx'},
+  {fmt:'PDF',        ic:'🏛️', t:'Board Report', d:'Director-level narrative: performance, risk, outlook.', ep:'pdf'},
+  {fmt:'PDF',        ic:'📋', t:'Executive Summary', d:'Concise written summary — email or print ready.', ep:'pdf'}
+];
+function openExportCentre(id){
+  exportTargetId = id || currentUploadId || (sampleMode?SAMPLE_WS.current_upload_id:null);
+  const f = findWsFile(exportTargetId);
+  document.getElementById('ws-export-sub').textContent = f ? `From “${f.display_name}” · ${fmtDate(f.upload_date)}` : 'Presentation-ready outputs from your analysis';
+  document.getElementById('ws-export-grid').innerHTML = EXPORT_OPTS.map(o=>`
+    <button class="ws-exp-card" onclick="doExport('${o.ep}','${escapeHtml(o.t)}')">
+      <div class="ec-ic">${o.ic}</div>
+      <div><div class="ec-t">${o.t}</div><div class="ec-d">${o.d}</div><span class="ec-fmt">${o.fmt}</span></div>
+    </button>`).join('');
+  document.getElementById('ws-export-overlay').classList.add('open');
+}
+function closeExportCentre(){ document.getElementById('ws-export-overlay').classList.remove('open'); }
+function doExport(ep, label){
+  if(sampleMode){ showUploadToast('info','Sample mode','“'+label+'” export is available once you upload your own data.',5000); closeExportCentre(); return; }
+  showUploadToast('loading','Preparing export…','Building “'+label+'” — this can take a moment.',4000);
+  closeExportCentre();
+  if(ep==='pptx'){ window.open('/api/report/pptx'+(exportTargetId?('?upload_id='+exportTargetId):''),'_blank'); }
+  else { showUploadToast('info','Coming online','“'+label+'” ('+ep.toUpperCase()+') is being generated for your account.',5000); }
+}
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ── File actions ──────────────────────────────────────────────
+async function wsSwitchTo(id){
+  if(sampleMode){ openDetailPanel(id); return; }
+  try {
+    showUploadToast('loading','Loading dataset…','Restoring your saved analysis…');
+    await wsApi('POST','/api/workspace/switch',{upload_id:id});
+    currentUploadId = id;
+    const aRes = await fetch('/api/analysis?upload_id='+id,{credentials:'include'});
+    if(aRes.ok) analysisData = await aRes.json();
+    const rRes = await fetch('/api/analysis/role?upload_id='+id,{credentials:'include'});
+    if(rRes.ok) roleData = await rRes.json();
+    closeWorkspace();
+    showRoleView();
+    refreshDatasetSwitcher();
+    showUploadToast('success','Dataset loaded','Switched without re-uploading.',3500);
+  } catch(e){ showUploadToast('error','Could not load',e.message,6000); }
+}
+async function wsRename(id){
+  const f = wsFiles.find(x=>x.id===id);
+  const name = prompt('Rename file:', f?f.display_name:'');
+  if(name===null) return;
+  try { await wsApi('POST','/api/workspace/file/'+id+'/update',{display_name:name}); wsLoadFiles(); refreshDatasetSwitcher(); }
+  catch(e){ showUploadToast('error','Rename failed',e.message,5000); }
+}
+async function wsAddTag(id){
+  const f = wsFiles.find(x=>x.id===id);
+  const existing = (f&&f.tags)?f.tags.join(', '):'';
+  const input = prompt('Tags (comma-separated):', existing);
+  if(input===null) return;
+  const tags = input.split(',').map(t=>t.trim()).filter(Boolean);
+  try { await wsApi('POST','/api/workspace/file/'+id+'/update',{tags}); wsLoadFiles(); }
+  catch(e){ showUploadToast('error','Tagging failed',e.message,5000); }
+}
+async function wsArchive(id,val){
+  try { await wsApi('POST','/api/workspace/file/'+id+'/update',{archived:val}); wsLoadFiles(); refreshDatasetSwitcher(); }
+  catch(e){ showUploadToast('error','Action failed',e.message,5000); }
+}
+async function wsTrash(id,val){
+  if(val && !confirm('Move this file to Trash? Your analysis is kept and can be restored.')) return;
+  try { await wsApi('POST','/api/workspace/file/'+id+'/update',{trashed:val}); wsLoadFiles(); refreshDatasetSwitcher(); }
+  catch(e){ showUploadToast('error','Action failed',e.message,5000); }
+}
+
+// ── Dataset switcher (topbar) ─────────────────────────────────
+async function refreshDatasetSwitcher(){
+  try {
+    const data = await wsApi('GET','/api/workspace/files?view=all');
+    wsAllFiles = (data.files||[]).filter(f=>!f.trashed);
+    currentUploadId = data.current_upload_id || currentUploadId;
+    const sw = document.getElementById('ds-switcher');
+    const sel = document.getElementById('ds-select');
+    if(!wsAllFiles.length){ sw.style.display='none'; return; }
+    sw.style.display='flex';
+    sel.innerHTML = wsAllFiles.map(f=>
+      `<option value="${f.id}"${f.id===currentUploadId?' selected':''}>${escapeHtml(f.display_name)}${f.archived?' (archived)':''}</option>`
+    ).join('');
+  } catch(e){ /* silent */ }
+}
+async function switchDataset(id){ if(id && id!==currentUploadId) await wsSwitchTo(id); }
+
+// ── Compare ───────────────────────────────────────────────────
+function wsInitCompare(){
+  const opts = wsAllFiles.length ? wsAllFiles : wsFiles;
+  if(!opts.length){ refreshDatasetSwitcher().then(()=>fillCompareSelects()); return; }
+  fillCompareSelects();
+}
+function fillCompareSelects(){
+  const opts = (wsAllFiles.length?wsAllFiles:wsFiles);
+  const mk = sel => opts.map((f,i)=>`<option value="${f.id}">${escapeHtml(f.display_name)} · ${fmtDate(f.upload_date)}</option>`).join('');
+  const a=document.getElementById('ws-cmp-a'), b=document.getElementById('ws-cmp-b');
+  a.innerHTML = mk(); b.innerHTML = mk();
+  if(opts.length>1) b.selectedIndex = 1;
+}
+async function wsRunCompare(){
+  const a=document.getElementById('ws-cmp-a').value, b=document.getElementById('ws-cmp-b').value;
+  const box=document.getElementById('ws-cmp-results');
+  if(!a||!b){ box.innerHTML='<div class="ws-empty"><div class="t">Pick two datasets to compare</div></div>'; return; }
+  if(a===b){ box.innerHTML='<div class="ws-empty"><div class="t">Choose two different datasets</div></div>'; return; }
+  box.innerHTML='<div class="ws-empty"><div class="ic">⏳</div><div class="t">Comparing…</div></div>';
+  try {
+    const d = await wsApi('GET',`/api/workspace/compare?a=${a}&b=${b}`);
+    renderCompare(d);
+  } catch(e){ box.innerHTML='<div class="ws-empty"><div class="ic">⚠️</div><div class="t">'+e.message+'</div></div>'; }
+}
+function renderCompare(d){
+  const metricDefs = [
+    {k:'revenue', l:'Revenue', fmt:fmtCurr},
+    {k:'margin', l:'Margin %', fmt:v=>v.toFixed(1)+'%'},
+    {k:'sell_through', l:'Sell-Through %', fmt:v=>v.toFixed(1)+'%'},
+    {k:'units', l:'Units', fmt:fmtNum},
+    {k:'reorders', l:'Reorder Alerts', fmt:fmtNum},
+    {k:'health', l:'Health Score', fmt:v=>Math.round(v)},
+  ];
+  const cards = metricDefs.map(m=>{
+    const dd = d.deltas[m.k]; if(!dd) return '';
+    const dir = dd.diff>0?'up':dd.diff<0?'down':'flat';
+    const arrow = dir==='up'?'▲':dir==='down'?'▼':'■';
+    const pct = dd.pct==null?'—':(dd.pct>0?'+':'')+dd.pct.toFixed(1)+'%';
+    return `<div class="ws-cmp-metric">
+      <div class="ml">${m.l}</div>
+      <div class="ws-cmp-vals"><span class="ws-cmp-a">${m.fmt(dd.a)}</span><span class="ws-cmp-arrow">→</span><span class="ws-cmp-b">${m.fmt(dd.b)}</span></div>
+      <div class="ws-cmp-delta ${dir}">${arrow} ${pct}</div>
+    </div>`;
+  }).join('');
+
+  const rows = (d.category_movement||[]).map(c=>{
+    const dir = c.rev_diff>0?'up':c.rev_diff<0?'down':'flat';
+    const badge = `<span class="ws-movebadge ${c.status}">${c.status}</span>`;
+    return `<tr>
+      <td>${escapeHtml(c.category)} ${badge}</td>
+      <td class="num">${fmtCurr(c.rev_a)}</td>
+      <td class="num">${fmtCurr(c.rev_b)}</td>
+      <td class="num"><span class="ws-cmp-delta ${dir}">${c.rev_diff>0?'+':''}${fmtCurr(c.rev_diff)}</span></td>
+      <td class="num">${c.st_a.toFixed(0)}% → ${c.st_b.toFixed(0)}%</td>
+    </tr>`;
+  }).join('');
+
+  const commentary = (d.commentary||[]).map(c=>{
+    const cls = c.tone==='bad'?'bad':c.tone==='warn'?'warn':'';
+    return `<li class="${cls}">${escapeHtml(c.text)}</li>`;
+  }).join('');
+
+  document.getElementById('ws-cmp-results').innerHTML = `
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      <b>${escapeHtml(d.a.label)}</b> (${fmtDate(d.a.date)}) &nbsp;vs&nbsp; <b>${escapeHtml(d.b.label)}</b> (${fmtDate(d.b.date)})
+    </div>
+    ${commentary?`<div class="ws-cmp-commentary"><div class="cc-head">🤖 AI Analysis</div><ul>${commentary}</ul></div>`:''}
+    <div class="ws-cmp-grid">${cards}</div>
+    ${rows?`<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">Category Movement</div>
+    <table class="ws-cmp-table"><thead><tr>
+      <th>Category</th><th style="text-align:right">Revenue A</th><th style="text-align:right">Revenue B</th><th style="text-align:right">Change</th><th style="text-align:right">Sell-Through</th>
+    </tr></thead><tbody>${rows}</tbody></table>`:''}
+  `;
+}
+
+// ── Timeline ──────────────────────────────────────────────────
+async function wsLoadTimeline(){
+  const track=document.getElementById('ws-tl-track');
+  const comm=document.getElementById('ws-tl-commentary');
+  track.innerHTML='<div class="ws-empty"><div class="ic">⏳</div></div>';
+  try {
+    const d = await wsApi('GET','/api/workspace/timeline');
+    const pts = d.points||[];
+    if(pts.length<1){ track.innerHTML='<div class="ws-empty"><div class="ic">📈</div><div class="t">No history yet</div><div>Upload files over time to see trends.</div></div>'; comm.innerHTML=''; svgEmpty(document.getElementById('ws-tl-chart')); return; }
+    // commentary
+    comm.innerHTML = (d.commentary||[]).map(c=>{
+      const cls = c.direction;
+      const arrow = c.direction==='up'?'▲':c.direction==='down'?'▼':'■';
+      const sign = c.pct>0?'+':'';
+      return `<div class="ws-tl-item"><div class="tm">${c.metric}</div><div class="tv ${cls}">${arrow} ${sign}${c.pct}%</div><div class="tm">vs previous file</div></div>`;
+    }).join('') || '<div class="ws-tl-item"><div class="tm">Upload another file to unlock trend commentary.</div></div>';
+    // chart
+    svgLine(document.getElementById('ws-tl-chart'), pts.map(p=>p.revenue||0), '#7DAA75');
+    // nodes
+    track.innerHTML = pts.map(p=>{
+      const cur = p.id===currentUploadId;
+      const hc = healthColor(p.health);
+      return `<div class="ws-tl-node${cur?' is-current':''}" onclick="openDetailPanel('${p.id}')">
+        <div class="ws-tl-dot"></div>
+        <div class="ws-tl-card">
+          <div class="d">${fmtDate(p.date)}</div>
+          <div class="n">${escapeHtml(p.label)}</div>
+          <div class="r">${fmtCurr(p.revenue)}</div>
+          <div class="d">Health <b style="color:${hc}">${p.health}</b> · ${(p.margin||0).toFixed(0)}% margin</div>
+          ${p.key_rec?`<div class="kr">💡 <b>Key rec:</b> ${escapeHtml(p.key_rec)}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e){ track.innerHTML='<div class="ws-empty"><div class="ic">⚠️</div><div class="t">'+e.message+'</div></div>'; }
 }
 
 // ── Auth ──────────────────────────────────────────────────────

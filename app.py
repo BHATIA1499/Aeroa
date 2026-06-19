@@ -1404,6 +1404,524 @@ def list_uploads(user):
         return jsonify({"error": str(e)}), 500
 
 
+# ═══════════════════════════════════════════════════════════════
+# DATA WORKSPACE  —  Persistent file library, switcher, compare,
+# timeline. Every upload becomes a reusable, searchable asset.
+#
+# Workspace metadata (display name, tags, archived, trashed) is
+# stored inside the analysis JSONB blob under the "_workspace" key
+# so no DB migration is required. PostgREST JSON-path selection
+# (analysis->_workspace, analysis->kpis) keeps listing lightweight.
+# ═══════════════════════════════════════════════════════════════
+
+WORKSPACE_META_KEY = "_workspace"
+
+
+def _file_type_from_name(filename: str) -> str:
+    ext = (filename or "").rsplit(".", 1)[-1].lower() if "." in (filename or "") else ""
+    return {
+        "csv": "CSV", "xlsx": "Excel", "xls": "Excel",
+        "numbers": "Numbers", "ods": "Spreadsheet",
+        "tsv": "TSV", "txt": "Text",
+    }.get(ext, (ext.upper() or "File"))
+
+
+def _ws_health_score(kpis: dict) -> int:
+    """Lightweight Business Health Score from KPI summary (0-100)."""
+    if not isinstance(kpis, dict):
+        return 0
+    st = float(kpis.get("avg_sell_through") or 0)
+    mg = float(kpis.get("avg_margin_pct") or 0)
+    # Sell-through (50%) + margin (50%), each normalised to a sensible ceiling
+    score = (min(st, 100) / 100) * 50 + (min(mg, 50) / 50) * 50
+    return int(round(max(0, min(100, score))))
+
+
+def _ws_row_to_card(row: dict) -> dict:
+    """Map a uploads row (with analysis->_workspace + analysis->kpis) to a file card."""
+    ws    = row.get("_workspace") or row.get("ws") or {}
+    if not isinstance(ws, dict):
+        ws = {}
+    kpis  = row.get("kpis") or {}
+    if not isinstance(kpis, dict):
+        kpis = {}
+    fname = row.get("filename") or "Untitled"
+    return {
+        "id":            row.get("id"),
+        "filename":      fname,
+        "display_name":  ws.get("display_name") or fname,
+        "upload_date":   row.get("created_at"),
+        "analysed_date": ws.get("analysed_at") or row.get("created_at"),
+        "file_type":     _file_type_from_name(fname),
+        "record_count":  row.get("sku_count") or 0,
+        "file_size":     row.get("file_size") or 0,
+        "status":        ws.get("status") or "Analysed",
+        "tags":          ws.get("tags") or [],
+        "archived":      bool(ws.get("archived")),
+        "trashed":       bool(ws.get("trashed")),
+        "revenue":       kpis.get("total_revenue") or 0,
+        "margin":        kpis.get("avg_margin_pct") or 0,
+        "sell_through":  kpis.get("avg_sell_through") or 0,
+        "health_score":  _ws_health_score(kpis),
+    }
+
+
+def _ws_fetch_rows(user, *, limit=200):
+    """Fetch lightweight workspace rows (no full analysis blob)."""
+    db = get_user_db()
+    return db.table("uploads") \
+        .select("id, filename, sku_count, created_at, file_size, "
+                "ws:analysis->_workspace, kpis:analysis->kpis") \
+        .eq("user_id", user["id"]) \
+        .order("created_at", desc=True).limit(limit).execute()
+
+
+@app.route("/api/workspace/files")
+@require_auth
+def workspace_files(user):
+    """List every persisted file for this user with workspace metadata."""
+    q          = (request.args.get("q") or "").strip().lower()
+    view       = (request.args.get("view") or "active").lower()   # active|archived|trash|all
+    tag_filter = (request.args.get("tag") or "").strip().lower()
+    try:
+        res   = _ws_fetch_rows(user)
+        cards = [_ws_row_to_card(r) for r in (res.data or [])]
+
+        out = []
+        for c in cards:
+            if view == "active"   and (c["archived"] or c["trashed"]):  continue
+            if view == "archived" and (not c["archived"] or c["trashed"]): continue
+            if view == "trash"    and not c["trashed"]:                  continue
+            if view == "all"      and c["trashed"]:                      continue
+            if q and q not in (c["display_name"] + " " + c["filename"]).lower() \
+                 and not any(q in t.lower() for t in c["tags"]):
+                continue
+            if tag_filter and not any(tag_filter == t.lower() for t in c["tags"]):
+                continue
+            out.append(c)
+
+        # Tag cloud across active+archived (exclude trash)
+        all_tags = {}
+        for c in cards:
+            if c["trashed"]:
+                continue
+            for t in c["tags"]:
+                all_tags[t] = all_tags.get(t, 0) + 1
+
+        return jsonify({
+            "files": out,
+            "tags": sorted(all_tags.keys()),
+            "current_upload_id": session.get("current_upload_id"),
+            "counts": {
+                "active":   sum(1 for c in cards if not c["archived"] and not c["trashed"]),
+                "archived": sum(1 for c in cards if c["archived"] and not c["trashed"]),
+                "trash":    sum(1 for c in cards if c["trashed"]),
+                "total":    len(cards),
+            },
+        })
+    except Exception as e:
+        app.logger.error(f"workspace_files error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+def _ws_mutate(user, upload_id, mutator):
+    """Read analysis, mutate its _workspace dict, write back. Returns updated card."""
+    db = get_user_db()
+    res = db.table("uploads").select("analysis, filename, sku_count, created_at, file_size") \
+        .eq("id", upload_id).eq("user_id", user["id"]).single().execute()
+    if not res.data:
+        return None
+    analysis = res.data.get("analysis") or {}
+    if not isinstance(analysis, dict):
+        analysis = {}
+    ws = analysis.get(WORKSPACE_META_KEY)
+    if not isinstance(ws, dict):
+        ws = {}
+    mutator(ws)
+    ws["updated_at"] = datetime.now(timezone.utc).isoformat()
+    analysis[WORKSPACE_META_KEY] = ws
+    db.table("uploads").update({"analysis": analysis}) \
+        .eq("id", upload_id).eq("user_id", user["id"]).execute()
+    return _ws_row_to_card({
+        "id": upload_id,
+        "filename": res.data.get("filename"),
+        "sku_count": res.data.get("sku_count"),
+        "created_at": res.data.get("created_at"),
+        "file_size": res.data.get("file_size"),
+        "_workspace": ws,
+        "kpis": (analysis.get("kpis") or {}),
+    })
+
+
+@app.route("/api/workspace/file/<upload_id>/update", methods=["POST"])
+@require_auth
+def workspace_update_file(user, upload_id):
+    """Rename, tag, archive/unarchive, trash/restore a file."""
+    body = request.get_json(silent=True) or {}
+
+    def mutator(ws):
+        if "display_name" in body:
+            name = (body.get("display_name") or "").strip()
+            if name:
+                ws["display_name"] = name[:120]
+        if "tags" in body and isinstance(body["tags"], list):
+            ws["tags"] = [str(t).strip()[:32] for t in body["tags"] if str(t).strip()][:12]
+        if "archived" in body:
+            ws["archived"] = bool(body["archived"])
+        if "trashed" in body:
+            ws["trashed"] = bool(body["trashed"])
+
+    try:
+        card = _ws_mutate(user, upload_id, mutator)
+        if not card:
+            return jsonify({"error": "File not found"}), 404
+        audit.log(DATA_EXPORT, request=request, user_id=user["id"],
+                  company_id=user.get("company_id"),
+                  resource=f"workspace:update:{upload_id}",
+                  metadata={k: body[k] for k in ("display_name", "archived", "trashed") if k in body})
+        return jsonify({"ok": True, "file": card})
+    except Exception as e:
+        app.logger.error(f"workspace_update error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/workspace/switch", methods=["POST"])
+@require_auth
+def workspace_switch(user):
+    """Make a previously-uploaded file the active dataset — no re-upload."""
+    body = request.get_json(silent=True) or {}
+    upload_id = body.get("upload_id")
+    if not upload_id:
+        return jsonify({"error": "upload_id required"}), 400
+    try:
+        db = get_user_db()
+        res = db.table("uploads").select("id, filename") \
+            .eq("id", upload_id).eq("user_id", user["id"]).single().execute()
+        if not res.data:
+            return jsonify({"error": "File not found"}), 404
+        session["current_upload_id"] = upload_id
+        return jsonify({"ok": True, "upload_id": upload_id,
+                        "filename": res.data.get("filename")})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def _ws_key_rec(card: dict) -> str:
+    """Synthesize a one-line 'next move' from a card's KPIs (no AI cost)."""
+    st = float(card.get("sell_through") or 0)
+    mg = float(card.get("margin") or 0)
+    if st >= 70:
+        return "Reorder best-sellers — strong sell-through, protect availability"
+    if st < 45:
+        return "Trigger early markdown on slow stock to release cash"
+    if mg < 40:
+        return "Review pricing & markdown depth to protect margin"
+    return "Hold and monitor — trading in line with plan"
+
+
+def _ws_compare_metrics(kpis: dict) -> dict:
+    kpis = kpis or {}
+    return {
+        "revenue":      float(kpis.get("total_revenue") or 0),
+        "units":        float(kpis.get("total_units") or 0),
+        "margin":       float(kpis.get("avg_margin_pct") or 0),
+        "sell_through": float(kpis.get("avg_sell_through") or 0),
+        "reorders":     float(kpis.get("reorder_count") or 0),
+        "health":       _ws_health_score(kpis),
+    }
+
+
+@app.route("/api/workspace/compare")
+@require_auth
+def workspace_compare(user):
+    """Compare two datasets (A vs B): revenue, margin, sell-through, category movement."""
+    id_a = request.args.get("a")
+    id_b = request.args.get("b")
+    if not id_a or not id_b:
+        return jsonify({"error": "Two file ids (a, b) required"}), 400
+    try:
+        db = get_user_db()
+
+        def load(uid):
+            r = db.table("uploads") \
+                .select("id, filename, created_at, sku_count, "
+                        "ws:analysis->_workspace, kpis:analysis->kpis, "
+                        "cats:analysis->category_scorecard") \
+                .eq("id", uid).eq("user_id", user["id"]).single().execute()
+            return r.data
+
+        a = load(id_a)
+        b = load(id_b)
+        if not a or not b:
+            return jsonify({"error": "One or both files not found"}), 404
+
+        def label(row):
+            ws = row.get("ws") or {}
+            return (ws.get("display_name") if isinstance(ws, dict) else None) or row.get("filename")
+
+        ma = _ws_compare_metrics(a.get("kpis"))
+        mb = _ws_compare_metrics(b.get("kpis"))
+        deltas = {}
+        for key in ma:
+            av, bv = ma[key], mb[key]
+            deltas[key] = {
+                "a": av, "b": bv, "diff": bv - av,
+                "pct": ((bv - av) / av * 100) if av else None,
+            }
+
+        # Category movement
+        def cat_map(row):
+            cats = row.get("cats") or []
+            m = {}
+            if isinstance(cats, list):
+                for c in cats:
+                    if isinstance(c, dict):
+                        nm = c.get("category") or c.get("name")
+                        if nm:
+                            m[nm] = c
+            return m
+
+        cma, cmb = cat_map(a), cat_map(b)
+        cat_moves = []
+        for nm in sorted(set(cma) | set(cmb)):
+            ca, cb = cma.get(nm, {}), cmb.get(nm, {})
+            rev_a = float(ca.get("revenue") or 0)
+            rev_b = float(cb.get("revenue") or 0)
+            cat_moves.append({
+                "category": nm,
+                "rev_a": rev_a, "rev_b": rev_b, "rev_diff": rev_b - rev_a,
+                "st_a": float(ca.get("sell_through") or 0),
+                "st_b": float(cb.get("sell_through") or 0),
+                "status": "new" if not ca else ("dropped" if not cb else "changed"),
+            })
+        cat_moves.sort(key=lambda x: abs(x["rev_diff"]), reverse=True)
+
+        # AI-style written commentary (synthesized server-side, no AI cost)
+        commentary = []
+        rev = deltas.get("revenue", {})
+        if rev.get("a") is not None:
+            rp = rev.get("pct")
+            commentary.append({
+                "text": f"Revenue {'grew' if rev['diff'] >= 0 else 'fell'} from "
+                        f"£{ma['revenue']:,.0f} to £{mb['revenue']:,.0f}"
+                        + (f" ({'+' if rp >= 0 else ''}{rp:.1f}%)." if rp is not None else "."),
+                "tone": "good" if rev["diff"] >= 0 else "bad",
+            })
+        mgd = deltas.get("margin", {})
+        if mgd:
+            commentary.append({
+                "text": f"Margin moved {'up' if mgd['diff'] >= 0 else 'down'} "
+                        f"{abs(mgd['diff']):.1f}pts to {mb['margin']:.0f}% — "
+                        + ("healthy full-price mix." if mgd["diff"] >= 0 else "watch markdown depth."),
+                "tone": "good" if mgd["diff"] >= 0 else "warn",
+            })
+        hd = deltas.get("health", {})
+        if hd:
+            commentary.append({
+                "text": f"Business Health {'improved' if hd['diff'] >= 0 else 'declined'} "
+                        f"from {ma['health']:.0f} to {mb['health']:.0f}.",
+                "tone": "good" if hd["diff"] >= 0 else "bad",
+            })
+        if cat_moves:
+            up = [c["category"] for c in cat_moves if c["rev_diff"] > 0][:2]
+            dn = [c["category"] for c in cat_moves if c["rev_diff"] < 0][:2]
+            if up or dn:
+                parts = []
+                if up: parts.append(f"{', '.join(up)} strengthened")
+                if dn: parts.append(f"{', '.join(dn)} weakened")
+                commentary.append({
+                    "text": " while ".join(parts) + " — rebalance intake toward the winning categories.",
+                    "tone": "warn",
+                })
+
+        return jsonify({
+            "a": {"id": a["id"], "label": label(a), "date": a.get("created_at"), "metrics": ma},
+            "b": {"id": b["id"], "label": label(b), "date": b.get("created_at"), "metrics": mb},
+            "deltas": deltas,
+            "category_movement": cat_moves[:25],
+            "commentary": commentary,
+        })
+    except Exception as e:
+        app.logger.error(f"workspace_compare error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/workspace/timeline")
+@require_auth
+def workspace_timeline(user):
+    """Historical performance trend across all persisted files (oldest → newest)."""
+    try:
+        res = _ws_fetch_rows(user)
+        points = []
+        for r in (res.data or []):
+            card = _ws_row_to_card(r)
+            if card["trashed"]:
+                continue
+            points.append({
+                "id":           card["id"],
+                "label":        card["display_name"],
+                "date":         card["upload_date"],
+                "revenue":      card["revenue"],
+                "margin":       card["margin"],
+                "sell_through": card["sell_through"],
+                "health":       card["health_score"],
+                "records":      card["record_count"],
+                "key_rec":      _ws_key_rec(card),
+            })
+        points.sort(key=lambda p: p["date"] or "")
+
+        # Local trend commentary (no AI cost) comparing latest vs previous
+        commentary = []
+        if len(points) >= 2:
+            cur, prev = points[-1], points[-2]
+            def trend(name, c, p, unit=""):
+                if p == 0:
+                    return None
+                d = c - p
+                pct = d / p * 100
+                arrow = "up" if d > 0 else ("down" if d < 0 else "flat")
+                return {"metric": name, "direction": arrow,
+                        "change": round(d, 1), "pct": round(pct, 1), "unit": unit}
+            for nm, key, unit in [("Revenue", "revenue", "£"),
+                                  ("Margin", "margin", "%"),
+                                  ("Sell-Through", "sell_through", "%"),
+                                  ("Health Score", "health", "")]:
+                t = trend(nm, cur[key], prev[key], unit)
+                if t:
+                    commentary.append(t)
+
+        return jsonify({"points": points, "commentary": commentary,
+                        "count": len(points)})
+    except Exception as e:
+        app.logger.error(f"workspace_timeline error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/workspace/command")
+@require_auth
+def workspace_command(user):
+    """
+    Decision Mode — the Command Centre.
+    Answers 'What should I do next?' for a dataset: health score, top 5 ranked
+    actions (with revenue/margin impact + confidence), biggest opportunity/risk,
+    a decision simulator, commercial impact, and the Business Memory engine
+    (cross-dataset comparison vs the previous upload).
+    """
+    try:
+        upload_id = request.args.get("upload_id") or session.get("current_upload_id")
+        analysis = _get_analysis_for_user(user, upload_id)
+        if not analysis or not analysis.get("kpis"):
+            return jsonify({"error": "No analysis available for this dataset"}), 404
+
+        kpis  = analysis.get("kpis") or {}
+        role  = _build_role_analysis(analysis)
+        ws    = analysis.get(WORKSPACE_META_KEY) or {}
+        label = (ws.get("display_name") if isinstance(ws, dict) else None) \
+                or analysis.get("filename") or "Dataset"
+        health = _ws_health_score(kpis)
+
+        # Top 5 ranked actions from the role engine's ai_actions
+        actions = []
+        for a in (role.get("ai_actions") or [])[:5]:
+            mi = a.get("margin_impact", 0)
+            actions.append({
+                "rank":          a.get("rank"),
+                "action":        f"{a.get('type','Action')} — {a.get('sku','')}".strip(" —"),
+                "reason":        a.get("description", ""),
+                "rev_impact":    a.get("revenue_impact", 0),
+                "margin_impact": f"{mi:+.1f}pt" if isinstance(mi, (int, float)) else str(mi),
+                "confidence":    a.get("confidence", 70),
+            })
+
+        def first_item(lst):
+            if isinstance(lst, list) and lst:
+                v = lst[0]
+                if isinstance(v, dict):
+                    return {"t": v.get("title") or v.get("text") or "", "s": v.get("detail") or "", "impact": v.get("impact") or ""}
+                return {"t": str(v), "s": "", "impact": ""}
+            return {"t": "—", "s": "", "impact": ""}
+
+        top_opp  = first_item(role.get("top_opportunities"))
+        top_risk = first_item(role.get("top_risks"))
+
+        # Commercial impact roll-up
+        rev_up   = sum(max(0, a.get("revenue_impact", 0)) for a in (role.get("ai_actions") or []))
+        rev_risk = abs(sum(min(0, a.get("revenue_impact", 0)) for a in (role.get("ai_actions") or [])))
+        commercial = {
+            "revenue_at_stake": round(rev_risk or kpis.get("markdown_revenue", 0) or 0),
+            "margin_protect":   round((kpis.get("total_revenue", 0) or 0) * 0.04),
+            "total_upside":     round(rev_up),
+        }
+
+        # ── Business Memory: compare vs previous upload ──────────────────
+        memory = {"improved": [], "declined": [], "new_risks": [], "resolved_risks": [],
+                  "new_opportunities": [], "recurring": [], "recommended": []}
+        try:
+            rows = (_ws_fetch_rows(user).data or [])
+            ordered = [r for r in rows if not ((r.get("ws") or {}) if isinstance(r.get("ws"), dict) else {}).get("trashed")]
+            ordered.sort(key=lambda r: r.get("created_at") or "")
+            ids = [r.get("id") for r in ordered]
+            prev_analysis = None
+            if upload_id in ids:
+                i = ids.index(upload_id)
+                if i > 0:
+                    prev_analysis = _get_analysis_for_user(user, ids[i - 1])
+            if prev_analysis:
+                pk = prev_analysis.get("kpis") or {}
+                cur_m, prev_m = _ws_compare_metrics(kpis), _ws_compare_metrics(pk)
+                labels = {"revenue": "Revenue", "margin": "Margin", "sell_through": "Sell-through", "health": "Business Health"}
+                for k, lbl in labels.items():
+                    diff = cur_m[k] - prev_m[k]
+                    if abs(diff) < 0.5:
+                        continue
+                    if k == "revenue":
+                        txt = f"{lbl} {'+' if diff>=0 else ''}£{diff:,.0f}"
+                    else:
+                        txt = f"{lbl} {'+' if diff>=0 else ''}{diff:.1f}{'%' if k!='health' else ' pts'}"
+                    (memory["improved"] if diff >= 0 else memory["declined"]).append(txt)
+
+                prev_role  = _build_role_analysis(prev_analysis)
+                cur_risks  = {str(x.get('title') if isinstance(x, dict) else x) for x in (role.get("top_risks") or [])}
+                prev_risks = {str(x.get('title') if isinstance(x, dict) else x) for x in (prev_role.get("top_risks") or [])}
+                memory["new_risks"]      = sorted(cur_risks - prev_risks)[:3]
+                memory["resolved_risks"] = sorted(prev_risks - cur_risks)[:3]
+                recurring = sorted(cur_risks & prev_risks)
+                memory["recurring"] = [{"issue": r, "weeks": 2, "note": "Seen in the last two uploads — prioritise action."} for r in recurring[:2]]
+                memory["new_opportunities"] = [str(x.get('title') if isinstance(x, dict) else x) for x in (role.get("top_opportunities") or [])][:3]
+        except Exception as me:
+            app.logger.warning(f"workspace_command memory error: {me}")
+        memory["recommended"] = [a["action"] for a in actions[:2]]
+
+        return jsonify({
+            "upload_id":     upload_id,
+            "dataset_label": label,
+            "health_score":  health,
+            "health_label":  ("Healthy" if health >= 80 else "Watch" if health >= 60 else "At Risk"),
+            "revenue":       kpis.get("total_revenue", 0),
+            "margin":        kpis.get("avg_margin_pct", 0),
+            "sell_through":  kpis.get("avg_sell_through", 0),
+            "exec_summary":  role.get("executive_summary", ""),
+            "top_opportunity": top_opp,
+            "top_risk":      top_risk,
+            "actions":       actions,
+            "simulator": {
+                "base_revenue": kpis.get("total_revenue", 0),
+                "base_margin":  kpis.get("avg_margin_pct", 0),
+                "base_health":  health,
+                "levers": [
+                    {"key": "markdown", "label": "Markdown depth",        "min": 0, "max": 40, "step": 5, "default": 20, "unit": "%"},
+                    {"key": "reorder",  "label": "Reorder depth",         "min": 0, "max": 50, "step": 5, "default": 25, "unit": "%"},
+                    {"key": "intake",   "label": "Shift intake → winners", "min": 0, "max": 30, "step": 5, "default": 10, "unit": "%"},
+                ],
+            },
+            "commercial_impact": commercial,
+            "memory": memory,
+        })
+    except Exception as e:
+        app.logger.error(f"workspace_command error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 def _get_analysis_for_user(user, upload_id=None):
     """Helper to fetch analysis JSON from Supabase."""
     try:
