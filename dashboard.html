@@ -627,6 +627,33 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-cmp-commentary li.warn::before{background:#E0975A}
 .ws-cmp-commentary li.bad::before{background:#E05A4A}
 
+/* compare entity drill-down (SKU / category search) */
+.ws-cmp-entity-head{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
+.ws-cmp-seg{display:inline-flex;background:var(--glass-2,rgba(0,0,0,.04));border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:14px}
+.ws-cmp-seg-btn{font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--text3);background:transparent;border:none;
+  padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .15s ease}
+.ws-cmp-seg-btn.active{background:var(--text);color:var(--bg,#fff);box-shadow:var(--shadow)}
+.ws-cmp-search-wrap{position:relative}
+.ws-cmp-search-input{width:100%;font-family:var(--body);font-size:14px;color:var(--text);background:var(--glass);
+  border:1px solid var(--glass-border);border-radius:11px;padding:12px 14px;outline:none;transition:border-color .15s ease}
+.ws-cmp-search-input:focus{border-color:var(--mint-d)}
+.ws-cmp-search-list{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:var(--bg,#fff);
+  border:1px solid var(--glass-border);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);max-height:300px;overflow-y:auto;display:none}
+.ws-cmp-search-list.open{display:block}
+.ws-cmp-search-opt{padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s ease}
+.ws-cmp-search-opt:last-child{border-bottom:none}
+.ws-cmp-search-opt:hover{background:var(--glass)}
+.ws-cmp-search-opt .nm{font-size:13.5px;font-weight:600;color:var(--text)}
+.ws-cmp-search-opt .meta{font-size:11.5px;color:var(--text3);margin-top:2px}
+.ws-cmp-search-empty{padding:14px;font-size:13px;color:var(--text3);text-align:center}
+.ws-cmp-entity-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.ws-cmp-entity-card .ec-title{font-size:16px;font-weight:800;color:var(--text);font-family:var(--serif)}
+.ws-cmp-entity-card .ec-sub{font-size:12px;color:var(--text3);margin-top:3px;margin-bottom:16px}
+.ws-cmp-entity-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle}
+.ws-cmp-entity-badge.new{background:rgba(46,139,87,.14);color:#2E8B57}
+.ws-cmp-entity-badge.dropped{background:rgba(224,90,74,.14);color:#E05A4A}
+
 .ws-tl-card .kr{font-size:10px;color:var(--text2);margin-top:5px;line-height:1.35;border-top:1px solid var(--border);padding-top:5px}
 .ws-tl-card .kr b{color:var(--mint-d)}
 
@@ -1479,6 +1506,24 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <button class="ws-btn primary" onclick="wsRunCompare()">Compare datasets →</button>
         </div>
         <div id="ws-cmp-results"></div>
+
+        <!-- Drill-down: compare a single SKU or category across the two periods -->
+        <div id="ws-cmp-entity" style="display:none;margin-top:26px">
+          <div class="ws-cmp-entity-head">
+            <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px">Track a specific SKU or category</div>
+            <div class="ws-sub" style="margin-bottom:12px">Search a product or category to see exactly how it moved between the two periods — did last week's action deliver?</div>
+            <div class="ws-cmp-seg">
+              <button class="ws-cmp-seg-btn active" data-etype="sku" onclick="cmpSetType('sku')">By SKU / Product</button>
+              <button class="ws-cmp-seg-btn" data-etype="category" onclick="cmpSetType('category')">By Category</button>
+            </div>
+            <div class="ws-cmp-search-wrap">
+              <input id="ws-cmp-search-input" class="ws-cmp-search-input" type="text" autocomplete="off"
+                     placeholder="Search a SKU or product name…" oninput="cmpSearch(this.value)" onfocus="cmpSearch(this.value)">
+              <div id="ws-cmp-search-list" class="ws-cmp-search-list"></div>
+            </div>
+          </div>
+          <div id="ws-cmp-entity-detail"></div>
+        </div>
       </div>
 
       <!-- TAB: Timeline -->
@@ -1598,6 +1643,12 @@ const NAV = {
 const ROLE_TITLES = {MA:'MA Dashboard',AM:'Trading Overview',Merchandiser:'Command Centre',Director:'Executive Dashboard'};
 
 // ── Init ──────────────────────────────────────────────────────
+// Close the Compare drill-down search dropdown when clicking outside it.
+document.addEventListener('click', (ev) => {
+  const wrap = ev.target.closest && ev.target.closest('.ws-cmp-search-wrap');
+  if(!wrap){ const l=document.getElementById('ws-cmp-search-list'); if(l) l.classList.remove('open'); }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUser();
   try {
@@ -2939,6 +2990,11 @@ function sampleApi(method, url, body){
   if (u==='/api/workspace/category'){
     return Promise.resolve(buildSampleCategoryDetail(qs.get('category')));
   }
+  if (u==='/api/workspace/compare/entities'){
+    const fa = SAMPLE_WS.files.find(f=>f.id===qs.get('a'));
+    const fb = SAMPLE_WS.files.find(f=>f.id===qs.get('b'));
+    return Promise.resolve(buildSampleCompareEntities(fa,fb));
+  }
   // mutations (rename/tag/archive/trash/switch) are no-ops in sample mode
   return Promise.resolve({ ok:true });
 }
@@ -3108,6 +3164,30 @@ function buildSampleCompare(a,b){
       {text:`Dresses and Knitwear strengthened sell-through, while Outerwear weakened — rebalance intake toward the winning categories.`,tone:'warn'},
       {text:`Business Health ${b.health_score>=a.health_score?'improved':'declined'} from ${a.health_score} to ${b.health_score}.`,tone:b.health_score>=a.health_score?'good':'bad'}
     ]
+  };
+}
+
+function buildSampleCompareEntities(a,b){
+  // Treat the SAMPLE_CATEGORIES snapshot as period B (this week) and derive a
+  // plausible period A (last week) with a deterministic per-line drift so the
+  // drill-down shows real movement.
+  if(!a||!b) return {a:{label:'A'},b:{label:'B'},margin_available:true,skus:[],categories:[]};
+  const ent=(key,name,category,bRev,bUnits,bSt,bMg,driftRev,driftSt,driftMg)=>{
+    const aRev=Math.round(bRev*(1-driftRev)), aUnits=Math.round(bUnits*(1-driftRev*0.9));
+    const aSt=bSt!=null?+(bSt-driftSt).toFixed(1):null, aMg=bMg!=null?+(bMg-driftMg).toFixed(1):null;
+    const m=(av,bv)=>({a:av,b:bv,diff:(av!=null&&bv!=null)?+(bv-av).toFixed(2):null,pct:(av!=null&&bv!=null&&av)?((bv-av)/av*100):null});
+    return {key,name,category,status:'changed',metrics:{revenue:m(aRev,bRev),units:m(aUnits,bUnits),sell_through:m(aSt,bSt),margin:m(aMg,bMg)}};
+  };
+  const skus=[], cats=[];
+  SAMPLE_CATEGORIES.forEach((c,ci)=>{
+    cats.push(ent(c.category,c.category,c.category,c.revenue,c.units,c.sell_through,c.margin, 0.06+ci*0.01, 4-ci, 1));
+    (c.top_sellers||[]).forEach((s,si)=>skus.push(ent(s.sku,s.name,c.category,s.revenue,s.units,s.sell_through,s.margin_pct, 0.08+si*0.02, 5, 1.2)));
+    (c.slow_movers||[]).forEach((s)=>skus.push(ent(s.sku,s.name,c.category,s.revenue,s.units,s.sell_through,s.margin_pct, -0.04, -3, -1)));
+  });
+  return {
+    a:{label:a.display_name,date:a.upload_date},
+    b:{label:b.display_name,date:b.upload_date},
+    margin_available:true, skus, categories:cats
   };
 }
 
@@ -3912,10 +3992,134 @@ async function wsRunCompare(){
   if(!a||!b){ box.innerHTML='<div class="ws-empty"><div class="t">Pick two datasets to compare</div></div>'; return; }
   if(a===b){ box.innerHTML='<div class="ws-empty"><div class="t">Choose two different datasets</div></div>'; return; }
   box.innerHTML='<div class="ws-empty"><div class="ic">⏳</div><div class="t">Comparing…</div></div>';
+  document.getElementById('ws-cmp-entity').style.display='none';
   try {
     const d = await wsApi('GET',`/api/workspace/compare?a=${a}&b=${b}`);
     renderCompare(d);
+    loadCompareEntities(a,b);
   } catch(e){ box.innerHTML='<div class="ws-empty"><div class="ic">⚠️</div><div class="t">'+e.message+'</div></div>'; }
+}
+
+// ── Compare drill-down: SKU / category search ─────────────────
+let cmpEntities = null;   // {a,b,margin_available,skus:[],categories:[]}
+let cmpType = 'sku';
+let cmpSelectedKey = null;
+
+async function loadCompareEntities(a,b){
+  try {
+    cmpEntities = await wsApi('GET',`/api/workspace/compare/entities?a=${a}&b=${b}`);
+  } catch(e){ cmpEntities = null; return; }
+  const wrap = document.getElementById('ws-cmp-entity');
+  const hasAny = cmpEntities && ((cmpEntities.skus||[]).length || (cmpEntities.categories||[]).length);
+  if(!hasAny){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  cmpSelectedKey = null;
+  cmpType = (cmpEntities.skus||[]).length ? 'sku' : 'category';
+  document.querySelectorAll('.ws-cmp-seg-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.etype===cmpType));
+  const inp = document.getElementById('ws-cmp-search-input');
+  inp.value=''; inp.placeholder = cmpType==='sku' ? 'Search a SKU or product name…' : 'Search a category…';
+  document.getElementById('ws-cmp-search-list').classList.remove('open');
+  document.getElementById('ws-cmp-entity-detail').innerHTML =
+    '<div class="ws-empty"><div class="ic">🔍</div><div class="t">Search above to track a specific '+(cmpType==='sku'?'product':'category')+'</div><div>See exactly how it moved between the two periods.</div></div>';
+}
+
+function cmpSetType(t){
+  if(!cmpEntities) return;
+  cmpType = t; cmpSelectedKey = null;
+  document.querySelectorAll('.ws-cmp-seg-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.etype===t));
+  const inp = document.getElementById('ws-cmp-search-input');
+  inp.value=''; inp.placeholder = t==='sku' ? 'Search a SKU or product name…' : 'Search a category…';
+  document.getElementById('ws-cmp-search-list').classList.remove('open');
+  document.getElementById('ws-cmp-entity-detail').innerHTML =
+    '<div class="ws-empty"><div class="ic">🔍</div><div class="t">Search above to track a specific '+(t==='sku'?'product':'category')+'</div><div>See exactly how it moved between the two periods.</div></div>';
+}
+
+function cmpSearch(q){
+  if(!cmpEntities) return;
+  const list = document.getElementById('ws-cmp-search-list');
+  const pool = (cmpType==='sku' ? cmpEntities.skus : cmpEntities.categories) || [];
+  const term = (q||'').trim().toLowerCase();
+  let matches = pool;
+  if(term){
+    matches = pool.filter(e =>
+      (e.key||'').toLowerCase().includes(term) ||
+      (e.name||'').toLowerCase().includes(term) ||
+      (e.category||'').toLowerCase().includes(term));
+  }
+  // Sort by absolute revenue (most material first), cap the dropdown.
+  matches = matches.slice().sort((x,y)=>Math.abs((y.metrics.revenue.b??y.metrics.revenue.a)||0)-Math.abs((x.metrics.revenue.b??x.metrics.revenue.a)||0)).slice(0,30);
+  if(!matches.length){
+    list.innerHTML = '<div class="ws-cmp-search-empty">No '+(cmpType==='sku'?'products':'categories')+' match “'+escapeHtml(q)+'”.</div>';
+    list.classList.add('open'); return;
+  }
+  list.innerHTML = matches.map(e=>{
+    const meta = cmpType==='sku'
+      ? (escapeHtml(e.key) + (e.category?(' · '+escapeHtml(e.category)):''))
+      : ((e.metrics.revenue.b!=null?fmtCurr(e.metrics.revenue.b):'—')+' revenue this period');
+    return `<div class="ws-cmp-search-opt" onclick="cmpSelectEntity('${encodeURIComponent(e.key)}')">
+      <div class="nm">${escapeHtml(e.name||e.key)}</div>
+      <div class="meta">${meta}</div>
+    </div>`;
+  }).join('');
+  list.classList.add('open');
+}
+
+function cmpSelectEntity(encKey){
+  const key = decodeURIComponent(encKey);
+  const pool = (cmpType==='sku' ? cmpEntities.skus : cmpEntities.categories) || [];
+  const e = pool.find(x=>x.key===key);
+  document.getElementById('ws-cmp-search-list').classList.remove('open');
+  if(!e) return;
+  cmpSelectedKey = key;
+  document.getElementById('ws-cmp-search-input').value = e.name || e.key;
+  renderEntityDetail(e);
+}
+
+function renderEntityDetail(e){
+  const marginAv = cmpEntities && cmpEntities.margin_available !== false;
+  const defs = [
+    {k:'revenue', l:'Revenue', fmt:fmtCurr},
+    {k:'units', l:'Units Sold', fmt:fmtNum},
+    {k:'sell_through', l:'Sell-Through', fmt:v=>v.toFixed(1)+'%'},
+    {k:'margin', l:'Margin', fmt:v=>v.toFixed(1)+'%', needMargin:true},
+  ];
+  const cards = defs.map(m=>{
+    if(m.needMargin && !marginAv) return '';
+    const dd = e.metrics[m.k]; if(!dd) return '';
+    const av = dd.a, bv = dd.b;
+    if(av==null && bv==null) return '';
+    const diff = dd.diff;
+    const dir = diff==null?'flat':diff>0?'up':diff<0?'down':'flat';
+    const arrow = dir==='up'?'▲':dir==='down'?'▼':'■';
+    let deltaTxt = '—';
+    if(dd.pct!=null) deltaTxt = (dd.pct>0?'+':'')+dd.pct.toFixed(1)+'%';
+    else if(diff!=null) deltaTxt = (diff>0?'+':'')+m.fmt(Math.abs(diff)).replace('-','');
+    return `<div class="ws-cmp-metric">
+      <div class="ml">${m.l}</div>
+      <div class="ws-cmp-vals">
+        <span class="ws-cmp-a">${av==null?'—':m.fmt(av)}</span>
+        <span class="ws-cmp-arrow">→</span>
+        <span class="ws-cmp-b">${bv==null?'—':m.fmt(bv)}</span>
+      </div>
+      <div class="ws-cmp-delta ${dir}">${arrow} ${deltaTxt}</div>
+    </div>`;
+  }).join('');
+
+  let badge = '';
+  if(e.status==='new') badge = '<span class="ws-cmp-entity-badge new">New this period</span>';
+  else if(e.status==='dropped') badge = '<span class="ws-cmp-entity-badge dropped">Not in period B</span>';
+
+  const aLab = cmpEntities.a ? cmpEntities.a.label : 'Period A';
+  const bLab = cmpEntities.b ? cmpEntities.b.label : 'Period B';
+  const sub = (cmpType==='sku' ? (escapeHtml(e.key) + (e.category?(' · '+escapeHtml(e.category)):'')) : 'Category')
+    + ' &nbsp;·&nbsp; ' + escapeHtml(aLab) + ' → ' + escapeHtml(bLab);
+
+  document.getElementById('ws-cmp-entity-detail').innerHTML = `
+    <div class="ws-cmp-entity-card">
+      <div class="ec-title">${escapeHtml(e.name||e.key)}${badge}</div>
+      <div class="ec-sub">${sub}</div>
+      <div class="ws-cmp-grid">${cards || '<div class="ws-cmp-search-empty">No comparable metrics for this selection.</div>'}</div>
+    </div>`;
 }
 function renderCompare(d){
   const metricDefs = [

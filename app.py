@@ -2338,6 +2338,148 @@ def workspace_compare(user):
         return jsonify({"error": str(e)}), 500
 
 
+def _entity_metrics_from_sku(rows: dict) -> dict:
+    """Merge the per-SKU view across best_sellers / markdown_risk / reorder_alerts
+    into a single metrics record (best_sellers is richest so it wins ties)."""
+    return {
+        "revenue":      _safe_float(rows.get("revenue")),
+        "units":        _safe_float(rows.get("units")) if rows.get("units") is not None else None,
+        "sell_through": _safe_float(rows.get("sell_through")) if rows.get("sell_through") is not None else None,
+        "margin":       _safe_float(rows.get("margin_pct")) if rows.get("margin_pct") is not None else None,
+        "stock":        _safe_float(rows.get("stock")) if rows.get("stock") is not None else None,
+        "name":         rows.get("name"),
+        "category":     rows.get("category"),
+    }
+
+
+def _build_sku_index(dataset: dict) -> dict:
+    """sku -> merged metrics record, pooling best_sellers, markdown_risk, reorder_alerts."""
+    pool = {}
+    for src in ("best_sellers", "markdown_risk", "reorder_alerts"):
+        for r in (dataset.get(src) or []):
+            if not isinstance(r, dict):
+                continue
+            sku = r.get("sku")
+            if not sku:
+                continue
+            cur = pool.setdefault(sku, {})
+            # best_sellers carries the fullest record, so only fill gaps —
+            # never overwrite a non-null value already captured.
+            for k, v in r.items():
+                if v is not None and cur.get(k) in (None, ""):
+                    cur[k] = v
+    return {sku: _entity_metrics_from_sku(rec) for sku, rec in pool.items()}
+
+
+def _build_category_index(dataset: dict) -> dict:
+    """category name -> metrics record from category_scorecard."""
+    out = {}
+    for c in (dataset.get("category_scorecard") or []):
+        if not isinstance(c, dict):
+            continue
+        nm = c.get("category") or c.get("name")
+        if not nm:
+            continue
+        out[nm] = {
+            "revenue":      _safe_float(c.get("revenue")),
+            "units":        _safe_float(c.get("units")) if c.get("units") is not None else None,
+            "sell_through": _safe_float(c.get("avg_sell_through")) if c.get("avg_sell_through") is not None else None,
+            "margin":       _safe_float(c.get("avg_margin_pct")) if c.get("avg_margin_pct") is not None else None,
+            "sku_count":    c.get("sku_count"),
+            "name":         nm,
+            "category":     nm,
+        }
+    return out
+
+
+@app.route("/api/workspace/compare/entities")
+@require_auth
+def workspace_compare_entities(user):
+    """Searchable index of every SKU and category present in either dataset, with
+    last-period (A) vs this-period (B) metrics + deltas. Powers the Compare search
+    box so a merchandiser can track whether an action on a specific SKU/category
+    actually moved the numbers week-on-week."""
+    id_a = request.args.get("a")
+    id_b = request.args.get("b")
+    if not id_a or not id_b:
+        return jsonify({"error": "Two file ids (a, b) required"}), 400
+    try:
+        db = get_user_db()
+
+        def load(uid):
+            r = db.table("uploads") \
+                .select("id, filename, created_at, "
+                        "ws:analysis->_workspace, kpis:analysis->kpis, "
+                        "cats:analysis->category_scorecard, "
+                        "best:analysis->best_sellers, "
+                        "md:analysis->markdown_risk, "
+                        "reorders:analysis->reorder_alerts") \
+                .eq("id", uid).eq("user_id", user["id"]).single().execute()
+            d = r.data or {}
+            return {
+                "id": d.get("id"),
+                "filename": d.get("filename"),
+                "created_at": d.get("created_at"),
+                "ws": d.get("ws"),
+                "kpis": d.get("kpis") or {},
+                "category_scorecard": d.get("cats") or [],
+                "best_sellers": d.get("best") or [],
+                "markdown_risk": d.get("md") or [],
+                "reorder_alerts": d.get("reorders") or [],
+            }
+
+        a = load(id_a)
+        b = load(id_b)
+        if not a.get("id") or not b.get("id"):
+            return jsonify({"error": "One or both files not found"}), 404
+
+        def label(row):
+            ws = row.get("ws") or {}
+            return (ws.get("display_name") if isinstance(ws, dict) else None) or row.get("filename")
+
+        def diff_pct(av, bv):
+            if av is None or bv is None:
+                return None
+            return ((bv - av) / av * 100) if av else None
+
+        def build_entities(idx_a, idx_b):
+            out = []
+            for key in sorted(set(idx_a) | set(idx_b)):
+                ra, rb = idx_a.get(key), idx_b.get(key)
+                base = rb or ra
+                metrics = {}
+                for fld in ("revenue", "units", "sell_through", "margin"):
+                    av = ra.get(fld) if ra else None
+                    bv = rb.get(fld) if rb else None
+                    metrics[fld] = {
+                        "a": av, "b": bv,
+                        "diff": (bv - av) if (av is not None and bv is not None) else None,
+                        "pct": diff_pct(av, bv),
+                    }
+                out.append({
+                    "key": key,
+                    "name": base.get("name") or key,
+                    "category": base.get("category"),
+                    "status": "new" if not ra else ("dropped" if not rb else "changed"),
+                    "metrics": metrics,
+                })
+            return out
+
+        ma_av = bool(a["kpis"].get("margin_available", True))
+        mb_av = bool(b["kpis"].get("margin_available", True))
+
+        return jsonify({
+            "a": {"id": a["id"], "label": label(a), "date": a.get("created_at")},
+            "b": {"id": b["id"], "label": label(b), "date": b.get("created_at")},
+            "margin_available": ma_av and mb_av,
+            "skus": build_entities(_build_sku_index(a), _build_sku_index(b)),
+            "categories": build_entities(_build_category_index(a), _build_category_index(b)),
+        })
+    except Exception as e:
+        app.logger.error(f"workspace_compare_entities error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/workspace/timeline")
 @require_auth
 def workspace_timeline(user):
