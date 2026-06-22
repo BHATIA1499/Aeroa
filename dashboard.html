@@ -100,6 +100,18 @@ body{font-family:var(--body);background:var(--bg-grad);background-attachment:fix
 .drop-zone-icon{font-size:32px;margin-bottom:10px}
 .drop-zone-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
 .drop-zone-sub{font-size:12px;color:var(--text3)}
+.empty-or{display:flex;align-items:center;gap:12px;width:100%;max-width:300px;margin:18px 0}
+.empty-or::before,.empty-or::after{content:'';flex:1;height:1px;background:rgba(125,170,117,0.22)}
+.empty-or span{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+.empty-sample-cta{display:flex;align-items:center;gap:14px;text-align:left;max-width:460px;width:100%;
+  padding:18px 22px;border:1px solid rgba(125,170,117,0.32);border-radius:16px;cursor:pointer;
+  background:linear-gradient(135deg,rgba(125,170,117,0.06),rgba(168,197,160,0.10));
+  transition:all 0.2s}
+.empty-sample-cta:hover{border-color:var(--mint-d);transform:translateY(-2px);box-shadow:0 10px 30px rgba(125,170,117,0.16)}
+.empty-sample-icon{font-size:24px;flex-shrink:0}
+.empty-sample-text{display:flex;flex-direction:column;gap:3px}
+.empty-sample-title{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--text)}
+.empty-sample-sub{font-size:12px;color:var(--text2);line-height:1.5;font-weight:300}
 .upload-progress{font-size:13px;color:var(--mint-d);margin-top:12px;display:none}
 
 /* ── UPLOAD TOAST ── */
@@ -950,6 +962,14 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
         <div class="drop-zone-title">Drag & drop your file here</div>
         <div class="drop-zone-sub">CSV · XLSX · XLS · Numbers · ODS · up to 32 MB</div>
       </div>
+      <div class="empty-or"><span>or</span></div>
+      <button class="empty-sample-cta" onclick="viewSampleDataset()">
+        <span class="empty-sample-icon">✨</span>
+        <span class="empty-sample-text">
+          <span class="empty-sample-title">Try Aeroa with Sample Data</span>
+          <span class="empty-sample-sub">Explore every feature instantly with a 200-SKU fashion dataset — no upload needed</span>
+        </span>
+      </button>
       <div class="upload-progress" id="upload-progress">Analysing your data…</div>
     </div>
 
