@@ -716,8 +716,9 @@ def _build_role_analysis(analysis):
     open_po_count = len(critical_urgent)
     open_po_value = round(sum(r.get("revenue", 0) * 0.15 for r in critical_urgent), 2)
 
-    # Health score
-    health_score = _compute_health_score(avg_st, avg_margin, avg_cover, reorder_count)
+    # Health score (explainable breakdown — total is the canonical score)
+    health_detail = _health_breakdown(k)
+    health_score  = health_detail["total"]
 
     # Plan data (actuals * multipliers)
     plan_data = {
@@ -984,6 +985,7 @@ def _build_role_analysis(analysis):
         "open_po_count": open_po_count,
         "open_po_value": open_po_value,
         "health_score": health_score,
+        "health_breakdown": health_detail,
         "plan_data": plan_data,
         "vs_plan": vs_plan,
         "cash_trapped": cash_trapped,
@@ -1498,15 +1500,113 @@ def _file_type_from_name(filename: str) -> str:
     }.get(ext, (ext.upper() or "File"))
 
 
+def _health_breakdown(kpis: dict) -> dict:
+    """
+    Explainable Business Health Score (0-100).
+
+    Decomposes the score into five transparent components a merchandiser can
+    reason about, each grounded in a real KPI:
+
+      1. Revenue Performance  /30  — revenue quality (velocity × margin)
+      2. Sell-Through         /20  — how fast stock is converting to sales
+      3. Margin Protection    /20  — profitability vs a healthy benchmark
+      4. Stock Efficiency     /20  — weeks of cover vs the ideal 4-8 wk band
+      5. Risk Exposure        /10  — penalty for OOS / markdown / reorder load
+
+    Returns {"total", "label", "components":[{key,name,score,max,detail,status}]}.
+    The total is the canonical health score used across the product so the
+    headline number and this breakdown always agree.
+    """
+    if not isinstance(kpis, dict):
+        kpis = {}
+    st       = float(kpis.get("avg_sell_through") or 0)
+    mg       = float(kpis.get("gross_margin_pct") or kpis.get("avg_margin_pct") or 0)
+    cover    = float(kpis.get("avg_cover_weeks") or 0)
+    reorder  = int(kpis.get("reorder_count") or 0)
+    critical = int(kpis.get("critical_oos_count") or 0)
+    markdown = int(kpis.get("markdown_risk_count") or 0)
+    margin_ok = kpis.get("margin_available") is not False
+
+    def status(score, mx):
+        r = score / mx if mx else 0
+        return "strong" if r >= 0.75 else "watch" if r >= 0.45 else "weak"
+
+    # 1. Revenue Performance /30 — composite of sell-through velocity and margin
+    rev_pts = round(min(1.0, st / 85.0) * 18 + min(1.0, mg / 60.0) * 12)
+    rev_pts = max(0, min(30, rev_pts))
+
+    # 2. Sell-Through /20
+    if   st >= 70: st_pts = 20
+    elif st >= 55: st_pts = 16
+    elif st >= 40: st_pts = 12
+    elif st >= 25: st_pts = 7
+    else:          st_pts = 3
+
+    # 3. Margin Protection /20
+    if not margin_ok:
+        mg_pts = 10  # neutral — not penalised for missing data
+        mg_detail = "Insufficient margin data in this dataset — scored neutrally."
+        mg_status = "watch"
+    else:
+        if   mg >= 60: mg_pts = 20
+        elif mg >= 50: mg_pts = 16
+        elif mg >= 40: mg_pts = 12
+        elif mg >= 30: mg_pts = 7
+        else:          mg_pts = 3
+        mg_detail = f"Blended margin of {mg:.1f}% vs a 55% healthy benchmark."
+        mg_status = status(mg_pts, 20)
+
+    # 4. Stock Efficiency /20 — ideal cover band is 4-8 weeks
+    if   4 <= cover <= 8:                        cov_pts = 18
+    elif (2 <= cover < 4) or (8 < cover <= 12):  cov_pts = 13
+    elif (1 <= cover < 2) or (12 < cover <= 16): cov_pts = 7
+    else:                                        cov_pts = 3
+    if cover <= 0:
+        cov_detail = "No stock-cover signal in this dataset."
+    elif cover < 4:
+        cov_detail = f"{cover:.1f} wks cover — running lean, stockout risk on top sellers."
+    elif cover <= 8:
+        cov_detail = f"{cover:.1f} wks cover — healthy, within the ideal 4-8 wk band."
+    else:
+        cov_detail = f"{cover:.1f} wks cover — overstocked, cash tied up in slow stock."
+
+    # 5. Risk Exposure /10 — start clean, penalise live risks
+    risk_pts = 10
+    risk_pts -= min(5, critical * 2)        # critical OOS hurts most
+    risk_pts -= min(3, reorder // 5)        # reorder backlog
+    risk_pts -= min(2, markdown // 5)       # markdown dependency
+    risk_pts = max(0, risk_pts)
+    risk_bits = []
+    if critical: risk_bits.append(f"{critical} critical OOS")
+    if reorder:  risk_bits.append(f"{reorder} reorder alerts")
+    if markdown: risk_bits.append(f"{markdown} markdown risks")
+    risk_detail = ("Live risks: " + ", ".join(risk_bits) + ".") if risk_bits \
+                  else "No critical stock or margin risks detected."
+
+    components = [
+        {"key": "revenue", "name": "Revenue Performance", "score": rev_pts, "max": 30,
+         "status": status(rev_pts, 30),
+         "detail": f"Revenue quality from {st:.0f}% sell-through and {mg:.0f}% margin."},
+        {"key": "sell_through", "name": "Sell-Through", "score": st_pts, "max": 20,
+         "status": status(st_pts, 20),
+         "detail": f"Range sell-through of {st:.1f}% — how fast stock is converting."},
+        {"key": "margin", "name": "Margin Protection", "score": mg_pts, "max": 20,
+         "status": mg_status, "detail": mg_detail},
+        {"key": "stock", "name": "Stock Efficiency", "score": cov_pts, "max": 20,
+         "status": status(cov_pts, 20), "detail": cov_detail},
+        {"key": "risk", "name": "Risk Exposure", "score": risk_pts, "max": 10,
+         "status": status(risk_pts, 10), "detail": risk_detail},
+    ]
+    total = max(0, min(100, sum(c["score"] for c in components)))
+    label = "Healthy" if total >= 80 else "Watch" if total >= 60 else "At Risk"
+    return {"total": total, "label": label, "components": components}
+
+
 def _ws_health_score(kpis: dict) -> int:
-    """Lightweight Business Health Score from KPI summary (0-100)."""
+    """Canonical Business Health Score (0-100) — the breakdown total."""
     if not isinstance(kpis, dict):
         return 0
-    st = float(kpis.get("avg_sell_through") or 0)
-    mg = float(kpis.get("avg_margin_pct") or 0)
-    # Sell-through (50%) + margin (50%), each normalised to a sensible ceiling
-    score = (min(st, 100) / 100) * 50 + (min(mg, 50) / 50) * 50
-    return int(round(max(0, min(100, score))))
+    return int(_health_breakdown(kpis)["total"])
 
 
 def _dataset_type_from_name(fname: str, tags=None) -> str:
@@ -1925,6 +2025,7 @@ def workspace_command(user):
         label = (ws.get("display_name") if isinstance(ws, dict) else None) \
                 or analysis.get("filename") or "Dataset"
         health = _ws_health_score(kpis)
+        health_detail = _health_breakdown(kpis)
 
         # Top 5 ranked actions from the role engine's ai_actions
         actions = []
@@ -2003,6 +2104,7 @@ def workspace_command(user):
             "dataset_label": label,
             "health_score":  health,
             "health_label":  ("Healthy" if health >= 80 else "Watch" if health >= 60 else "At Risk"),
+            "health_breakdown": health_detail,
             "revenue":       kpis.get("total_revenue", 0),
             "margin":        kpis.get("avg_margin_pct", 0),
             "sell_through":  kpis.get("avg_sell_through", 0),

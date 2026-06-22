@@ -754,6 +754,25 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-exp-card:hover{border-color:var(--mint-d);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.1)}
 .ws-exp-card .ec-ic{font-size:24px;flex-shrink:0}
 .ws-exp-card .ec-t{font-size:13.5px;font-weight:800;color:var(--text)}
+/* Health breakdown modal */
+.hb-modal{width:min(580px,96vw)}
+.hb-hero{display:flex;align-items:center;gap:18px;padding:20px 24px;border-bottom:1px solid var(--border)}
+.hb-hero .hb-num{font-family:var(--serif);font-size:52px;font-weight:900;line-height:1}
+.hb-hero .hb-meta{flex:1}
+.hb-hero .hb-lbl{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:99px;padding:3px 10px;display:inline-block;margin-bottom:6px}
+.hb-hero .hb-sub{font-size:12.5px;color:var(--text3);line-height:1.5}
+.hb-list{padding:14px 24px 24px;display:flex;flex-direction:column;gap:12px}
+.hb-comp{background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:14px 15px}
+.hb-comp-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.hb-comp-name{font-size:13.5px;font-weight:800;color:var(--text)}
+.hb-comp-score{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0}
+.hb-bar{height:7px;border-radius:99px;background:rgba(0,0,0,.07);overflow:hidden;margin-bottom:8px}
+.hb-bar-fill{height:100%;border-radius:99px;transition:width .5s}
+.hb-comp-detail{font-size:12px;color:var(--text2);line-height:1.5}
+.hb-strong{color:#2E8B57}.hb-watch{color:#C77A38}.hb-weak{color:#E05A4A}
+.hb-strong-bg{background:#2E8B57}.hb-watch-bg{background:#C77A38}.hb-weak-bg{background:#E05A4A}
+.cc-score.clickable{cursor:pointer;transition:transform .15s}
+.cc-score.clickable:hover{transform:scale(1.04)}
 .ws-exp-card .ec-d{font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.4}
 .ws-exp-card .ec-fmt{display:inline-block;margin-top:6px;font-size:10px;font-weight:800;color:#5B6BB5;background:rgba(91,107,181,.1);border-radius:6px;padding:2px 7px;letter-spacing:.03em}
 </style>
@@ -1397,6 +1416,20 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
             <button class="ws-panel-close" onclick="closeExportCentre()" aria-label="Close">×</button>
           </div>
           <div class="ws-export-grid" id="ws-export-grid"></div>
+        </div>
+      </div>
+
+      <!-- Business Health Breakdown modal -->
+      <div class="ws-export-overlay" id="hb-overlay" onclick="closeHealthBreakdown()">
+        <div class="ws-export-modal hb-modal" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="hb-title">
+          <div class="ws-export-head">
+            <div>
+              <div class="ws-export-t" id="hb-title">🩺 Business Health Breakdown</div>
+              <div class="ws-export-s">How your Business Health Score is calculated — every point explained.</div>
+            </div>
+            <button class="ws-panel-close" onclick="closeHealthBreakdown()" aria-label="Close">×</button>
+          </div>
+          <div id="hb-body"></div>
         </div>
       </div>
     </div><!-- /workspace-view -->
@@ -2791,9 +2824,11 @@ function sampleApi(method, url, body){
 
 function buildSampleCommand(f){
   if(!f) return {};
+  const hb = sampleHealthBreakdown(f);
   return {
     upload_id:f.id, dataset_label:f.display_name, dataset_date:f.upload_date,
-    health_score:f.health_score, health_label:healthLabel(f.health_score),
+    health_score:hb.total, health_label:hb.label,
+    health_breakdown:hb,
     revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
     exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
     actions:[
@@ -2823,6 +2858,28 @@ function buildSampleCommand(f){
       recommended:['Act on Outerwear markdown this week to stop the recurring drag','Lock Linen Dress reorder before Friday cutoff']
     }
   };
+}
+
+// Mirror of backend _health_breakdown so the sample modal stays consistent.
+function sampleHealthBreakdown(f){
+  const st=+f.sell_through||0, mg=+f.margin||0, cover=+f.cover_weeks||6;
+  const reorder=+f.reorder_count||2, critical=+f.critical_oos||0, markdown=+f.markdown_count||3;
+  const stat=(s,m)=>{const r=m?s/m:0; return r>=0.75?'strong':r>=0.45?'watch':'weak';};
+  let rev=Math.round(Math.min(1,st/85)*18+Math.min(1,mg/60)*12); rev=Math.max(0,Math.min(30,rev));
+  let stp = st>=70?20:st>=55?16:st>=40?12:st>=25?7:3;
+  let mgp = mg>=60?20:mg>=50?16:mg>=40?12:mg>=30?7:3;
+  let cov = (cover>=4&&cover<=8)?18:((cover>=2&&cover<4)||(cover>8&&cover<=12))?13:((cover>=1&&cover<2)||(cover>12&&cover<=16))?7:3;
+  let risk=10; risk-=Math.min(5,critical*2); risk-=Math.min(3,Math.floor(reorder/5)); risk-=Math.min(2,Math.floor(markdown/5)); risk=Math.max(0,risk);
+  const riskBits=[]; if(critical)riskBits.push(critical+' critical OOS'); if(reorder)riskBits.push(reorder+' reorder alerts'); if(markdown)riskBits.push(markdown+' markdown risks');
+  const comps=[
+    {key:'revenue',name:'Revenue Performance',score:rev,max:30,status:stat(rev,30),detail:`Revenue quality from ${st.toFixed(0)}% sell-through and ${mg.toFixed(0)}% margin.`},
+    {key:'sell_through',name:'Sell-Through',score:stp,max:20,status:stat(stp,20),detail:`Range sell-through of ${st.toFixed(1)}% — how fast stock is converting.`},
+    {key:'margin',name:'Margin Protection',score:mgp,max:20,status:stat(mgp,20),detail:`Blended margin of ${mg.toFixed(1)}% vs a 55% healthy benchmark.`},
+    {key:'stock',name:'Stock Efficiency',score:cov,max:20,status:stat(cov,20),detail:`${cover.toFixed(1)} wks cover — ${cover>=4&&cover<=8?'healthy, within the ideal 4-8 wk band':cover<4?'running lean, stockout risk':'overstocked, cash tied up in slow stock'}.`},
+    {key:'risk',name:'Risk Exposure',score:risk,max:10,status:stat(risk,10),detail:riskBits.length?('Live risks: '+riskBits.join(', ')+'.'):'No critical stock or margin risks detected.'}
+  ];
+  const total=Math.max(0,Math.min(100,comps.reduce((a,c)=>a+c.score,0)));
+  return {total, label: total>=80?'Healthy':total>=60?'Watch':'At Risk', components:comps};
 }
 
 function buildSampleCompare(a,b){
@@ -3219,7 +3276,7 @@ function renderCommandCentre(d){
   const op=d.top_opportunity||{}, rk=d.top_risk||{};
   document.getElementById('cc-wrap').innerHTML = `
     <div class="cc-hero">
-      <div style="text-align:center"><div class="cc-score" style="color:${hc}">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')}</div></div>
+      <div style="text-align:center">${d.health_breakdown?`<div class="cc-score clickable" style="color:${hc}" onclick="openHealthBreakdown()" title="See how this score is calculated">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')} <button class="hb-why" onclick="openHealthBreakdown()" style="background:none;border:none;color:var(--mint-d);font-size:11px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline">Why?</button></div>`:`<div class="cc-score" style="color:${hc}">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')}</div>`}</div>
       <div>
         <div class="cc-q">What should I do next?</div>
         <div class="cc-qs">${escapeHtml(d.exec_summary||'')}</div>
@@ -3342,6 +3399,41 @@ function openExportCentre(id){
   document.getElementById('ws-export-overlay').classList.add('open');
 }
 function closeExportCentre(){ document.getElementById('ws-export-overlay').classList.remove('open'); }
+
+// ── Business Health Breakdown (explainable score) ─────────────
+function openHealthBreakdown(){
+  const hb = ccData && ccData.health_breakdown;
+  if(!hb || !hb.components){ return; }
+  const total = hb.total||0;
+  const hc = healthColor(total), hcl = healthClass(total);
+  const labelClass = hcl==='green'?'hb-strong':hcl==='amber'?'hb-watch':'hb-weak';
+  const labelBg = hcl==='green'?'rgba(46,139,87,.12)':hcl==='amber'?'rgba(224,151,90,.14)':'rgba(224,90,74,.12)';
+  const sCls = s => s==='strong'?'hb-strong':s==='watch'?'hb-watch':'hb-weak';
+  const sBg  = s => s==='strong'?'hb-strong-bg':s==='watch'?'hb-watch-bg':'hb-weak-bg';
+  const rows = hb.components.map(c=>{
+    const pct = c.max ? Math.round(c.score/c.max*100) : 0;
+    return `
+      <div class="hb-comp">
+        <div class="hb-comp-top">
+          <span class="hb-comp-name">${escapeHtml(c.name)}</span>
+          <span class="hb-comp-score ${sCls(c.status)}">${c.score} / ${c.max}</span>
+        </div>
+        <div class="hb-bar"><div class="hb-bar-fill ${sBg(c.status)}" style="width:${pct}%"></div></div>
+        <div class="hb-comp-detail">${escapeHtml(c.detail||'')}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('hb-body').innerHTML = `
+    <div class="hb-hero">
+      <div class="hb-num" style="color:${hc}">${total}</div>
+      <div class="hb-meta">
+        <span class="hb-lbl ${labelClass}" style="background:${labelBg}">${escapeHtml(hb.label||'')}</span>
+        <div class="hb-sub">Your Business Health Score is out of 100, built from five weighted components. Each bar below shows where points are earned or lost — and exactly why.</div>
+      </div>
+    </div>
+    <div class="hb-list">${rows}</div>`;
+  document.getElementById('hb-overlay').classList.add('open');
+}
+function closeHealthBreakdown(){ document.getElementById('hb-overlay').classList.remove('open'); }
 function doExport(ep, label){
   if(sampleMode){ showUploadToast('info','Sample mode','“'+label+'” export is available once you upload your own data.',5000); closeExportCentre(); return; }
   showUploadToast('loading','Preparing export…','Building “'+label+'” — this can take a moment.',4000);
