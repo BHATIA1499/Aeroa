@@ -273,14 +273,29 @@ def _best_sheet(file_obj, filename):
 
 def _parse_numbers(file_obj):
     """Parse Apple Numbers .numbers file into a DataFrame."""
-    import tempfile, os
-    from numbers_parser import Document
+    import tempfile, os, warnings
     raw = file_obj.read() if hasattr(file_obj, "read") else file_obj
     with tempfile.NamedTemporaryFile(suffix=".numbers", delete=False) as tmp:
         tmp.write(raw)
         tmp_path = tmp.name
     try:
-        doc = Document(tmp_path)
+        # numbers_parser raises on Numbers file formats newer than the installed
+        # library knows about (e.g. version 26.x from the latest macOS Numbers).
+        # Catch that and give the user an actionable instruction rather than an
+        # opaque 500 — exporting to CSV/Excel always works.
+        try:
+            from numbers_parser import Document
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")  # ignore "unsupported version" warnings
+                doc = Document(tmp_path)
+        except Exception as e:
+            raise ValueError(
+                "This .numbers file was saved by a newer version of Apple Numbers "
+                "than we can read yet. Please open it in Numbers and choose "
+                "File → Export To → CSV (or Excel), then upload that file. "
+                f"(parser detail: {type(e).__name__})"
+            )
+
         # Find the sheet/table with the most recognisable columns
         KEY_COLS = {"sku","productcode","revenue","sales","unitssold","units","qty","stockonhand"}
         best_df, best_score = None, -1
@@ -297,7 +312,10 @@ def _parse_numbers(file_obj):
                     data = [[c.value for c in row] for row in rows[1:]]
                     best_df = pd.DataFrame(data, columns=headers)
         if best_df is None:
-            raise ValueError("No data table found in Numbers file.")
+            raise ValueError(
+                "No data table was found in this Numbers file. If the data is on a "
+                "sheet, try File → Export To → CSV (or Excel) in Numbers and upload that."
+            )
         return best_df
     finally:
         os.unlink(tmp_path)
