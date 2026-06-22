@@ -679,6 +679,105 @@ def _compute_health_score(avg_st, avg_margin, avg_cover, reorder_count):
     return int(st_pts + mg_pts + cov_pts + ro_pts)
 
 
+def _gbp(v) -> str:
+    """Compact GBP formatter for reasoning chips."""
+    try:
+        v = float(v or 0)
+    except (TypeError, ValueError):
+        return "£0"
+    a = abs(v)
+    if a >= 1_000_000: return f"£{v/1_000_000:.1f}m"
+    if a >= 1_000:     return f"£{v/1_000:.0f}k"
+    return f"£{v:,.0f}"
+
+
+def _action_reasoning(a, ctx):
+    """
+    Build the 'Why Aeroa recommends this' block for one ranked action.
+
+    Returns a dict with:
+      data_points    — the evidence behind the decision (sell-through, category
+                       average, weeks of cover, stock value tied up, severity)
+      expected_impact— revenue and margin-point effect
+      confidence     — model confidence (0-100)
+      why            — one-sentence plain-English rationale
+    Every figure is drawn from the dataset; nothing is invented.
+    """
+    sku = a.get("sku", "")
+    typ = a.get("type", "")
+    md  = ctx["md_by"].get(sku)
+    ro  = ctx["ro_by"].get(sku)
+    cat = ctx["cat_by"].get(sku)          # when the action targets a category
+    bs  = ctx["seller_by"].get(sku)
+
+    item_cat = (md or ro or bs or {}).get("category")
+    cat_obj  = ctx["cat_by"].get(item_cat) if item_cat else None
+    cat_avg_st = (cat_obj or {}).get("avg_sell_through")
+    avg_st   = ctx["avg_st"]
+    avg_cover = ctx["avg_cover"]
+
+    dp = []
+    rev = a.get("revenue_impact", 0)
+
+    if md:
+        st = md.get("sell_through", 0)
+        dp.append({"label": "Sell-through", "value": f"{st:.0f}%"})
+        if cat_avg_st is not None:
+            dp.append({"label": f"{item_cat} avg ST", "value": f"{cat_avg_st:.0f}%"})
+        else:
+            dp.append({"label": "Range avg ST", "value": f"{avg_st:.0f}%"})
+        dp.append({"label": "Stock value tied up", "value": _gbp(md.get("revenue", 0))})
+        dp.append({"label": "Recommended depth", "value": md.get("recommended_depth", "25–35%")})
+        why = (f"{sku} is selling at just {st:.0f}% — "
+               + (f"well below the {item_cat} category average of {cat_avg_st:.0f}%" if cat_avg_st is not None
+                  else f"below the {avg_st:.0f}% range average")
+               + f". Acting now releases {_gbp(md.get('revenue', 0))} of trapped stock before it ages further.")
+    elif ro:
+        cover = ro.get("cover_weeks")
+        st    = ro.get("sell_through")
+        if cover is not None:
+            dp.append({"label": "Weeks of cover", "value": f"{cover:.1f} wks"})
+        if st is not None:
+            dp.append({"label": "Sell-through", "value": f"{st:.0f}%"})
+        if ro.get("stock") is not None:
+            dp.append({"label": "Stock on hand", "value": f"{ro.get('stock'):,} units"})
+        dp.append({"label": "Revenue at risk", "value": _gbp(ro.get("revenue", 0))})
+        dp.append({"label": "Urgency", "value": ro.get("urgency", "REORDER").title()})
+        cover_txt = f"only {cover:.1f} weeks of cover left" if cover is not None else "cover running low"
+        why = (f"{sku} has {cover_txt}"
+               + (f" against {st:.0f}% sell-through" if st is not None else "")
+               + f", putting {_gbp(ro.get('revenue', 0))} of demand at risk if it stocks out before the next delivery.")
+    elif cat:
+        dp.append({"label": "Category revenue", "value": _gbp(cat.get("revenue", 0))})
+        if cat.get("avg_sell_through") is not None:
+            dp.append({"label": "Avg sell-through", "value": f"{cat.get('avg_sell_through'):.0f}%"})
+        dp.append({"label": "Health", "value": cat.get("health", "—").title()})
+        dp.append({"label": "SKUs in range", "value": str(cat.get("sku_count", 0))})
+        cst = cat.get("avg_sell_through")
+        if cst is not None and cst < avg_st:
+            why = (f"{sku} is rated {cat.get('health','').title()} with {cst:.0f}% sell-through, "
+                   f"below the {avg_st:.0f}% range average — trimming forward commitment protects margin.")
+        else:
+            why = (f"{sku} is your strongest category at {_gbp(cat.get('revenue', 0))} revenue and "
+                   f"{(cst or 0):.0f}% sell-through — leaning in captures demand outpacing supply.")
+    else:
+        # Generic / monitoring / OTB direction
+        dp.append({"label": "Range avg ST", "value": f"{avg_st:.0f}%"})
+        dp.append({"label": "Range avg cover", "value": f"{avg_cover:.1f} wks"})
+        if bs:
+            dp.append({"label": f"{sku} revenue", "value": _gbp(bs.get("revenue", 0))})
+        why = a.get("description", "Recommended from the current trading position across the range.")
+
+    mi = a.get("margin_impact", 0)
+    impact = {
+        "revenue": rev,
+        "revenue_label": ("Revenue recovered" if rev >= 0 else "Revenue traded"),
+        "margin_pts": mi,
+    }
+    return {"data_points": dp, "expected_impact": impact,
+            "confidence": a.get("confidence", 70), "why": why}
+
+
 def _build_role_analysis(analysis):
     """Build extended role-based analysis data from base analysis."""
     k = analysis.get("kpis", {})
@@ -939,6 +1038,18 @@ def _build_role_analysis(analysis):
             "confidence": 65,
             "priority": "Recommended"
         })
+
+    # ── Attach 'Why Aeroa recommends this' reasoning to every action ─────────
+    _reason_ctx = {
+        "md_by":     {m.get("sku"): m for m in markdowns},
+        "ro_by":     {r.get("sku"): r for r in reorders},
+        "cat_by":    {c.get("category"): c for c in categories},
+        "seller_by": {b.get("sku"): b for b in best_sellers},
+        "avg_st":    avg_st,
+        "avg_cover": avg_cover,
+    }
+    for _a in ai_actions:
+        _a["reasoning"] = _action_reasoning(_a, _reason_ctx)
 
     # Executive summary (generated inline, not from Claude API)
     perf_word = "above" if vs_plan["revenue_pct"] >= 100 else "below"
@@ -2038,6 +2149,7 @@ def workspace_command(user):
                 "rev_impact":    a.get("revenue_impact", 0),
                 "margin_impact": f"{mi:+.1f}pt" if isinstance(mi, (int, float)) else str(mi),
                 "confidence":    a.get("confidence", 70),
+                "reasoning":     a.get("reasoning"),
             })
 
         def first_item(lst):

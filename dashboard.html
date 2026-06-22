@@ -713,6 +713,24 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .cc-conf .cf-ring{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
 .cc-conf .cf-l{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
 
+/* AI Recommendation Reasoning */
+.ar-toggle{margin-top:9px;background:none;border:none;padding:0;cursor:pointer;font-size:11.5px;font-weight:800;color:var(--mint-d);display:inline-flex;align-items:center;gap:6px;letter-spacing:.01em}
+.ar-toggle .ar-spark{font-size:11px}
+.ar-toggle .ar-caret{transition:transform .2s;font-size:10px}
+.ar-toggle.open .ar-caret{transform:rotate(180deg)}
+.ar-body{margin-top:10px;padding:13px 14px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-border)}
+.ar-why{font-size:12.5px;color:var(--text);line-height:1.55;margin-bottom:11px;font-style:italic}
+.ar-sec-l{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin:9px 0 6px}
+.ar-chips{display:flex;flex-wrap:wrap;gap:7px}
+.ar-chip{display:flex;flex-direction:column;gap:1px;background:var(--bg-soft,rgba(255,255,255,.45));border:1px solid var(--border);border-radius:9px;padding:6px 10px}
+.ar-chip-l{font-size:9.5px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.ar-chip-v{font-size:13px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.ar-empty{color:var(--text3);font-size:12px}
+.ar-impact{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:4px}
+.ar-imp{text-align:center;background:var(--bg-soft,rgba(255,255,255,.45));border:1px solid var(--border);border-radius:10px;padding:9px 6px}
+.ar-imp .v{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--text)}
+.ar-imp .l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:2px}
+
 /* Decision Simulator */
 .cc-sim-row{display:grid;grid-template-columns:160px 1fr 70px;gap:14px;align-items:center;margin-bottom:14px}
 .cc-sim-row label{font-size:12.5px;font-weight:700;color:var(--text2)}
@@ -2832,11 +2850,26 @@ function buildSampleCommand(f){
     revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
     exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
     actions:[
-      {rank:1, action:'Reorder SS26 Linen Dress range', reason:'78% sell-through with 3 weeks cover left — supplier cutoff Friday.', rev_impact:62000, margin_impact:'+0.4pt', confidence:92},
-      {rank:2, action:'Trigger 20% markdown on ageing Outerwear', reason:'Sell-through stuck at 31% vs 55% plan; clear before the markdown window closes.', rev_impact:34000, margin_impact:'-1.2pt', confidence:84},
-      {rank:3, action:'Feature Knitwear best-sellers in Thursday email', reason:'Category momentum building — capture full-price demand while it lasts.', rev_impact:18000, margin_impact:'+0.2pt', confidence:78},
-      {rank:4, action:'Hold Dresses intake at current depth', reason:'Performing to plan; no action needed beyond the linen reorder.', rev_impact:0, margin_impact:'0pt', confidence:71},
-      {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1pt', confidence:66}
+      {rank:1, action:'Reorder SS26 Linen Dress range', reason:'78% sell-through with 3 weeks cover left — supplier cutoff Friday.', rev_impact:62000, margin_impact:'+0.4pt', confidence:92,
+        reasoning:{why:'SS26 Linen Dresses are selling at 78% — well above the 64% range average — with only 3 weeks of cover. Reordering before Friday’s supplier cutoff protects £62k of in-demand revenue.',
+          data_points:[{label:'Sell-through',value:'78%'},{label:'Dresses avg ST',value:'72%'},{label:'Weeks of cover',value:'3.0 wks'},{label:'Revenue at risk',value:'£62k'}],
+          expected_impact:{revenue:62000,revenue_label:'Revenue protected',margin_pts:0.4},confidence:92}},
+      {rank:2, action:'Trigger 20% markdown on ageing Outerwear', reason:'Sell-through stuck at 31% vs 55% plan; clear before the markdown window closes.', rev_impact:34000, margin_impact:'-1.2pt', confidence:84,
+        reasoning:{why:'Outerwear is stuck at 31% sell-through versus a 55% plan, with £88k of stock tied up. A 20% markdown now recovers cash before the clearance window narrows.',
+          data_points:[{label:'Sell-through',value:'31%'},{label:'Plan ST',value:'55%'},{label:'Stock value tied up',value:'£88k'},{label:'Recommended depth',value:'20%'}],
+          expected_impact:{revenue:34000,revenue_label:'Cash recovered',margin_pts:-1.2},confidence:84}},
+      {rank:3, action:'Feature Knitwear best-sellers in Thursday email', reason:'Category momentum building — capture full-price demand while it lasts.', rev_impact:18000, margin_impact:'+0.2pt', confidence:78,
+        reasoning:{why:'Knitwear sell-through has climbed to 74% and is outpacing supply. Featuring the hero lines drives full-price demand before stock thins.',
+          data_points:[{label:'Sell-through',value:'74%'},{label:'Knitwear avg ST',value:'69%'},{label:'Momentum',value:'+5pts WoW'},{label:'Full-price share',value:'High'}],
+          expected_impact:{revenue:18000,revenue_label:'Revenue uplift',margin_pts:0.2},confidence:78}},
+      {rank:4, action:'Hold Dresses intake at current depth', reason:'Performing to plan; no action needed beyond the linen reorder.', rev_impact:0, margin_impact:'0pt', confidence:71,
+        reasoning:{why:'Dresses are tracking to plan at 72% sell-through and 6 weeks of cover — the ideal band. No intake change needed beyond the linen reorder.',
+          data_points:[{label:'Sell-through',value:'72%'},{label:'Weeks of cover',value:'6.0 wks'},{label:'Health',value:'Strong'},{label:'Vs plan',value:'On plan'}],
+          expected_impact:{revenue:0,revenue_label:'Revenue impact',margin_pts:0},confidence:71}},
+      {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1pt', confidence:66,
+        reasoning:{why:'Two Footwear lines will stock out within 4 weeks given current lead times. Reviewing supplier cadence now prevents £12k of lost sales.',
+          data_points:[{label:'Reorder alerts',value:'2'},{label:'Weeks of cover',value:'4.0 wks'},{label:'Footwear avg ST',value:'58%'},{label:'Revenue at risk',value:'£12k'}],
+          expected_impact:{revenue:12000,revenue_label:'Revenue protected',margin_pts:0.1},confidence:66}}
     ],
     simulator:{
       base_revenue:f.revenue, base_margin:f.margin, base_health:f.health_score, base_stock:f.stock_value||0,
@@ -3260,7 +3293,7 @@ function renderCommandCentre(d){
   if(!d || !d.actions){ document.getElementById('cc-wrap').innerHTML='<div class="ws-empty"><div class="ic">🧭</div><div class="t">No dataset selected</div><div>Open a file to see your next best actions.</div></div>'; return; }
   const hc = healthColor(d.health_score), hcl = healthClass(d.health_score);
   const ci = d.commercial_impact||{};
-  const actions = (d.actions||[]).map(a=>`
+  const actions = (d.actions||[]).map((a,i)=>`
     <div class="cc-action">
       <div class="ca-n">${a.rank}</div>
       <div>
@@ -3270,6 +3303,7 @@ function renderCommandCentre(d){
           <div class="ca-m"><span class="lbl">Revenue impact</span><span style="color:${a.rev_impact>=0?'#2E8B57':'#E05A4A'}">${a.rev_impact>0?'+':''}${fmtCurr(a.rev_impact)}</span></div>
           <div class="ca-m"><span class="lbl">Margin impact</span><span style="color:var(--text)">${escapeHtml(a.margin_impact)}</span></div>
         </div>
+        ${renderActionReasoning(a, i)}
       </div>
       <div class="cc-conf"><div class="cf-ring" style="color:${a.confidence>=80?'#2E8B57':a.confidence>=65?'#C77A38':'#E05A4A'}">${a.confidence}%</div><div class="cf-l">Confidence</div></div>
     </div>`).join('');
@@ -3314,6 +3348,41 @@ function renderCommandCentre(d){
     ${renderMemory(d.memory)}
   `;
   renderSimulator(d.simulator);
+}
+
+// ── AI Recommendation Reasoning ("Why Aeroa recommends this") ──
+function renderActionReasoning(a, i){
+  const r = a && a.reasoning;
+  if(!r) return '';
+  const chips = (r.data_points||[]).map(p=>`
+    <div class="ar-chip"><span class="ar-chip-l">${escapeHtml(p.label)}</span><span class="ar-chip-v">${escapeHtml(String(p.value))}</span></div>`).join('');
+  const imp = r.expected_impact||{};
+  const rev = imp.revenue||0;
+  const mp  = imp.margin_pts;
+  const mpTxt = (typeof mp==='number') ? (mp>=0?'+':'')+mp.toFixed(1)+'pt' : (mp||'—');
+  const id = 'ar-'+i;
+  return `
+    <button class="ar-toggle" onclick="toggleReasoning('${id}', this)" aria-expanded="false">
+      <span class="ar-spark">✦</span> Why Aeroa recommends this <span class="ar-caret">▾</span>
+    </button>
+    <div class="ar-body" id="${id}" hidden>
+      <div class="ar-why">${escapeHtml(r.why||'')}</div>
+      <div class="ar-sec-l">Data behind the decision</div>
+      <div class="ar-chips">${chips||'<span class="ar-empty">—</span>'}</div>
+      <div class="ar-sec-l">Expected commercial impact</div>
+      <div class="ar-impact">
+        <div class="ar-imp"><div class="v" style="color:${rev>=0?'#2E8B57':'#E05A4A'}">${rev>0?'+':''}${fmtCurr(rev)}</div><div class="l">${escapeHtml(imp.revenue_label||'Revenue impact')}</div></div>
+        <div class="ar-imp"><div class="v">${escapeHtml(mpTxt)}</div><div class="l">Margin impact</div></div>
+        <div class="ar-imp"><div class="v" style="color:${r.confidence>=80?'#2E8B57':r.confidence>=65?'#C77A38':'#E05A4A'}">${r.confidence}%</div><div class="l">Confidence</div></div>
+      </div>
+    </div>`;
+}
+function toggleReasoning(id, btn){
+  const el=document.getElementById(id); if(!el) return;
+  const open = el.hasAttribute('hidden');
+  if(open){ el.removeAttribute('hidden'); } else { el.setAttribute('hidden',''); }
+  btn.setAttribute('aria-expanded', open?'true':'false');
+  btn.classList.toggle('open', open);
 }
 
 // ── Decision Simulator ────────────────────────────────────────
