@@ -188,6 +188,31 @@ class SecureFilePipeline:
 
     # ── Stage 5: CSV injection ─────────────────────────────────────────────────
 
+    @staticmethod
+    def _is_numeric_cell(cell: str) -> bool:
+        """
+        True when a cell is a plain (possibly signed) number rather than a formula.
+
+        Retail/trading data is full of legitimate negative and signed values —
+        week-over-week deltas, variance-to-plan, markdown depth, '-20%' discounts,
+        '(1,200)' accounting negatives, '£-1,200.50'. A leading '-' or '+' on such
+        a value is DATA, not formula injection. We strip common numeric adornments
+        (currency symbols, thousands separators, percent, accounting parentheses)
+        and test whether what remains parses as a number.
+        """
+        c = cell.strip().strip('"').strip("'").strip()
+        if not c:
+            return False
+        for sym in ("£", "$", "€", "%", ",", " ", "(", ")"):
+            c = c.replace(sym, "")
+        if c in ("", "+", "-", "."):
+            return False
+        try:
+            float(c)
+            return True
+        except ValueError:
+            return False
+
     def _stage_csv_injection(self, data: bytes, filename: str, ext: str) -> ValidationResult:
         """Detect formula injection in CSV/TSV files."""
         if ext not in ("csv", "tsv", "txt"):
@@ -202,9 +227,17 @@ class SecureFilePipeline:
                 cells = line.split("\t" if ext == "tsv" else ",")
                 for cell in cells:
                     cell = cell.strip().strip('"').strip("'")
+                    if not cell:
+                        continue
                     for prefix in CSV_INJECTION_PREFIXES:
                         if cell.startswith(prefix):
+                            # Signed numbers (-20, +15.5, -1,200.00, -20%) are
+                            # legitimate data, not a formula. Only '=' and '@'
+                            # (and non-numeric +/- payloads) are real injection.
+                            if prefix in ("+", "-") and self._is_numeric_cell(cell):
+                                break
                             injection_count += 1
+                            break
 
             # Tolerate a few formula cells (legitimate data may start with -)
             # but flag if more than 5% of sampled cells look malicious
