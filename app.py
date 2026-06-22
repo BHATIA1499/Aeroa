@@ -778,6 +778,115 @@ def _action_reasoning(a, ctx):
             "confidence": a.get("confidence", 70), "why": why}
 
 
+def _category_health(cat: dict) -> int:
+    """Numeric 0-100 health score for a single category (ST + margin)."""
+    st = float(cat.get("avg_sell_through") or 0)
+    mg = float(cat.get("avg_margin_pct") or 0)
+    if not st and not mg:
+        return 0
+    score = (min(st, 100) / 100) * 55 + (min(mg, 60) / 60) * 45
+    return int(round(max(0, min(100, score))))
+
+
+def _category_cards(analysis) -> list:
+    """Compact category performance cards for the Command Centre grid."""
+    cats = analysis.get("category_scorecard", []) or []
+    cards = []
+    for c in cats:
+        if not c or float(c.get("revenue") or 0) <= 0:
+            continue
+        cards.append({
+            "category":     c.get("category", "Other"),
+            "revenue":      c.get("revenue", 0),
+            "units":        c.get("units", 0),
+            "sku_count":    c.get("sku_count", 0),
+            "sell_through": c.get("avg_sell_through"),
+            "margin":       c.get("avg_margin_pct"),
+            "health":       _category_health(c),
+            "health_label": c.get("health", "—"),
+        })
+    cards.sort(key=lambda x: -(x.get("revenue") or 0))
+    return cards
+
+
+def _category_detail(analysis, category: str) -> dict:
+    """
+    Drill-down for one category: headline KPIs, top sellers, slow movers,
+    and recommended actions — all derived from the dataset.
+    """
+    cats = analysis.get("category_scorecard", []) or []
+    cat = next((c for c in cats if (c.get("category") or "").lower() == (category or "").lower()), None)
+    if not cat:
+        return {}
+
+    best = analysis.get("best_sellers", []) or []
+    members = [s for s in best if (s.get("category") or "").lower() == (category or "").lower()]
+
+    top_sellers = sorted(members, key=lambda x: -(x.get("revenue") or 0))[:5]
+    slow = [s for s in members if s.get("sell_through") is not None]
+    slow_movers = sorted(slow, key=lambda x: (x.get("sell_through") or 0))[:5]
+
+    def slim(s):
+        return {
+            "sku":          s.get("sku"),
+            "name":         s.get("name") or s.get("sku"),
+            "revenue":      s.get("revenue", 0),
+            "units":        s.get("units", 0),
+            "sell_through": s.get("sell_through"),
+            "margin_pct":   s.get("margin_pct"),
+            "stock":        s.get("stock"),
+        }
+
+    st  = cat.get("avg_sell_through")
+    mg  = cat.get("avg_margin_pct")
+    rev = cat.get("revenue", 0)
+    health_lbl = cat.get("health", "—")
+    cat_name = cat.get("category", category)
+
+    # Recommended actions for the category
+    actions = []
+    if st is not None and st < 30:
+        actions.append({
+            "type": "Markdown",
+            "text": f"Clear ageing {cat_name} stock — {st:.0f}% sell-through signals weak demand; a 20–30% markdown releases working capital.",
+        })
+    if st is not None and st >= 45:
+        actions.append({
+            "type": "Reorder",
+            "text": f"Lean into {cat_name} — {st:.0f}% sell-through is outpacing supply; increase buying depth before stockouts.",
+        })
+    if mg is not None and mg < 40:
+        actions.append({
+            "type": "Margin",
+            "text": f"Protect {cat_name} margin — at {mg:.0f}% it sits below the 40% benchmark; review cost prices and discount depth.",
+        })
+    if slow_movers and (slow_movers[0].get("sell_through") or 100) < 25:
+        sm = slow_movers[0]
+        actions.append({
+            "type": "Review",
+            "text": f"{sm.get('name') or sm.get('sku')} is the weakest line at {(sm.get('sell_through') or 0):.0f}% — consider markdown or delisting.",
+        })
+    if not actions:
+        actions.append({
+            "type": "Monitor",
+            "text": f"{cat_name} is trading in line with the range — monitor weekly and hold current strategy.",
+        })
+
+    return {
+        "category":     cat.get("category"),
+        "revenue":      rev,
+        "units":        cat.get("units", 0),
+        "sku_count":    cat.get("sku_count", 0),
+        "sell_through": st,
+        "margin":       mg,
+        "health":       _category_health(cat),
+        "health_label": health_lbl,
+        "top_sellers":  [slim(s) for s in top_sellers],
+        "slow_movers":  [slim(s) for s in slow_movers],
+        "actions":      actions,
+    }
+
+
 def _build_role_analysis(analysis):
     """Build extended role-based analysis data from base analysis."""
     k = analysis.get("kpis", {})
@@ -2217,6 +2326,7 @@ def workspace_command(user):
             "health_score":  health,
             "health_label":  ("Healthy" if health >= 80 else "Watch" if health >= 60 else "At Risk"),
             "health_breakdown": health_detail,
+            "categories":    _category_cards(analysis),
             "revenue":       kpis.get("total_revenue", 0),
             "margin":        kpis.get("avg_margin_pct", 0),
             "sell_through":  kpis.get("avg_sell_through", 0),
@@ -2241,6 +2351,27 @@ def workspace_command(user):
         })
     except Exception as e:
         app.logger.error(f"workspace_command error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/workspace/category")
+@require_auth
+def workspace_category(user):
+    """Category drill-down — overview KPIs, top sellers, slow movers, actions."""
+    try:
+        category  = request.args.get("category", "").strip()
+        if not category:
+            return jsonify({"error": "category is required"}), 400
+        upload_id = request.args.get("upload_id") or session.get("current_upload_id")
+        analysis, upload_id = _get_analysis_for_user(user, upload_id)
+        if not analysis or not analysis.get("kpis"):
+            return jsonify({"error": "No analysis available for this dataset"}), 404
+        detail = _category_detail(analysis, category)
+        if not detail:
+            return jsonify({"error": f"Category '{category}' not found"}), 404
+        return jsonify(detail)
+    except Exception as e:
+        app.logger.error(f"workspace_category error: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 

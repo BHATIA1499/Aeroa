@@ -791,6 +791,38 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .hb-strong-bg{background:#2E8B57}.hb-watch-bg{background:#C77A38}.hb-weak-bg{background:#E05A4A}
 .cc-score.clickable{cursor:pointer;transition:transform .15s}
 .cc-score.clickable:hover{transform:scale(1.04)}
+/* Category performance cards */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px;margin-top:4px}
+.cat-card{text-align:left;background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px}
+.cat-card:hover{border-color:var(--mint-d);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.1)}
+.cat-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cat-name{font-size:13.5px;font-weight:800;color:var(--text)}
+.cat-health{font-size:12px;font-weight:900;border:1px solid;border-radius:8px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.cat-rev{font-family:var(--serif);font-size:22px;font-weight:900;color:var(--text);line-height:1.1}
+.cat-meta{display:flex;gap:5px;font-size:11px;color:var(--text3);font-weight:600}
+.cat-go{font-size:11px;font-weight:800;color:var(--mint-d);margin-top:2px}
+/* Category modal */
+.cat-modal{width:min(620px,96vw)}
+.cat-loading,.cat-empty{padding:24px;text-align:center;color:var(--text3);font-size:13px}
+.cat-empty{padding:12px}
+.cat-hero{padding:18px 24px 6px}
+.cat-hero-name{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--text);margin-bottom:7px}
+.cat-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;padding:10px 24px 6px}
+@media(max-width:560px){.cat-kpis{grid-template-columns:repeat(2,1fr)}}
+.cat-kpi{background:var(--glass);border:1px solid var(--glass-border);border-radius:11px;padding:10px 8px;text-align:center}
+.cat-kpi .v{font-size:15px;font-weight:900;color:var(--text);font-variant-numeric:tabular-nums}
+.cat-kpi .l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-top:2px}
+.cat-sec-h{font-size:12px;font-weight:800;color:var(--text);padding:16px 24px 7px;letter-spacing:.01em}
+.cat-list{padding:0 24px;display:flex;flex-direction:column;gap:7px}
+.cat-sku{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:10px 13px}
+.cat-sku-name{font-size:12.5px;font-weight:700;color:var(--text)}
+.cat-sku-id{font-size:10px;color:var(--text3);margin-top:1px}
+.cat-sku-stat{text-align:right}
+.cat-sku-stat .v{font-size:13px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;display:block}
+.cat-sku-stat .l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+.cat-acts{padding:0 24px 24px;display:flex;flex-direction:column;gap:8px}
+.cat-act{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--text2);line-height:1.5}
+.cat-act-tag{flex-shrink:0;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--mint-d);background:rgba(91,107,181,.10);border:1px solid rgba(91,107,181,.22);border-radius:7px;padding:2px 8px;margin-top:1px}
 .ws-exp-card .ec-d{font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.4}
 .ws-exp-card .ec-fmt{display:inline-block;margin-top:6px;font-size:10px;font-weight:800;color:#5B6BB5;background:rgba(91,107,181,.1);border-radius:6px;padding:2px 7px;letter-spacing:.03em}
 </style>
@@ -1448,6 +1480,20 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
             <button class="ws-panel-close" onclick="closeHealthBreakdown()" aria-label="Close">×</button>
           </div>
           <div id="hb-body"></div>
+        </div>
+      </div>
+
+      <!-- Category drill-down modal -->
+      <div class="ws-export-overlay" id="cat-overlay" onclick="closeCategoryDetail()">
+        <div class="ws-export-modal cat-modal" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="cat-title">
+          <div class="ws-export-head">
+            <div>
+              <div class="ws-export-t" id="cat-title">🗂️ Category Overview</div>
+              <div class="ws-export-s">Top sellers, slow movers and recommended actions for this category.</div>
+            </div>
+            <button class="ws-panel-close" onclick="closeCategoryDetail()" aria-label="Close">×</button>
+          </div>
+          <div id="cat-body"></div>
         </div>
       </div>
     </div><!-- /workspace-view -->
@@ -2836,8 +2882,57 @@ function sampleApi(method, url, body){
     const f = SAMPLE_WS.files.find(x=>x.id===qs.get('upload_id')) || SAMPLE_WS.files.find(x=>x.id===SAMPLE_WS.current_upload_id);
     return Promise.resolve(buildSampleCommand(f));
   }
+  if (u==='/api/workspace/category'){
+    return Promise.resolve(buildSampleCategoryDetail(qs.get('category')));
+  }
   // mutations (rename/tag/archive/trash/switch) are no-ops in sample mode
   return Promise.resolve({ ok:true });
+}
+
+const SAMPLE_CATEGORIES = [
+  {category:'Dresses', revenue:250000, units:4200, sku_count:42, sell_through:72, margin:61, health:84, health_label:'STRONG',
+    top_sellers:[
+      {sku:'DR-118',name:'SS26 Linen Midi Dress',revenue:38000,units:620,sell_through:81,margin_pct:63,stock:140},
+      {sku:'DR-094',name:'Floral Wrap Dress',revenue:31000,units:540,sell_through:77,margin_pct:60,stock:180},
+      {sku:'DR-201',name:'Cotton Shirt Dress',revenue:27000,units:480,sell_through:74,margin_pct:62,stock:210}],
+    slow_movers:[
+      {sku:'DR-045',name:'Sequin Party Dress',revenue:6200,units:90,sell_through:34,margin_pct:55,stock:260},
+      {sku:'DR-077',name:'Velvet Maxi Dress',revenue:7100,units:110,sell_through:38,margin_pct:57,stock:240}],
+    actions:[{type:'Reorder',text:'Lean into Dresses — 72% sell-through is outpacing supply; increase buying depth before stockouts.'},
+             {type:'Review',text:'Sequin Party Dress is the weakest line at 34% — consider a tactical markdown to clear ageing stock.'}]},
+  {category:'Knitwear', revenue:165000, units:3100, sku_count:36, sell_through:69, margin:58, health:79, health_label:'STRONG',
+    top_sellers:[
+      {sku:'KN-061',name:'Merino Crew Jumper',revenue:24000,units:430,sell_through:76,margin_pct:60,stock:160},
+      {sku:'KN-088',name:'Cable Knit Cardigan',revenue:19500,units:360,sell_through:71,margin_pct:58,stock:190}],
+    slow_movers:[
+      {sku:'KN-022',name:'Chunky Roll Neck',revenue:5400,units:80,sell_through:41,margin_pct:54,stock:150}],
+    actions:[{type:'Reorder',text:'Lean into Knitwear — 69% sell-through and building momentum; secure replenishment early.'}]},
+  {category:'Footwear', revenue:128000, units:2400, sku_count:30, sell_through:58, margin:52, health:66, health_label:'HEALTHY',
+    top_sellers:[
+      {sku:'FW-140',name:'Leather Ankle Boot',revenue:21000,units:300,sell_through:64,margin_pct:54,stock:120}],
+    slow_movers:[
+      {sku:'FW-019',name:'Suede Loafer',revenue:4800,units:70,sell_through:39,margin_pct:48,stock:200}],
+    actions:[{type:'Monitor',text:'Footwear is trading healthily — monitor two reorder alerts to avoid stockouts in 4 weeks.'}]},
+  {category:'Outerwear', revenue:88000, units:1300, sku_count:24, sell_through:31, margin:49, health:42, health_label:'AT RISK',
+    top_sellers:[
+      {sku:'OW-203',name:'Wool Blend Coat',revenue:14000,units:180,sell_through:44,margin_pct:52,stock:160}],
+    slow_movers:[
+      {sku:'OW-077',name:'Padded Parka',revenue:5200,units:60,sell_through:19,margin_pct:45,stock:340},
+      {sku:'OW-112',name:'Trench Coat',revenue:6100,units:75,sell_through:23,margin_pct:47,stock:300}],
+    actions:[{type:'Markdown',text:'Clear ageing Outerwear — 31% sell-through signals weak demand; a 20–30% markdown releases ~£88k of trapped capital.'},
+             {type:'Review',text:'Padded Parka is the weakest line at 19% — consider markdown or delisting before season end.'}]},
+  {category:'Accessories', revenue:62000, units:2900, sku_count:28, sell_through:65, margin:67, health:78, health_label:'STRONG',
+    top_sellers:[
+      {sku:'AC-301',name:'Leather Crossbody Bag',revenue:12000,units:400,sell_through:73,margin_pct:69,stock:220}],
+    slow_movers:[
+      {sku:'AC-044',name:'Wide Brim Hat',revenue:3100,units:120,sell_through:42,margin_pct:62,stock:180}],
+    actions:[{type:'Margin',text:'Accessories carry the strongest margin at 67% — protect pricing and feature hero lines to grow share.'}]}
+];
+function buildSampleCategoryDetail(name){
+  const c = SAMPLE_CATEGORIES.find(x=>x.category.toLowerCase()===(name||'').toLowerCase());
+  if(!c) return {error:'Category not found'};
+  return {category:c.category,revenue:c.revenue,units:c.units,sku_count:c.sku_count,sell_through:c.sell_through,
+    margin:c.margin,health:c.health,health_label:c.health_label,top_sellers:c.top_sellers,slow_movers:c.slow_movers,actions:c.actions};
 }
 
 function buildSampleCommand(f){
@@ -2847,6 +2942,7 @@ function buildSampleCommand(f){
     upload_id:f.id, dataset_label:f.display_name, dataset_date:f.upload_date,
     health_score:hb.total, health_label:hb.label,
     health_breakdown:hb,
+    categories:SAMPLE_CATEGORIES.map(c=>({category:c.category,revenue:c.revenue,units:c.units,sku_count:c.sku_count,sell_through:c.sell_through,margin:c.margin,health:c.health,health_label:c.health_label})),
     revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
     exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
     actions:[
@@ -3326,6 +3422,8 @@ function renderCommandCentre(d){
       ${actions}
     </div>
 
+    ${renderCategoryPerformance(d.categories)}
+
     <div class="cc-grid2">
       <div class="cc-bigcard opp"><div class="cc-card-h" style="color:#2E8B57">📈 Biggest Opportunity</div><div class="bc-t">${escapeHtml(op.t||'—')}</div><div class="bc-s">${escapeHtml(op.s||'')}</div>${op.impact?`<span class="bc-impact">${escapeHtml(op.impact)}</span>`:''}</div>
       <div class="cc-bigcard risk"><div class="cc-card-h" style="color:#E05A4A">⚠️ Biggest Risk</div><div class="bc-t">${escapeHtml(rk.t||'—')}</div><div class="bc-s">${escapeHtml(rk.s||'')}</div>${rk.impact?`<span class="bc-impact">${escapeHtml(rk.impact)}</span>`:''}</div>
@@ -3383,6 +3481,78 @@ function toggleReasoning(id, btn){
   if(open){ el.removeAttribute('hidden'); } else { el.setAttribute('hidden',''); }
   btn.setAttribute('aria-expanded', open?'true':'false');
   btn.classList.toggle('open', open);
+}
+
+// ── Category Performance + Drill-Down ─────────────────────────
+function renderCategoryPerformance(cats){
+  if(!cats || !cats.length) return '';
+  const cards = cats.map(c=>{
+    const hc = healthColor(c.health);
+    const st = (c.sell_through!=null) ? Math.round(c.sell_through)+'%' : '—';
+    return `
+      <button class="cat-card" onclick="openCategoryDetail('${escapeHtml(c.category).replace(/'/g,"\\'")}')">
+        <div class="cat-card-top">
+          <span class="cat-name">${escapeHtml(c.category)}</span>
+          <span class="cat-health" style="color:${hc};border-color:${hc}33;background:${hc}14">${c.health}</span>
+        </div>
+        <div class="cat-rev">${fmtCurr(c.revenue)}</div>
+        <div class="cat-meta"><span>ST ${st}</span><span>·</span><span>${c.sku_count||0} SKUs</span></div>
+        <div class="cat-go">View category →</div>
+      </button>`;
+  }).join('');
+  return `
+    <div class="cc-card">
+      <div class="cc-card-h">🗂️ Category Performance <span style="font-weight:600;color:var(--text3);font-size:12px">— click any category to drill in</span></div>
+      <div class="cat-grid">${cards}</div>
+    </div>`;
+}
+async function openCategoryDetail(category){
+  const ov = document.getElementById('cat-overlay');
+  document.getElementById('cat-body').innerHTML = '<div class="cat-loading">Loading '+escapeHtml(category)+'…</div>';
+  ov.classList.add('open');
+  try{
+    const id = currentUploadId || (sampleMode?SAMPLE_WS.current_upload_id:null);
+    const d = await wsApi('GET','/api/workspace/category?category='+encodeURIComponent(category)+(id?('&upload_id='+id):''));
+    if(!d || d.error){ document.getElementById('cat-body').innerHTML='<div class="cat-loading">'+escapeHtml((d&&d.error)||'Category not found')+'</div>'; return; }
+    renderCategoryBody(d);
+  }catch(e){
+    document.getElementById('cat-body').innerHTML='<div class="cat-loading">Couldn’t load this category.</div>';
+  }
+}
+function closeCategoryDetail(){ document.getElementById('cat-overlay').classList.remove('open'); }
+function renderCategoryBody(d){
+  const hc = healthColor(d.health);
+  const pct = v => (v!=null)? (Number(v).toFixed(1)+'%') : '—';
+  const skuRow = s => `
+    <div class="cat-sku">
+      <div class="cat-sku-main"><div class="cat-sku-name">${escapeHtml(s.name||s.sku||'—')}</div><div class="cat-sku-id">${escapeHtml(s.sku||'')}</div></div>
+      <div class="cat-sku-stat"><span class="v">${fmtCurr(s.revenue||0)}</span><span class="l">Revenue</span></div>
+      <div class="cat-sku-stat"><span class="v">${s.sell_through!=null?Math.round(s.sell_through)+'%':'—'}</span><span class="l">Sell-through</span></div>
+    </div>`;
+  const tops = (d.top_sellers||[]).map(skuRow).join('') || '<div class="cat-empty">No SKU detail available.</div>';
+  const slow = (d.slow_movers||[]).map(skuRow).join('') || '<div class="cat-empty">No slow movers — strong range.</div>';
+  const acts = (d.actions||[]).map(a=>`
+    <div class="cat-act"><span class="cat-act-tag">${escapeHtml(a.type||'Action')}</span><span>${escapeHtml(a.text||'')}</span></div>`).join('');
+  document.getElementById('cat-body').innerHTML = `
+    <div class="cat-hero">
+      <div>
+        <div class="cat-hero-name">${escapeHtml(d.category)}</div>
+        <span class="cat-health" style="color:${hc};border-color:${hc}33;background:${hc}14">${escapeHtml(d.health_label||'')} · ${d.health}/100</span>
+      </div>
+    </div>
+    <div class="cat-kpis">
+      <div class="cat-kpi"><div class="v">${fmtCurr(d.revenue||0)}</div><div class="l">Revenue</div></div>
+      <div class="cat-kpi"><div class="v">${pct(d.margin)}</div><div class="l">Margin</div></div>
+      <div class="cat-kpi"><div class="v">${pct(d.sell_through)}</div><div class="l">Sell-through</div></div>
+      <div class="cat-kpi"><div class="v">${(d.units||0).toLocaleString()}</div><div class="l">Units</div></div>
+      <div class="cat-kpi"><div class="v">${d.sku_count||0}</div><div class="l">SKUs</div></div>
+    </div>
+    <div class="cat-sec-h">⭐ Top Sellers</div>
+    <div class="cat-list">${tops}</div>
+    <div class="cat-sec-h">🐌 Slow Movers</div>
+    <div class="cat-list">${slow}</div>
+    <div class="cat-sec-h">✅ Recommended Actions</div>
+    <div class="cat-acts">${acts}</div>`;
 }
 
 // ── Decision Simulator ────────────────────────────────────────
