@@ -2995,14 +2995,14 @@ function buildSampleTradingMeeting(f,hb){
     header:{title:'Monday Trading Review', dataset:f.display_name, period:'Wk 24 – Wk 25', generated:today},
     overview:[
       {label:'Revenue', value:fmtCurr(f.revenue), delta:'+6.2%', trend:'up', sub:'vs last week'},
-      {label:'Margin', value:(f.margin||0)+'%', delta:'+1.0pts', trend:'up', sub:'blended margin'},
-      {label:'Sell-Through', value:(f.sell_through||0)+'%', delta:'+3.0pts', trend:'up', sub:'WoW'},
+      {label:'Margin', value:(f.margin||0)+'%', delta:'+1.0%', trend:'up', sub:'blended margin'},
+      {label:'Sell-Through', value:(f.sell_through||0)+'%', delta:'+3.0%', trend:'up', sub:'WoW'},
       {label:'Health Score', value:hb.total+'/100', delta:'+4 pts', trend:'up', sub:hb.label}
     ],
     exec_summary:'Trading is ahead of plan this week, led by Dresses and Knitwear where sell-through is outpacing supply — the SS26 Linen reorder should be locked before Friday’s cutoff. Margin held at 58% despite a growing markdown dependency in Outerwear, which is now the clearest drag on the range at 31% sell-through and £88k of trapped stock. Cover is healthy at six weeks overall, but two Footwear lines are trending toward stockout. Net: protect the winners, act decisively on Outerwear, and the week’s upside outweighs the risk.',
     changes:[
       {title:'Revenue Movement', value:'+6.2%', trend:'up', driver:'Driven by Dresses (£250k) and Knitwear momentum'},
-      {title:'Margin Movement', value:'+1.0pts', trend:'up', driver:'Held despite rising markdown dependency in Outerwear'},
+      {title:'Margin Movement', value:'+1.0%', trend:'up', driver:'Held despite rising markdown dependency in Outerwear'},
       {title:'Stock Position', value:'2 categories flagged', trend:'down', driver:'Outerwear overstocked at 31% ST; Footwear stockout risk in 4 wks'}
     ],
     questions:['Why are we behind target?','Which categories need action?','Where are we losing margin?','Which products should we reorder?','Which products should we markdown?']
@@ -3021,23 +3021,23 @@ function buildSampleCommand(f){
     revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
     exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
     actions:[
-      {rank:1, action:'Reorder SS26 Linen Dress range', reason:'78% sell-through with 3 weeks cover left — supplier cutoff Friday.', rev_impact:62000, margin_impact:'+0.4pt', confidence:92,
+      {rank:1, action:'Reorder SS26 Linen Dress range', reason:'78% sell-through with 3 weeks cover left — supplier cutoff Friday.', rev_impact:62000, margin_impact:'+0.4%', confidence:92,
         reasoning:{why:'SS26 Linen Dresses are selling at 78% — well above the 64% range average — with only 3 weeks of cover. Reordering before Friday’s supplier cutoff protects £62k of in-demand revenue.',
           data_points:[{label:'Sell-through',value:'78%'},{label:'Dresses avg ST',value:'72%'},{label:'Weeks of cover',value:'3.0 wks'},{label:'Revenue at risk',value:'£62k'}],
           expected_impact:{revenue:62000,revenue_label:'Revenue protected',margin_pts:0.4},confidence:92}},
-      {rank:2, action:'Trigger 20% markdown on ageing Outerwear', reason:'Sell-through stuck at 31% vs 55% plan; clear before the markdown window closes.', rev_impact:34000, margin_impact:'-1.2pt', confidence:84,
+      {rank:2, action:'Trigger 20% markdown on ageing Outerwear', reason:'Sell-through stuck at 31% vs 55% plan; clear before the markdown window closes.', rev_impact:34000, margin_impact:'-1.2%', confidence:84,
         reasoning:{why:'Outerwear is stuck at 31% sell-through versus a 55% plan, with £88k of stock tied up. A 20% markdown now recovers cash before the clearance window narrows.',
           data_points:[{label:'Sell-through',value:'31%'},{label:'Plan ST',value:'55%'},{label:'Stock value tied up',value:'£88k'},{label:'Recommended depth',value:'20%'}],
           expected_impact:{revenue:34000,revenue_label:'Cash recovered',margin_pts:-1.2},confidence:84}},
-      {rank:3, action:'Feature Knitwear best-sellers in Thursday email', reason:'Category momentum building — capture full-price demand while it lasts.', rev_impact:18000, margin_impact:'+0.2pt', confidence:78,
+      {rank:3, action:'Feature Knitwear best-sellers in Thursday email', reason:'Category momentum building — capture full-price demand while it lasts.', rev_impact:18000, margin_impact:'+0.2%', confidence:78,
         reasoning:{why:'Knitwear sell-through has climbed to 74% and is outpacing supply. Featuring the hero lines drives full-price demand before stock thins.',
-          data_points:[{label:'Sell-through',value:'74%'},{label:'Knitwear avg ST',value:'69%'},{label:'Momentum',value:'+5pts WoW'},{label:'Full-price share',value:'High'}],
+          data_points:[{label:'Sell-through',value:'74%'},{label:'Knitwear avg ST',value:'69%'},{label:'Momentum',value:'+5% WoW'},{label:'Full-price share',value:'High'}],
           expected_impact:{revenue:18000,revenue_label:'Revenue uplift',margin_pts:0.2},confidence:78}},
-      {rank:4, action:'Hold Dresses intake at current depth', reason:'Performing to plan; no action needed beyond the linen reorder.', rev_impact:0, margin_impact:'0pt', confidence:71,
+      {rank:4, action:'Hold Dresses intake at current depth', reason:'Performing to plan; no action needed beyond the linen reorder.', rev_impact:0, margin_impact:'0%', confidence:71,
         reasoning:{why:'Dresses are tracking to plan at 72% sell-through and 6 weeks of cover — the ideal band. No intake change needed beyond the linen reorder.',
           data_points:[{label:'Sell-through',value:'72%'},{label:'Weeks of cover',value:'6.0 wks'},{label:'Health',value:'Strong'},{label:'Vs plan',value:'On plan'}],
           expected_impact:{revenue:0,revenue_label:'Revenue impact',margin_pts:0},confidence:71}},
-      {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1pt', confidence:66,
+      {rank:5, action:'Review Footwear supplier lead times', reason:'Two reorder alerts at risk of stocking out in 4 weeks.', rev_impact:12000, margin_impact:'+0.1%', confidence:66,
         reasoning:{why:'Two Footwear lines will stock out within 4 weeks given current lead times. Reviewing supplier cadence now prevents £12k of lost sales.',
           data_points:[{label:'Reorder alerts',value:'2'},{label:'Weeks of cover',value:'4.0 wks'},{label:'Footwear avg ST',value:'58%'},{label:'Revenue at risk',value:'£12k'}],
           expected_impact:{revenue:12000,revenue_label:'Revenue protected',margin_pts:0.1},confidence:66}}
@@ -3053,7 +3053,7 @@ function buildSampleCommand(f){
     },
     commercial_impact:{ revenue_at_stake:88000, margin_protect:34000, total_upside:92000 },
     memory:{
-      improved:['Revenue +6.2% (£793k → £843k)','Sell-through +3pts to 64%','Business Health 78 → 82'],
+      improved:['Revenue +6.2% (£793k → £843k)','Sell-through +3% to 64%','Business Health 78 → 82'],
       declined:['Outerwear revenue share fell 18% → 13%'],
       new_risks:['Outerwear overstock — £88k now exposed at 31% sell-through'],
       resolved_risks:['Knitwear slow-start risk from Wk22 has cleared (74% ST)'],
@@ -3104,7 +3104,7 @@ function buildSampleCompare(a,b){
     ],
     commentary:[
       {text:`Revenue ${b.revenue>=a.revenue?'grew':'fell'} from ${fmtCurr(a.revenue)} to ${fmtCurr(b.revenue)} (${b.revenue>=a.revenue?'+':''}${(((b.revenue-a.revenue)/(a.revenue||1))*100).toFixed(1)}%).`,tone:b.revenue>=a.revenue?'good':'bad'},
-      {text:`Margin moved ${b.margin>=a.margin?'up':'down'} ${Math.abs(b.margin-a.margin).toFixed(1)}pts to ${b.margin}% — ${b.margin>=a.margin?'healthy mix shift toward full-price.':'monitor markdown depth.'}`,tone:b.margin>=a.margin?'good':'warn'},
+      {text:`Margin moved ${b.margin>=a.margin?'up':'down'} from ${a.margin}% to ${b.margin}% — ${b.margin>=a.margin?'healthy mix shift toward full-price.':'monitor markdown depth.'}`,tone:b.margin>=a.margin?'good':'warn'},
       {text:`Dresses and Knitwear strengthened sell-through, while Outerwear weakened — rebalance intake toward the winning categories.`,tone:'warn'},
       {text:`Business Health ${b.health_score>=a.health_score?'improved':'declined'} from ${a.health_score} to ${b.health_score}.`,tone:b.health_score>=a.health_score?'good':'bad'}
     ]
@@ -3605,7 +3605,7 @@ function renderActionReasoning(a, i){
   const imp = r.expected_impact||{};
   const rev = imp.revenue||0;
   const mp  = imp.margin_pts;
-  const mpTxt = (typeof mp==='number') ? (mp>=0?'+':'')+mp.toFixed(1)+'pt' : (mp||'—');
+  const mpTxt = (typeof mp==='number') ? (mp>=0?'+':'')+mp.toFixed(1)+'%' : (mp||'—');
   const id = 'ar-'+i;
   return `
     <button class="ar-toggle" onclick="toggleReasoning('${id}', this)" aria-expanded="false">
@@ -3825,7 +3825,10 @@ function doExport(ep, label){
   if(sampleMode){ showUploadToast('info','Sample mode','“'+label+'” export is available once you upload your own data.',5000); closeExportCentre(); return; }
   showUploadToast('loading','Preparing export…','Building “'+label+'” — this can take a moment.',4000);
   closeExportCentre();
-  if(ep==='pptx'){ window.open('/api/report/pptx'+(exportTargetId?('?upload_id='+exportTargetId):''),'_blank'); }
+  const q = exportTargetId ? ('?upload_id='+exportTargetId) : '';
+  if(ep==='pptx'){ window.open('/api/report/pptx'+q,'_blank'); }
+  else if(ep==='pdf'){ window.open('/api/report/pdf'+q,'_blank'); }
+  else if(ep==='xlsx'){ window.open('/api/report/xlsx'+q,'_blank'); }
   else { showUploadToast('info','Coming online','“'+label+'” ('+ep.toUpperCase()+') is being generated for your account.',5000); }
 }
 function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

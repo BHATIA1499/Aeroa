@@ -832,12 +832,40 @@ def _category_detail(analysis, category: str) -> dict:
     if not cat:
         return {}
 
+    clow = (category or "").lower()
     best = analysis.get("best_sellers", []) or []
-    members = [s for s in best if (s.get("category") or "").lower() == (category or "").lower()]
+    md   = analysis.get("markdown_risk", []) or []
+    members = [s for s in best if (s.get("category") or "").lower() == clow]
 
+    # Top sellers: highest-revenue lines in this category.
     top_sellers = sorted(members, key=lambda x: -(x.get("revenue") or 0))[:5]
-    slow = [s for s in members if s.get("sell_through") is not None]
-    slow_movers = sorted(slow, key=lambda x: (x.get("sell_through") or 0))[:5]
+    top_skus = {t.get("sku") for t in top_sellers}
+
+    # Look-up so we can enrich markdown rows with units / margin / stock
+    # that live on the best-seller records.
+    best_by_sku = {s.get("sku"): s for s in best}
+
+    # Slow movers: genuinely low sell-through lines (the markdown-risk list is the
+    # canonical "slow" set, st < 30). A SKU already shown as a top seller is NEVER
+    # repeated here — top sellers rank on revenue, slow movers on demand velocity,
+    # so the same SKU must not appear in both lists.
+    md_members = [s for s in md if (s.get("category") or "").lower() == clow
+                  and s.get("sku") not in top_skus]
+    if md_members:
+        # Merge in best-seller fields where available so the card shows full data.
+        slow_src = []
+        for s in md_members:
+            base = dict(best_by_sku.get(s.get("sku"), {}))
+            base.update({kk: vv for kk, vv in s.items() if vv is not None})
+            slow_src.append(base)
+    else:
+        # Fallback: lowest sell-through members not already listed as top sellers.
+        slow_src = [s for s in members
+                    if s.get("sku") not in top_skus and s.get("sell_through") is not None]
+    slow_movers = sorted(
+        slow_src,
+        key=lambda x: (x.get("sell_through") if x.get("sell_through") is not None else 999)
+    )[:5]
 
     def slim(s):
         return {
@@ -934,25 +962,32 @@ def _trading_meeting(analysis, role, kpis, health, health_detail, label, prev_me
     rev_delta = mg_delta = st_delta = health_delta = None
     if prev_metrics:
         rev_delta    = pct_delta(rev, prev_metrics.get("revenue"))
-        mg_delta     = mg - prev_metrics.get("margin", mg)
-        st_delta     = st - prev_metrics.get("sell_through", st)
+        # Only show a margin / sell-through movement when there is a real prior
+        # baseline (>0). A missing or zero previous value would otherwise produce a
+        # misleading swing like "+46.2% to 0%".
+        _mg_prev = prev_metrics.get("margin")
+        _st_prev = prev_metrics.get("sell_through")
+        mg_delta     = (mg - _mg_prev) if _mg_prev else None
+        st_delta     = (st - _st_prev) if _st_prev else None
         health_delta = health - prev_metrics.get("health", health)
 
-    def fmt_pct(v, pts=False):
+    def fmt_pct(v):
+        # Percentage metrics (revenue %, margin, sell-through) are always shown with
+        # a "%" suffix so units stay consistent across the whole app — never "pts".
         if v is None:
             return None
-        return f"{'+' if v >= 0 else ''}{v:.1f}{'pts' if pts else '%'}"
+        return f"{'+' if v >= 0 else ''}{v:.1f}%"
 
     overview = [
         {"label": "Revenue",      "value": _gbp(rev),
          "delta": fmt_pct(rev_delta), "trend": ("up" if (rev_delta or 0) >= 0 else "down") if rev_delta is not None else "flat",
          "sub": "vs last week" if rev_delta is not None else "this period"},
         {"label": "Margin",       "value": (f"{mg:.1f}%" if margin_ok else "Insufficient data"),
-         "delta": fmt_pct(mg_delta, pts=True) if margin_ok else None,
+         "delta": fmt_pct(mg_delta) if margin_ok else None,
          "trend": ("up" if (mg_delta or 0) >= 0 else "down") if (mg_delta is not None and margin_ok) else "flat",
          "sub": "blended margin"},
         {"label": "Sell-Through", "value": f"{st:.0f}%",
-         "delta": fmt_pct(st_delta, pts=True), "trend": ("up" if (st_delta or 0) >= 0 else "down") if st_delta is not None else "flat",
+         "delta": fmt_pct(st_delta), "trend": ("up" if (st_delta or 0) >= 0 else "down") if st_delta is not None else "flat",
          "sub": "WoW" if st_delta is not None else "range average"},
         {"label": "Health Score", "value": f"{health}/100",
          "delta": (f"{'+' if (health_delta or 0) >= 0 else ''}{int(health_delta)} pts" if health_delta is not None else None),
@@ -974,7 +1009,7 @@ def _trading_meeting(analysis, role, kpis, health, health_detail, label, prev_me
                     else "Stable pricing across the range")
         changes.append({
             "title": "Margin Movement",
-            "value": fmt_pct(mg_delta, pts=True) if mg_delta is not None else f"{mg:.1f}%",
+            "value": fmt_pct(mg_delta) if mg_delta is not None else f"{mg:.1f}%",
             "trend": ("up" if (mg_delta or 0) >= 0 else "down") if mg_delta is not None else "flat",
             "driver": md_cause,
         })
@@ -2261,10 +2296,14 @@ def workspace_compare(user):
                 "tone": "good" if rev["diff"] >= 0 else "bad",
             })
         mgd = deltas.get("margin", {})
-        if mgd:
+        # Only comment on margin when BOTH datasets actually carry margin data —
+        # otherwise a missing column reads as a false "collapse to 0%".
+        _ma_av = bool((a.get("kpis") or {}).get("margin_available", ma.get("margin")))
+        _mb_av = bool((b.get("kpis") or {}).get("margin_available", mb.get("margin")))
+        if mgd and _ma_av and _mb_av:
             commentary.append({
-                "text": f"Margin moved {'up' if mgd['diff'] >= 0 else 'down'} "
-                        f"{abs(mgd['diff']):.1f}pts to {mb['margin']:.0f}% — "
+                "text": f"Margin moved {'up' if mgd['diff'] >= 0 else 'down'} from "
+                        f"{ma['margin']:.0f}% to {mb['margin']:.0f}% — "
                         + ("healthy full-price mix." if mgd["diff"] >= 0 else "watch markdown depth."),
                 "tone": "good" if mgd["diff"] >= 0 else "warn",
             })
@@ -2383,7 +2422,7 @@ def workspace_command(user):
                 "action":        f"{a.get('type','Action')} — {a.get('sku','')}".strip(" —"),
                 "reason":        a.get("description", ""),
                 "rev_impact":    a.get("revenue_impact", 0),
-                "margin_impact": f"{mi:+.1f}pt" if isinstance(mi, (int, float)) else str(mi),
+                "margin_impact": f"{mi:+.1f}%" if isinstance(mi, (int, float)) else str(mi),
                 "confidence":    a.get("confidence", 70),
                 "reasoning":     a.get("reasoning"),
             })
@@ -3826,6 +3865,262 @@ def _build_pptx(report, analysis):
     return buf
 
 
+def _build_xlsx(report, analysis):
+    """Generate a multi-sheet Excel workbook of the analysed data using openpyxl."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+    from datetime import date
+    import io as _io
+
+    k     = analysis.get("kpis", {}) or {}
+    cats  = analysis.get("category_scorecard", []) or []
+    best  = analysis.get("best_sellers", []) or []
+    reord = analysis.get("reorder_alerts", []) or []
+    mark  = analysis.get("markdown_risk", []) or []
+
+    HEAD_FILL = PatternFill("solid", fgColor="1F2A44")
+    HEAD_FONT = Font(bold=True, color="FFFFFF", size=11)
+    TITLE_FONT = Font(bold=True, size=14, color="1F2A44")
+    thin = Side(style="thin", color="D9DEE7")
+    BORDER = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    wb = Workbook()
+
+    def style_header(ws, row, ncols):
+        for c in range(1, ncols + 1):
+            cell = ws.cell(row=row, column=c)
+            cell.fill = HEAD_FILL
+            cell.font = HEAD_FONT
+            cell.alignment = Alignment(horizontal="left", vertical="center")
+            cell.border = BORDER
+
+    def autosize(ws, widths):
+        for i, w in enumerate(widths, start=1):
+            ws.column_dimensions[get_column_letter(i)].width = w
+
+    def write_table(ws, start_row, headers, rows, keys, fmts=None):
+        for j, h in enumerate(headers, start=1):
+            ws.cell(row=start_row, column=j, value=h)
+        style_header(ws, start_row, len(headers))
+        r = start_row + 1
+        for item in rows:
+            for j, key in enumerate(keys, start=1):
+                val = item.get(key)
+                if fmts and key in fmts and isinstance(val, (int, float)):
+                    val = fmts[key](val)
+                ws.cell(row=r, column=j, value=val).border = BORDER
+            r += 1
+        return r
+
+    # ── Sheet 1: Summary / KPIs ──
+    ws = wb.active
+    ws.title = "Summary"
+    ws["A1"] = "Aeroa — Trading Analysis Summary"
+    ws["A1"].font = TITLE_FONT
+    ws["A2"] = f"Generated {date.today().strftime('%d %B %Y')}"
+    ws["A2"].font = Font(italic=True, color="55606E")
+
+    kpi_rows = [
+        ("Total Revenue",        f"£{k.get('total_revenue',0):,.0f}"),
+        ("Total Units",          f"{k.get('total_units',0):,.0f}"),
+        ("Gross Profit",         f"£{k.get('gross_profit',0):,.0f}"),
+        ("Average Sell-Through", f"{k.get('avg_sell_through',0):.1f}%"),
+        ("Average Margin",       f"{k.get('avg_margin_pct',0):.1f}%"
+                                 if k.get('margin_available', True) else "Insufficient data"),
+        ("Blended Gross Margin", f"{k.get('gross_margin_pct',0):.1f}%"
+                                 if k.get('margin_available', True) else "Insufficient data"),
+        ("Average Stock Cover",  f"{k.get('avg_cover_weeks',0):.1f} weeks"),
+        ("Reorder Alerts",       k.get('reorder_count', 0)),
+        ("Markdown Risk SKUs",   k.get('markdown_risk_count', 0)),
+        ("Critical Stockouts",   k.get('critical_oos_count', 0)),
+    ]
+    ws.cell(row=4, column=1, value="Metric")
+    ws.cell(row=4, column=2, value="Value")
+    style_header(ws, 4, 2)
+    for i, (name, val) in enumerate(kpi_rows, start=5):
+        ws.cell(row=i, column=1, value=name).border = BORDER
+        ws.cell(row=i, column=2, value=val).border = BORDER
+    autosize(ws, [26, 22])
+
+    # ── Sheet 2: Categories ──
+    if cats:
+        ws = wb.create_sheet("Categories")
+        write_table(ws, 1,
+                    ["Category", "Revenue (£)", "Units", "SKUs", "Sell-Through %", "Margin %", "Health"],
+                    cats,
+                    ["category", "revenue", "units", "sku_count", "avg_sell_through", "avg_margin_pct", "health"])
+        autosize(ws, [22, 16, 12, 8, 16, 12, 14])
+
+    # ── Sheet 3: Best Sellers ──
+    if best:
+        ws = wb.create_sheet("Best Sellers")
+        write_table(ws, 1,
+                    ["SKU", "Name", "Category", "Revenue (£)", "Units", "Sell-Through %", "Margin %", "Stock"],
+                    best,
+                    ["sku", "name", "category", "revenue", "units", "sell_through", "margin_pct", "stock"])
+        autosize(ws, [14, 28, 18, 16, 10, 16, 12, 10])
+
+    # ── Sheet 4: Reorder Alerts ──
+    if reord:
+        ws = wb.create_sheet("Reorder Alerts")
+        write_table(ws, 1,
+                    ["SKU", "Name", "Category", "Urgency", "Revenue (£)", "Stock", "Cover (wks)", "Sell-Through %"],
+                    reord,
+                    ["sku", "name", "category", "urgency", "revenue", "stock", "cover_weeks", "sell_through"])
+        autosize(ws, [14, 28, 18, 12, 16, 10, 12, 16])
+
+    # ── Sheet 5: Markdown Risk ──
+    if mark:
+        ws = wb.create_sheet("Markdown Risk")
+        write_table(ws, 1,
+                    ["SKU", "Name", "Category", "Severity", "Sell-Through %", "Recommended Depth", "Revenue (£)"],
+                    mark,
+                    ["sku", "name", "category", "severity", "sell_through", "recommended_depth", "revenue"])
+        autosize(ws, [14, 28, 18, 12, 16, 20, 16])
+
+    buf = _io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
+
+
+def _build_pdf(report, analysis):
+    """Generate a clean, board-ready PDF executive report using reportlab."""
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.units import mm
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT
+    from reportlab.platypus import (
+        SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, ListFlowable, ListItem
+    )
+    from datetime import date
+    import io as _io
+    import re
+
+    k    = analysis.get("kpis", {}) or {}
+    cats = analysis.get("category_scorecard", []) or []
+    margin_ok = k.get("margin_available", True)
+
+    NAVY  = colors.HexColor("#1F2A44")
+    GREEN = colors.HexColor("#5B6BB5")
+    GREY  = colors.HexColor("#55606E")
+    LIGHT = colors.HexColor("#F3F5F9")
+
+    styles = getSampleStyleSheet()
+    h_title = ParagraphStyle("hTitle", parent=styles["Title"], textColor=NAVY,
+                             fontSize=22, spaceAfter=2, alignment=TA_LEFT)
+    h_sub   = ParagraphStyle("hSub", parent=styles["Normal"], textColor=GREY,
+                             fontSize=10, spaceAfter=12)
+    h_sec   = ParagraphStyle("hSec", parent=styles["Heading2"], textColor=NAVY,
+                             fontSize=13, spaceBefore=12, spaceAfter=5)
+    body    = ParagraphStyle("body", parent=styles["Normal"], fontSize=10,
+                             leading=15, textColor=colors.HexColor("#243040"), spaceAfter=6)
+
+    def esc(t):
+        return (str(t or "")).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    story = []
+    story.append(Paragraph("Aeroa — Executive Trade Report", h_title))
+    story.append(Paragraph(f"Generated {date.today().strftime('%d %B %Y')}", h_sub))
+
+    # KPI band
+    margin_txt = f"{k.get('avg_margin_pct',0):.1f}%" if margin_ok else "n/a"
+    kpi_data = [
+        ["Revenue", "Gross Margin", "Sell-Through", "Stock Cover"],
+        [f"£{k.get('total_revenue',0):,.0f}", margin_txt,
+         f"{k.get('avg_sell_through',0):.0f}%", f"{k.get('avg_cover_weeks',0):.1f} wks"],
+    ]
+    kpi_tbl = Table(kpi_data, colWidths=[42*mm]*4)
+    kpi_tbl.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("TEXTCOLOR",  (0, 0), (-1, 0), colors.white),
+        ("FONTNAME",   (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE",   (0, 0), (-1, 0), 9),
+        ("BACKGROUND", (0, 1), (-1, 1), LIGHT),
+        ("TEXTCOLOR",  (0, 1), (-1, 1), NAVY),
+        ("FONTNAME",   (0, 1), (-1, 1), "Helvetica-Bold"),
+        ("FONTSIZE",   (0, 1), (-1, 1), 13),
+        ("ALIGN",      (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN",     (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("GRID",       (0, 0), (-1, -1), 0.5, colors.white),
+    ]))
+    story.append(kpi_tbl)
+    story.append(Spacer(1, 10))
+
+    # Narrative sections (only those present)
+    sections = [
+        ("Executive Summary",       report.get("executive_summary")),
+        ("Business Overview",       report.get("business_overview")),
+        ("Revenue Performance",     report.get("revenue_performance")),
+        ("Margin Performance",      report.get("margin_performance")),
+        ("Stock Performance",       report.get("stock_performance")),
+        ("Markdown Risk",           report.get("markdown_risks")),
+        ("Replenishment Priorities", report.get("replenishment_opportunities")),
+        ("Risk Register",           report.get("risk_register_summary")),
+    ]
+    for title, text in sections:
+        if text:
+            story.append(Paragraph(title, h_sec))
+            story.append(Paragraph(esc(text), body))
+
+    # Recommended actions
+    actions = report.get("recommended_actions") or []
+    if actions:
+        story.append(Paragraph("Recommended Actions", h_sec))
+        items = [ListItem(Paragraph(esc(re.sub(r'^\d+\.\s*', '', a)), body), leftIndent=6)
+                 for a in actions]
+        story.append(ListFlowable(items, bulletType="1", bulletColor=GREEN,
+                                  bulletFontSize=10, leftIndent=14))
+
+    # Category table
+    if cats:
+        story.append(Paragraph("Category Scorecard", h_sec))
+        rows = [["Category", "Revenue", "Sell-Through", "Margin", "Health"]]
+        for c in cats[:12]:
+            mg = c.get("avg_margin_pct")
+            rows.append([
+                esc(c.get("category", "—")),
+                f"£{float(c.get('revenue') or 0):,.0f}",
+                f"{float(c.get('avg_sell_through') or 0):.0f}%",
+                (f"{float(mg):.0f}%" if mg is not None else "—"),
+                esc(c.get("health", "—")),
+            ])
+        ctbl = Table(rows, colWidths=[45*mm, 32*mm, 30*mm, 24*mm, 28*mm])
+        ctbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+            ("TEXTCOLOR",  (0, 0), (-1, 0), colors.white),
+            ("FONTNAME",   (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE",   (0, 0), (-1, -1), 9),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGHT]),
+            ("TEXTCOLOR",  (0, 1), (-1, -1), NAVY),
+            ("ALIGN",      (1, 0), (-1, -1), "CENTER"),
+            ("VALIGN",     (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LINEBELOW",  (0, 0), (-1, 0), 0.5, NAVY),
+            ("GRID",       (0, 0), (-1, -1), 0.25, colors.HexColor("#D9DEE7")),
+        ]))
+        story.append(ctbl)
+
+    story.append(Spacer(1, 14))
+    story.append(Paragraph(
+        "Generated by Aeroa · AI Senior Merchandiser. Figures derived from the uploaded dataset.",
+        ParagraphStyle("foot", parent=styles["Normal"], fontSize=8, textColor=GREY)))
+
+    buf = _io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4,
+                            leftMargin=16*mm, rightMargin=16*mm,
+                            topMargin=16*mm, bottomMargin=16*mm,
+                            title="Aeroa Executive Trade Report")
+    doc.build(story)
+    buf.seek(0)
+    return buf
+
+
 # ── Report routes ─────────────────────────────────────────────
 
 @app.route("/report")
@@ -3983,6 +4278,82 @@ def download_pptx(user):
     except Exception as e:
         app.logger.error(f"PPTX error: {e}", exc_info=True)
         return jsonify({"error": "Failed to generate PowerPoint"}), 500
+
+
+def _load_report_for_export(user):
+    """Shared loader: returns (analysis, report) for the current/selected upload."""
+    db = get_user_db()
+    upload_id = request.args.get("upload_id") or session.get("current_upload_id")
+
+    analysis = None
+    if upload_id:
+        try:
+            res = db.table("uploads").select("analysis").eq("id", upload_id) \
+                .eq("user_id", user["id"]).single().execute()
+            if res.data:
+                analysis = res.data["analysis"]
+        except Exception:
+            pass
+    if not analysis:
+        try:
+            res = db.table("uploads").select("analysis").eq("user_id", user["id"]) \
+                .order("created_at", desc=True).limit(1).execute()
+            if res.data:
+                analysis = res.data[0]["analysis"]
+        except Exception:
+            pass
+    if not analysis:
+        return None, None
+
+    cache_key = f"report_{upload_id or 'latest'}"
+    report = session.get(cache_key) or _fallback_report(analysis)
+    return analysis, report
+
+
+@app.route("/api/report/pdf")
+@require_auth
+def download_pdf(user):
+    """Generate and stream a board-ready PDF executive report."""
+    analysis, report = _load_report_for_export(user)
+    if not analysis:
+        return jsonify({"error": "No data"}), 404
+    try:
+        buf = _build_pdf(report, analysis)
+        from datetime import date as _d
+        fname = f"Aeroa_Executive_Report_{_d.today().strftime('%Y%m%d')}.pdf"
+        audit.log(DATA_EXPORT, request=request, user_id=user["id"],
+                  company_id=user.get("company_id"), resource="report:pdf")
+        return Response(
+            buf.getvalue(),
+            mimetype="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={fname}"}
+        )
+    except Exception as e:
+        app.logger.error(f"PDF error: {e}", exc_info=True)
+        return jsonify({"error": "Failed to generate PDF"}), 500
+
+
+@app.route("/api/report/xlsx")
+@require_auth
+def download_xlsx(user):
+    """Generate and stream an Excel workbook of the analysed data."""
+    analysis, report = _load_report_for_export(user)
+    if not analysis:
+        return jsonify({"error": "No data"}), 404
+    try:
+        buf = _build_xlsx(report, analysis)
+        from datetime import date as _d
+        fname = f"Aeroa_Data_Export_{_d.today().strftime('%Y%m%d')}.xlsx"
+        audit.log(DATA_EXPORT, request=request, user_id=user["id"],
+                  company_id=user.get("company_id"), resource="report:xlsx")
+        return Response(
+            buf.getvalue(),
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={fname}"}
+        )
+    except Exception as e:
+        app.logger.error(f"XLSX error: {e}", exc_info=True)
+        return jsonify({"error": "Failed to generate Excel"}), 500
 
 
 # ── Serve static assets ───────────────────────────────────────

@@ -18,6 +18,8 @@ stripe>=8.0.0
 
 # ── Export formats ─────────────────────────────────────────────────────────────
 python-pptx>=0.6.21
+# PDF executive reports (board-ready exports)
+reportlab>=4.0.0
 
 # ── SECURITY — Encryption ──────────────────────────────────────────────────────
 # AES-256-GCM file encryption and key derivation
