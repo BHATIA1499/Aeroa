@@ -627,7 +627,20 @@ TOP MARKDOWN RISK: {json.dumps(analysis.get('markdown_risk',[])[:8])}
 BEST SELLERS: {json.dumps(analysis.get('best_sellers',[])[:8])}
 CATEGORIES: {json.dumps(analysis.get('category_scorecard',[]))}
 
-Answer like a buying director — specific SKUs, real numbers, clear actions. Never generic."""
+Answer like a buying director — specific SKUs, real numbers, clear actions. Never generic.
+
+RESPONSE FORMAT (follow exactly)
+================================
+Write in clean, professional British English with proper sentences and grammar.
+- Open with ONE short plain-sentence summary (1–2 sentences max). No heading on it.
+- If there are actions, risks, or items to list, present them as bullet points — one
+  idea per bullet, each starting with "- " (a hyphen and a space).
+- Keep each bullet to a single concise line where possible.
+- Use **bold** sparingly, only for a SKU code or a key number that deserves emphasis.
+- Do NOT use markdown headings (no "#", "##", "###"). Do NOT use emoji.
+- Do NOT wrap things in tables or code blocks unless the user explicitly asks for a
+  table or code. Default to a brief intro plus bullets.
+- Avoid decorative symbols, asterisk bullets, or repeated punctuation."""
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -4046,7 +4046,7 @@ async function sendChat() {
     });
     const data = await res.json();
     const reply = data.reply || data.message || data.error || 'Sorry, I could not get a response.';
-    typingEl.textContent = reply;
+    typingEl.innerHTML = renderChatMarkdown(reply);
     typingEl.classList.remove('chat-typing');
     chatHistory.push({role:'assistant', content:reply});
   } catch(e) {
@@ -4064,6 +4064,58 @@ function appendChatMsg(role, text, typing=false) {
   msgs.appendChild(el);
   msgs.scrollTop = 9999;
   return el;
+}
+
+// Convert the assistant's markdown reply into clean, safe HTML:
+// a short intro paragraph followed by tidy bullet/numbered lists.
+function renderChatMarkdown(raw) {
+  const escHtml = (s) => String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Inline formatting: **bold** then *italic* / _italic_  (input already escaped)
+  const inline = (s) => escHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^\*])\*(?!\s)([^\*]+?)\*(?!\*)/g, '$1<em>$2</em>')
+    .replace(/(^|[^_])_(?!\s)([^_]+?)_(?!_)/g, '$1<em>$2</em>')
+    .replace(/`([^`]+?)`/g, '<code>$1</code>');
+
+  // Normalise line endings and split.
+  const lines = String(raw || '').replace(/\r\n?/g, '\n').split('\n');
+
+  const out = [];
+  let list = null;      // 'ul' | 'ol' | null
+  const closeList = () => { if (list) { out.push(`</${list}>`); list = null; } };
+
+  for (let rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) { closeList(); continue; }
+
+    // Headings (#, ##, ###) → a bold sub-label, no big markdown header.
+    const h = line.match(/^#{1,6}\s+(.*)$/);
+    if (h) { closeList(); out.push(`<div class="chat-h">${inline(h[1].replace(/[:：]\s*$/, ''))}</div>`); continue; }
+
+    // Bullet items: -, *, •
+    const b = line.match(/^[-*•]\s+(.*)$/);
+    if (b) {
+      if (list !== 'ul') { closeList(); list = 'ul'; out.push('<ul class="chat-list">'); }
+      out.push(`<li>${inline(b[1])}</li>`);
+      continue;
+    }
+
+    // Numbered items: 1. 2) etc.
+    const n = line.match(/^\d+[.)]\s+(.*)$/);
+    if (n) {
+      if (list !== 'ol') { closeList(); list = 'ol'; out.push('<ol class="chat-list">'); }
+      out.push(`<li>${inline(n[1])}</li>`);
+      continue;
+    }
+
+    // Plain paragraph.
+    closeList();
+    out.push(`<p>${inline(line)}</p>`);
+  }
+  closeList();
+  return out.join('');
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -4152,6 +4204,16 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
 .chat-user{background:linear-gradient(135deg,#7DAA75,#A8C5A0);color:white;align-self:flex-end;border-bottom-right-radius:4px}
 .chat-assistant{background:rgba(243,248,243,0.9);border:1px solid rgba(168,197,160,0.25);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
 .chat-typing{color:var(--text3);font-style:italic}
+.chat-assistant p{margin:0 0 8px}
+.chat-assistant p:last-child{margin-bottom:0}
+.chat-assistant .chat-h{font-weight:700;color:var(--text);margin:10px 0 5px;font-size:12px}
+.chat-assistant .chat-h:first-child{margin-top:0}
+.chat-assistant .chat-list{margin:4px 0 8px;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.chat-assistant .chat-list:last-child{margin-bottom:0}
+.chat-assistant .chat-list li{line-height:1.55;padding-left:2px}
+.chat-assistant .chat-list li::marker{color:#7DAA75}
+.chat-assistant strong{font-weight:700;color:var(--text)}
+.chat-assistant code{background:rgba(125,170,117,0.12);padding:1px 5px;border-radius:5px;font-size:11px;font-family:ui-monospace,Menlo,monospace}
 .chat-welcome-list{margin:7px 0 0;padding-left:16px;display:flex;flex-direction:column;gap:2px}
 .chat-welcome-list li{font-size:11.5px;color:var(--text2)}
 #ai-chat-suggest{display:flex;flex-direction:column;gap:6px;margin-top:2px}
