@@ -407,6 +407,14 @@ def analyse(df):
     col_margin= _col(df, "MarginPct","margin_pct","Margin","GrossMarginPct",
                          "gross_margin_pct","GM%","GM Pct","Gross Margin","GrossMargin",
                          "Margin %","Margin%","GP%")
+    # Absolute margin value (pounds) — used to DERIVE margin % when the file
+    # ships a "Margin £" column instead of a percentage.
+    col_margin_val = _col(df, "Margin £","Margin GBP","MarginGBP","Margin Value","MarginValue",
+                              "Gross Margin £","GM £","GMGBP","Gross Profit","GrossProfit",
+                              "Profit £","Profit GBP","ProfitGBP","Profit")
+    # Retail / selling price — used to derive margin % from (retail - cost)/retail.
+    col_retail = _col(df, "Retail Price","RetailPrice","RRP","Selling Price","SellingPrice",
+                          "Unit Price","UnitPrice","Ticket Price","TicketPrice","Price","SRP")
     col_st    = _col(df, "SellThrough","sell_through","SellThroughPct","ST","S/T",
                          "Sell Through","Sell Through %","SellThru","sell_thru","STR")
     col_cover = _col(df, "StockCoverWeeks","stock_cover_weeks","CoverWeeks","cover_weeks",
@@ -435,7 +443,8 @@ def analyse(df):
         )
 
     # ── Clean numerics — strips £$€, commas, % signs ──────────
-    for col in [col_units, col_rev, col_stock, col_cost, col_fp, col_buy]:
+    for col in [col_units, col_rev, col_stock, col_cost, col_fp, col_buy,
+                col_margin_val, col_retail]:
         if col:
             df[col] = _clean_numeric(df[col])
 
@@ -445,21 +454,56 @@ def analyse(df):
             df[col] = _clean_numeric(df[col])
             df[col] = _fix_decimal_percent(df[col], name)
 
+    # ── Derive a margin % when the file has no explicit % column ──
+    # Retail exports frequently ship an absolute "Margin £" column, or just
+    # Cost/Retail prices, instead of a margin percentage. Derive the % so the
+    # KPI is real rather than defaulting to 0. Order of preference:
+    #   1) explicit margin % column
+    #   2) Margin £ ÷ Revenue × 100
+    #   3) (Retail − Cost) ÷ Retail × 100
+    margin_source = "explicit" if col_margin else None
+    if not col_margin:
+        if col_margin_val and col_rev:
+            rev_nz = df[col_rev].where(df[col_rev] != 0)        # avoid /0 → NaN
+            df["_derived_margin_pct"] = (df[col_margin_val] / rev_nz * 100)
+            col_margin, margin_source = "_derived_margin_pct", "margin_value_over_revenue"
+        elif col_retail and col_cost:
+            rp_nz = df[col_retail].where(df[col_retail] != 0)
+            df["_derived_margin_pct"] = ((df[col_retail] - df[col_cost]) / rp_nz * 100)
+            col_margin, margin_source = "_derived_margin_pct", "cost_and_retail"
+
     agg = {col_units: "sum", col_rev: "sum"}
     for c in [col_stock, col_cost, col_margin, col_st, col_cover,
-              col_cat, col_chan, col_name, col_brand, col_fp, col_buy]:
+              col_cat, col_chan, col_name, col_brand, col_fp, col_buy, col_margin_val]:
         if c:
-            agg[c] = "last" if c in [col_stock, col_st, col_cover] else \
-                     "first" if c in [col_cat, col_chan, col_name, col_brand, col_buy] else "sum"
+            agg[c] = "last"  if c in [col_stock, col_st, col_cover] else \
+                     "first" if c in [col_cat, col_chan, col_name, col_brand, col_buy] else \
+                     "mean"  if c == col_margin else "sum"
 
     sku_df = df.groupby(col_sku, as_index=False).agg(agg)
     total_rev   = _safe_float(sku_df[col_rev].sum())
     total_units = _safe_float(sku_df[col_units].sum())
     sku_count   = len(sku_df)
     avg_st      = _safe_float(sku_df[col_st].mean()) if col_st else 0.0
-    avg_margin  = _safe_float(sku_df[col_margin].mean()) if col_margin else 0.0
     avg_cover   = _safe_float(sku_df[col_cover].mean()) if col_cover else 0.0
-    gross_profit= total_rev * avg_margin / 100
+
+    # ── Margin: a simple per-SKU average AND a revenue-weighted blended % ──
+    # avg_margin       = unweighted mean across the range (every SKU counts equally)
+    # gross_margin_pct = blended Σmargin ÷ Σrevenue (big sellers count more) — the
+    #                    "true" business gross margin. These legitimately differ.
+    margin_available = bool(col_margin) or bool(col_margin_val)
+    avg_margin = _safe_float(sku_df[col_margin].mean()) if col_margin else 0.0
+    if col_margin_val and total_rev:
+        total_margin_val = _safe_float(sku_df[col_margin_val].sum())
+        gross_margin_pct = total_margin_val / total_rev * 100
+        gross_profit     = total_margin_val
+    elif col_margin and total_rev:
+        wsum = _safe_float((sku_df[col_margin] * sku_df[col_rev]).sum())
+        gross_margin_pct = wsum / total_rev
+        gross_profit     = total_rev * gross_margin_pct / 100
+    else:
+        gross_margin_pct = 0.0
+        gross_profit     = total_rev * avg_margin / 100
 
     # Best sellers
     best = sku_df.sort_values(col_rev, ascending=False).head(20)
@@ -550,6 +594,9 @@ def analyse(df):
             "gross_profit": round(gross_profit, 2),
             "avg_sell_through": round(avg_st, 1),
             "avg_margin_pct": round(avg_margin, 1),
+            "gross_margin_pct": round(gross_margin_pct, 1),
+            "margin_available": margin_available,
+            "margin_source": margin_source,
             "avg_cover_weeks": round(avg_cover, 1),
             "reorder_count": len(reorders),
             "markdown_risk_count": len(markdowns),
@@ -1330,7 +1377,14 @@ def upload(user):
         return jsonify({"error": str(e)}), 422
     except Exception as e:
         app.logger.error(f"Upload error: {e}", exc_info=True)
-        return jsonify({"error": "Failed to parse file. Please check the format."}), 500
+        # Surface the real reason (type + short message) instead of an opaque
+        # message — parsing failures are diagnostic, not sensitive, and the
+        # generic text left us blind to format/library issues.
+        detail = f"{type(e).__name__}: {str(e)[:200]}"
+        return jsonify({
+            "error": f"Couldn't process this file. {detail}",
+            "detail": detail,
+        }), 500
 
 
 @app.route("/api/analysis")

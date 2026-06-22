@@ -1022,7 +1022,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <!-- Summary KPIs -->
           <div class="kpi-grid kpi-grid-4" style="margin-bottom:12px">
             <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="am-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
-            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="am-kpi-margin2">—</div><div class="kpi-sub">avg across range</div></div>
+            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="am-kpi-margin2">—</div><div class="kpi-sub">blended · Σ margin ÷ Σ revenue</div></div>
             <div class="kpi glass" style="border-top-color:#F4C0A8"><div class="kpi-label">Markdown Candidates</div><div class="kpi-value" id="am-kpi-md">—</div><div class="kpi-sub" id="am-kpi-md-sub">at risk</div></div>
             <div class="kpi glass" style="border-top-color:#B8C4E8"><div class="kpi-label">Reorder Alerts</div><div class="kpi-value" id="am-kpi-ro">—</div><div class="kpi-sub">need action</div></div>
           </div>
@@ -1030,7 +1030,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <div class="kpi-grid kpi-grid-4" style="margin-bottom:16px">
             <div class="kpi glass"><div class="kpi-label">Sell-Through %</div><div class="kpi-value" id="am-st">—</div><div class="kpi-sub">avg across all SKUs</div><div class="kpi-bar"><div class="kpi-bar-fill" id="am-st-bar" style="width:0%;background:#8A9DD8"></div></div></div>
             <div class="kpi glass"><div class="kpi-label">Weeks Cover</div><div class="kpi-value" id="am-cover">—</div><div class="kpi-sub" id="am-cover-sub">target: 4–8 weeks</div></div>
-            <div class="kpi glass"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="am-margin">—</div><div class="kpi-sub">avg margin</div><div class="kpi-bar"><div class="kpi-bar-fill" id="am-margin-bar" style="width:0%;background:#F4C0A8"></div></div></div>
+            <div class="kpi glass"><div class="kpi-label">Avg SKU Margin %</div><div class="kpi-value" id="am-margin">—</div><div class="kpi-sub">simple average per SKU</div><div class="kpi-bar"><div class="kpi-bar-fill" id="am-margin-bar" style="width:0%;background:#F4C0A8"></div></div></div>
             <div class="kpi glass"><div class="kpi-label">Stock Turn</div><div class="kpi-value" id="am-turn">—</div><div class="kpi-sub">annualised</div></div>
           </div>
           <!-- AI Insights -->
@@ -1101,7 +1101,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <!-- KPIs -->
           <div class="kpi-grid kpi-grid-5" style="margin-bottom:14px">
             <div class="kpi glass"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="mc-rev">—</div><div class="kpi-sub">trading period</div></div>
-            <div class="kpi glass"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="mc-margin">—</div><div class="kpi-sub">avg across range</div></div>
+            <div class="kpi glass"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="mc-margin">—</div><div class="kpi-sub">blended · revenue-weighted</div></div>
             <div class="kpi glass"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="mc-st">—</div><div class="kpi-sub">all SKUs</div></div>
             <div class="kpi glass"><div class="kpi-label">OTB Utilised</div><div class="kpi-value" id="mc-otb">—</div><div class="kpi-sub">of budget</div></div>
             <div class="kpi glass"><div class="kpi-label">Forecast Margin</div><div class="kpi-value" id="mc-fmargin">—</div><div class="kpi-sub">projected</div></div>
@@ -1185,7 +1185,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
           <!-- Top-level KPIs -->
           <div class="kpi-grid kpi-grid-4" style="margin-bottom:14px">
             <div class="kpi glass" style="border-top-color:#7DAA75"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="dir-kpi-revenue">—</div><div class="kpi-sub">trading period</div></div>
-            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="dir-kpi-margin">—</div><div class="kpi-sub">avg across range</div></div>
+            <div class="kpi glass" style="border-top-color:#A8C5A0"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="dir-kpi-margin">—</div><div class="kpi-sub">blended · revenue-weighted</div></div>
             <div class="kpi glass" style="border-top-color:#8A9DD8"><div class="kpi-label">Avg Sell-Through</div><div class="kpi-value" id="dir-kpi-st">—</div><div class="kpi-sub">all SKUs</div></div>
             <div class="kpi glass" style="border-top-color:#E3A08E"><div class="kpi-label">Business Health</div><div class="kpi-value" id="dir-kpi-health">—</div><div class="kpi-sub">0–100 score</div></div>
           </div>
@@ -1917,12 +1917,21 @@ function renderMA() {
 // ═══════════════════════════════════════
 // AM RENDER
 // ═══════════════════════════════════════
+// Margin display helper — shows "Insufficient data" when the uploaded file
+// lacks the columns needed to compute margin (so 0.0% is never mistaken for
+// a real zero margin or a system error).
+function mgText(val, available){
+  return (available === false) ? 'Insufficient data' : (Number(val)||0).toFixed(1)+'%';
+}
+
 function renderAM() {
   const k = analysisData.kpis || {};
   const rd = roleData || {};
 
   const avgST = k.avg_sell_through||0;
   const avgMg = k.avg_margin_pct||0;
+  const blendMg = k.gross_margin_pct||0;
+  const mgOk = k.margin_available !== false;
   const avgCv = k.avg_cover_weeks||0;
   const totalRev = k.total_revenue||0;
   const stockVal = (rd.total_stock_value||0) || totalRev*0.4;
@@ -1932,14 +1941,14 @@ function renderAM() {
   const mdCount = (analysisData.markdown_risk||[]).length;
   const roCount = (analysisData.reorder_alerts||[]).length;
   document.getElementById('am-kpi-revenue').textContent  = fmtCurr(totalRev);
-  document.getElementById('am-kpi-margin2').textContent  = avgMg.toFixed(1)+'%';
+  document.getElementById('am-kpi-margin2').textContent  = mgText(blendMg, mgOk);
   document.getElementById('am-kpi-md').textContent       = mdCount;
   document.getElementById('am-kpi-md-sub').textContent   = mdCount > 0 ? `${mdCount} SKU${mdCount>1?'s':''} at risk` : 'No markdown risk';
   document.getElementById('am-kpi-ro').textContent       = roCount;
 
   document.getElementById('am-st').textContent     = avgST.toFixed(1)+'%';
   document.getElementById('am-cover').textContent  = avgCv.toFixed(1)+'w';
-  document.getElementById('am-margin').textContent = avgMg.toFixed(1)+'%';
+  document.getElementById('am-margin').textContent = mgText(avgMg, mgOk);
   document.getElementById('am-turn').textContent   = stockTurn+'x';
 
   const cvSub = avgCv < 4 ? 'Below target — risk stockout' : avgCv > 8 ? 'Above target — overstocked' : 'Within target range';
@@ -2179,7 +2188,7 @@ function renderMerch() {
   const otbPct = otbBudget > 0 ? Math.round(openPoVal/otbBudget*100) : 73;
 
   document.getElementById('mc-rev').textContent    = fmtCurr(totalRev);
-  document.getElementById('mc-margin').textContent = avgMg.toFixed(1)+'%';
+  document.getElementById('mc-margin').textContent = mgText(k.gross_margin_pct||0, k.margin_available !== false);
   document.getElementById('mc-st').textContent     = avgST.toFixed(1)+'%';
   document.getElementById('mc-otb').textContent    = otbPct+'%';
   document.getElementById('mc-fmargin').textContent= (avgMg*1.02).toFixed(1)+'%';
@@ -2377,7 +2386,7 @@ function renderDirector() {
 
   // KPI accordion
   document.getElementById('dir-kpi-revenue').textContent = fmtCurr(k.total_revenue||0);
-  document.getElementById('dir-kpi-margin').textContent  = (k.avg_margin_pct||0).toFixed(1)+'%';
+  document.getElementById('dir-kpi-margin').textContent  = mgText(k.gross_margin_pct||0, k.margin_available !== false);
   document.getElementById('dir-kpi-st').textContent      = (k.avg_sell_through||0).toFixed(1)+'%';
   document.getElementById('dir-kpi-health').textContent  = rd.health_score||'—';
 
