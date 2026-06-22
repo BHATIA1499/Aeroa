@@ -887,6 +887,120 @@ def _category_detail(analysis, category: str) -> dict:
     }
 
 
+def _trading_meeting(analysis, role, kpis, health, health_detail, label, prev_metrics=None):
+    """
+    Monday Trading Review pack — the senior-merchandiser meeting view.
+
+    Five sections: business overview, AI executive summary, what changed this
+    week, top business questions, and the director summary export. Every figure
+    is dataset-driven; week-on-week deltas use the previous upload when present.
+    """
+    cats = analysis.get("category_scorecard", []) or []
+    weekly = analysis.get("weekly_trend", []) or []
+    rev   = float(kpis.get("total_revenue") or 0)
+    mg    = float(kpis.get("avg_margin_pct") or 0)
+    st    = float(kpis.get("avg_sell_through") or 0)
+    md_ct = int(kpis.get("markdown_risk_count") or 0)
+    cover = float(kpis.get("avg_cover_weeks") or 0)
+    margin_ok = kpis.get("margin_available") is not False
+    top_cat = cats[0] if cats else None
+
+    # Period label from the weekly trend, else a generic label
+    if weekly:
+        first, last = weekly[0].get("week"), weekly[-1].get("week")
+        period = f"{first} – {last}" if first != last else str(first)
+    else:
+        period = "Latest trading period"
+
+    # Deltas vs previous upload (week-on-week)
+    def pct_delta(cur, prev):
+        if not prev:
+            return None
+        return (cur - prev) / prev * 100
+
+    rev_delta = mg_delta = st_delta = health_delta = None
+    if prev_metrics:
+        rev_delta    = pct_delta(rev, prev_metrics.get("revenue"))
+        mg_delta     = mg - prev_metrics.get("margin", mg)
+        st_delta     = st - prev_metrics.get("sell_through", st)
+        health_delta = health - prev_metrics.get("health", health)
+
+    def fmt_pct(v, pts=False):
+        if v is None:
+            return None
+        return f"{'+' if v >= 0 else ''}{v:.1f}{'pts' if pts else '%'}"
+
+    overview = [
+        {"label": "Revenue",      "value": _gbp(rev),
+         "delta": fmt_pct(rev_delta), "trend": ("up" if (rev_delta or 0) >= 0 else "down") if rev_delta is not None else "flat",
+         "sub": "vs last week" if rev_delta is not None else "this period"},
+        {"label": "Margin",       "value": (f"{mg:.1f}%" if margin_ok else "Insufficient data"),
+         "delta": fmt_pct(mg_delta, pts=True) if margin_ok else None,
+         "trend": ("up" if (mg_delta or 0) >= 0 else "down") if (mg_delta is not None and margin_ok) else "flat",
+         "sub": "blended margin"},
+        {"label": "Sell-Through", "value": f"{st:.0f}%",
+         "delta": fmt_pct(st_delta, pts=True), "trend": ("up" if (st_delta or 0) >= 0 else "down") if st_delta is not None else "flat",
+         "sub": "WoW" if st_delta is not None else "range average"},
+        {"label": "Health Score", "value": f"{health}/100",
+         "delta": (f"{'+' if (health_delta or 0) >= 0 else ''}{int(health_delta)} pts" if health_delta is not None else None),
+         "trend": ("up" if (health_delta or 0) >= 0 else "down") if health_delta is not None else "flat",
+         "sub": health_detail.get("label", "")},
+    ]
+
+    # What changed this week
+    changes = []
+    changes.append({
+        "title": "Revenue Movement",
+        "value": fmt_pct(rev_delta) if rev_delta is not None else _gbp(rev),
+        "trend": ("up" if (rev_delta or 0) >= 0 else "down") if rev_delta is not None else "flat",
+        "driver": (f"Driven by {top_cat['category']} (£{top_cat['revenue']:,.0f})" if top_cat
+                   else "Across the range"),
+    })
+    if margin_ok:
+        md_cause = ("Markdown dependency on slow movers" if md_ct > 3
+                    else "Stable pricing across the range")
+        changes.append({
+            "title": "Margin Movement",
+            "value": fmt_pct(mg_delta, pts=True) if mg_delta is not None else f"{mg:.1f}%",
+            "trend": ("up" if (mg_delta or 0) >= 0 else "down") if mg_delta is not None else "flat",
+            "driver": md_cause,
+        })
+    else:
+        changes.append({
+            "title": "Margin Movement", "value": "Insufficient data", "trend": "flat",
+            "driver": "This dataset has no margin column — add one to track margin movement.",
+        })
+    changes.append({
+        "title": "Stock Position",
+        "value": (f"{md_ct} SKUs flagged" if md_ct else "Clean"),
+        "trend": "down" if md_ct > 5 else "flat",
+        "driver": (f"Slow/overstocked lines at ~{cover:.0f} wks average cover" if md_ct
+                   else f"Healthy cover at ~{cover:.0f} wks across the range"),
+    })
+
+    # Top business questions — clickable prompts that open the AI assistant
+    questions = [
+        "Why are we behind target?",
+        "Which categories need action?",
+        "Where are we losing margin?",
+        "Which products should we reorder?",
+        "Which products should we markdown?",
+    ]
+
+    return {
+        "header": {
+            "title":     "Monday Trading Review",
+            "dataset":   label,
+            "period":    period,
+            "generated": datetime.utcnow().strftime("%d %b %Y"),
+        },
+        "overview":      overview,
+        "exec_summary":  role.get("executive_summary", ""),
+        "changes":       changes,
+        "questions":     questions,
+    }
+
+
 def _build_role_analysis(analysis):
     """Build extended role-based analysis data from base analysis."""
     k = analysis.get("kpis", {})
@@ -2284,6 +2398,7 @@ def workspace_command(user):
         # ── Business Memory: compare vs previous upload ──────────────────
         memory = {"improved": [], "declined": [], "new_risks": [], "resolved_risks": [],
                   "new_opportunities": [], "recurring": [], "recommended": []}
+        prev_metrics = None
         try:
             rows = (_ws_fetch_rows(user).data or [])
             ordered = [r for r in rows if not ((r.get("ws") or {}) if isinstance(r.get("ws"), dict) else {}).get("trashed")]
@@ -2297,6 +2412,7 @@ def workspace_command(user):
             if prev_analysis:
                 pk = prev_analysis.get("kpis") or {}
                 cur_m, prev_m = _ws_compare_metrics(kpis), _ws_compare_metrics(pk)
+                prev_metrics = prev_m
                 labels = {"revenue": "Revenue", "margin": "Margin", "sell_through": "Sell-through", "health": "Business Health"}
                 for k, lbl in labels.items():
                     diff = cur_m[k] - prev_m[k]
@@ -2348,6 +2464,8 @@ def workspace_command(user):
             },
             "commercial_impact": commercial,
             "memory": memory,
+            "trading_meeting": _trading_meeting(
+                analysis, role, kpis, health, health_detail, label, prev_metrics),
         })
     except Exception as e:
         app.logger.error(f"workspace_command error: {e}", exc_info=True)

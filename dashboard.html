@@ -823,6 +823,40 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .cat-acts{padding:0 24px 24px;display:flex;flex-direction:column;gap:8px}
 .cat-act{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--text2);line-height:1.5}
 .cat-act-tag{flex-shrink:0;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--mint-d);background:rgba(91,107,181,.10);border:1px solid rgba(91,107,181,.22);border-radius:7px;padding:2px 8px;margin-top:1px}
+/* Command Centre view toggle */
+.cc-viewtoggle{display:inline-flex;gap:4px;background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;padding:4px;margin-bottom:16px}
+.cc-viewtoggle button{border:none;background:none;cursor:pointer;font-size:12.5px;font-weight:800;color:var(--text2);padding:8px 16px;border-radius:9px;transition:all .15s}
+.cc-viewtoggle button.active{background:#5B6BB5;color:#fff;box-shadow:0 4px 12px rgba(91,107,181,.3)}
+.cc-viewtoggle button:disabled{opacity:.4;cursor:not-allowed}
+/* Trading Meeting Mode */
+.tm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.tm-title{font-family:var(--serif);font-size:25px;font-weight:900;color:var(--text);line-height:1.15}
+.tm-sub{font-size:13px;color:var(--text2);margin-top:4px;font-weight:600}
+.tm-gen{font-size:11.5px;color:var(--text3);font-weight:700;white-space:nowrap;padding-top:6px}
+.tm-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+@media(max-width:640px){.tm-kpis{grid-template-columns:repeat(2,1fr)}}
+.tm-kpi{background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:15px}
+.tm-kpi-l{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--text3)}
+.tm-kpi-v{font-family:var(--serif);font-size:24px;font-weight:900;color:var(--text);margin:5px 0 4px;line-height:1}
+.tm-kpi-d{font-size:11px;color:var(--text3);font-weight:700}
+.tm-exec{font-size:14px;line-height:1.65;color:var(--text);font-style:italic}
+.tm-changes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+@media(max-width:640px){.tm-changes{grid-template-columns:1fr}}
+.tm-change{background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:15px;border-left:3px solid var(--text3)}
+.tm-change.tm-up{border-left-color:#2E8B57}.tm-change.tm-down{border-left-color:#E05A4A}
+.tm-change-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--text3)}
+.tm-change-v{font-size:20px;font-weight:900;margin:6px 0 5px;font-variant-numeric:tabular-nums}
+.tm-change-d{font-size:12px;color:var(--text2);line-height:1.5}
+.tm-qs{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:640px){.tm-qs{grid-template-columns:1fr}}
+.tm-q{display:flex;align-items:center;gap:10px;text-align:left;background:var(--glass);border:1px solid var(--glass-border);border-radius:11px;padding:12px 14px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);transition:all .15s}
+.tm-q:hover{border-color:var(--mint-d);transform:translateX(2px)}
+.tm-q-ic{font-size:14px}
+.tm-q-go{margin-left:auto;color:var(--mint-d);font-weight:900}
+.tm-director-b{text-align:center;padding:8px 0 4px}
+.tm-director-t{font-size:15px;font-weight:800;color:var(--text)}
+.tm-director-s{font-size:12.5px;color:var(--text3);margin:5px 0 14px}
+.tm-export{padding:11px 22px;font-size:13.5px}
 .ws-exp-card .ec-d{font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.4}
 .ws-exp-card .ec-fmt{display:inline-block;margin-top:6px;font-size:10px;font-weight:800;color:#5B6BB5;background:rgba(91,107,181,.1);border-radius:6px;padding:2px 7px;letter-spacing:.03em}
 </style>
@@ -2935,6 +2969,26 @@ function buildSampleCategoryDetail(name){
     margin:c.margin,health:c.health,health_label:c.health_label,top_sellers:c.top_sellers,slow_movers:c.slow_movers,actions:c.actions};
 }
 
+function buildSampleTradingMeeting(f,hb){
+  const today = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  return {
+    header:{title:'Monday Trading Review', dataset:f.display_name, period:'Wk 24 – Wk 25', generated:today},
+    overview:[
+      {label:'Revenue', value:fmtCurr(f.revenue), delta:'+6.2%', trend:'up', sub:'vs last week'},
+      {label:'Margin', value:(f.margin||0)+'%', delta:'+1.0pts', trend:'up', sub:'blended margin'},
+      {label:'Sell-Through', value:(f.sell_through||0)+'%', delta:'+3.0pts', trend:'up', sub:'WoW'},
+      {label:'Health Score', value:hb.total+'/100', delta:'+4 pts', trend:'up', sub:hb.label}
+    ],
+    exec_summary:'Trading is ahead of plan this week, led by Dresses and Knitwear where sell-through is outpacing supply — the SS26 Linen reorder should be locked before Friday’s cutoff. Margin held at 58% despite a growing markdown dependency in Outerwear, which is now the clearest drag on the range at 31% sell-through and £88k of trapped stock. Cover is healthy at six weeks overall, but two Footwear lines are trending toward stockout. Net: protect the winners, act decisively on Outerwear, and the week’s upside outweighs the risk.',
+    changes:[
+      {title:'Revenue Movement', value:'+6.2%', trend:'up', driver:'Driven by Dresses (£250k) and Knitwear momentum'},
+      {title:'Margin Movement', value:'+1.0pts', trend:'up', driver:'Held despite rising markdown dependency in Outerwear'},
+      {title:'Stock Position', value:'2 categories flagged', trend:'down', driver:'Outerwear overstocked at 31% ST; Footwear stockout risk in 4 wks'}
+    ],
+    questions:['Why are we behind target?','Which categories need action?','Where are we losing margin?','Which products should we reorder?','Which products should we markdown?']
+  };
+}
+
 function buildSampleCommand(f){
   if(!f) return {};
   const hb = sampleHealthBreakdown(f);
@@ -2943,6 +2997,7 @@ function buildSampleCommand(f){
     health_score:hb.total, health_label:hb.label,
     health_breakdown:hb,
     categories:SAMPLE_CATEGORIES.map(c=>({category:c.category,revenue:c.revenue,units:c.units,sku_count:c.sku_count,sell_through:c.sell_through,margin:c.margin,health:c.health,health_label:c.health_label})),
+    trading_meeting:buildSampleTradingMeeting(f,hb),
     revenue:f.revenue, margin:f.margin, sell_through:f.sell_through,
     exec_summary:f.exec_summary, top_opportunity:f.top_opportunity, top_risk:f.top_risk,
     actions:[
@@ -3374,6 +3429,8 @@ function updateTopNav(dest){
 
 // ── Command Centre (Decision Mode) ────────────────────────────
 let ccData = null;
+let ccView = 'command';   // 'command' | 'meeting'
+function setCommandView(v){ ccView = v; renderCommandCentre(ccData); window.scrollTo({top:0,behavior:'smooth'}); }
 async function loadCommandCentre(uploadId){
   const wrap = document.getElementById('cc-wrap');
   wrap.innerHTML = '<div class="ws-empty"><div class="ic">⏳</div><div class="t">Building your decision view…</div></div>';
@@ -3385,8 +3442,78 @@ async function loadCommandCentre(uploadId){
     wrap.innerHTML = '<div class="ws-empty"><div class="ic">⚠️</div><div class="t">Could not build Command Centre</div><div>'+escapeHtml(e.message)+'</div></div>';
   }
 }
+// ── Monday Trading Review (Trading Meeting Mode) ──────────────
+function renderTradingMeeting(d){
+  const tm = d.trading_meeting || {};
+  const h  = tm.header || {};
+  const trendIc = t => t==='up'?'▲':t==='down'?'▼':'—';
+  const trendCol = t => t==='up'?'#2E8B57':t==='down'?'#E05A4A':'var(--text3)';
+  const overview = (tm.overview||[]).map(o=>`
+    <div class="tm-kpi">
+      <div class="tm-kpi-l">${escapeHtml(o.label)}</div>
+      <div class="tm-kpi-v">${escapeHtml(o.value)}</div>
+      <div class="tm-kpi-d">${o.delta?`<span style="color:${trendCol(o.trend)}">${trendIc(o.trend)} ${escapeHtml(o.delta)}</span> · `:''}${escapeHtml(o.sub||'')}</div>
+    </div>`).join('');
+  const changes = (tm.changes||[]).map(c=>`
+    <div class="tm-change tm-${c.trend}">
+      <div class="tm-change-h">${escapeHtml(c.title)}</div>
+      <div class="tm-change-v" style="color:${trendCol(c.trend)}">${trendIc(c.trend)} ${escapeHtml(c.value)}</div>
+      <div class="tm-change-d">${escapeHtml(c.driver||'')}</div>
+    </div>`).join('');
+  const questions = (tm.questions||[]).map(q=>`
+    <button class="tm-q" onclick="askAeroa('${escapeHtml(q).replace(/'/g,"\\'")}')">
+      <span class="tm-q-ic">💬</span><span>${escapeHtml(q)}</span><span class="tm-q-go">→</span>
+    </button>`).join('');
+  document.getElementById('cc-wrap').innerHTML = `
+    ${ccViewToggle(d)}
+    <div class="tm-head">
+      <div>
+        <div class="tm-title">📅 ${escapeHtml(h.title||'Monday Trading Review')}</div>
+        <div class="tm-sub">${escapeHtml(h.dataset||'')} · ${escapeHtml(h.period||'')}</div>
+      </div>
+      <div class="tm-gen">Generated ${escapeHtml(h.generated||'')}</div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">📊 Business Overview</div>
+      <div class="tm-kpis">${overview}</div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">🧠 AI Executive Summary</div>
+      <div class="tm-exec">${escapeHtml(tm.exec_summary||'')}</div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">🔄 What Changed This Week?</div>
+      <div class="tm-changes">${changes}</div>
+    </div>
+
+    <div class="cc-card">
+      <div class="cc-card-h">❓ Top Business Questions <span style="font-weight:600;color:var(--text3);font-size:12px">— click to ask Aeroa</span></div>
+      <div class="tm-qs">${questions}</div>
+    </div>
+
+    <div class="cc-card tm-director">
+      <div class="cc-card-h">🏛️ Director Summary</div>
+      <div class="tm-director-b">
+        <div class="tm-director-t">Take the full picture into your trading meeting.</div>
+        <div class="tm-director-s">A board-ready pack: KPIs, risks, opportunities and the week's recommended actions.</div>
+        <button class="ws-cta primary tm-export" onclick="doExport('pdf','Trading Meeting Pack')">⬇ Export Trading Meeting Pack</button>
+      </div>
+    </div>`;
+}
+
+function ccViewToggle(d){
+  return `
+    <div class="cc-viewtoggle">
+      <button class="${ccView==='command'?'active':''}" onclick="setCommandView('command')">🧭 Command Centre</button>
+      <button class="${ccView==='meeting'?'active':''}" onclick="setCommandView('meeting')" ${d.trading_meeting?'':'disabled'}>📅 Monday Trading Review</button>
+    </div>`;
+}
 function renderCommandCentre(d){
   if(!d || !d.actions){ document.getElementById('cc-wrap').innerHTML='<div class="ws-empty"><div class="ic">🧭</div><div class="t">No dataset selected</div><div>Open a file to see your next best actions.</div></div>'; return; }
+  if(ccView==='meeting' && d.trading_meeting){ renderTradingMeeting(d); return; }
   const hc = healthColor(d.health_score), hcl = healthClass(d.health_score);
   const ci = d.commercial_impact||{};
   const actions = (d.actions||[]).map((a,i)=>`
@@ -3405,6 +3532,7 @@ function renderCommandCentre(d){
     </div>`).join('');
   const op=d.top_opportunity||{}, rk=d.top_risk||{};
   document.getElementById('cc-wrap').innerHTML = `
+    ${ccViewToggle(d)}
     <div class="cc-hero">
       <div style="text-align:center">${d.health_breakdown?`<div class="cc-score clickable" style="color:${hc}" onclick="openHealthBreakdown()" title="See how this score is calculated">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')} <button class="hb-why" onclick="openHealthBreakdown()" style="background:none;border:none;color:var(--mint-d);font-size:11px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline">Why?</button></div>`:`<div class="cc-score" style="color:${hc}">${d.health_score}</div><div class="cc-score-l">Health · ${escapeHtml(d.health_label||'')}</div>`}</div>
       <div>
@@ -3868,6 +3996,14 @@ function toggleChat() {
   document.getElementById('ai-chat-panel').style.display = chatOpen ? 'flex' : 'none';
   document.getElementById('ai-chat-fab').style.transform = chatOpen ? 'scale(0.9)' : 'scale(1)';
   if (chatOpen) document.getElementById('ai-chat-input').focus();
+}
+
+// Open the Aeroa Trading Assistant pre-loaded with a question and send it.
+function askAeroa(prompt){
+  if(!chatOpen) toggleChat();
+  const input = document.getElementById('ai-chat-input');
+  if(input){ input.value = prompt; input.focus(); }
+  sendChat();
 }
 
 async function sendChat() {
