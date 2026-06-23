@@ -1731,6 +1731,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 let currentRole = 'AM';
 let analysisData = null;
 let roleData = null;
+let _samplePrevAnalysis = null, _samplePrevRole = null, _samplePrevSaved = false;
 let charts = {};
 let csrfToken = '';
 
@@ -2123,20 +2124,26 @@ function switchSection(sectionName) {
   // operation click should bring us back to the role dashboard first — otherwise
   // the workspace stays on top and nothing appears to happen.
   if (workspaceOpen) {
-    workspaceOpen = false;
-    const wv = document.getElementById('workspace-view');
-    if (wv) wv.style.display = 'none';
-    const wsBtn = document.getElementById('sb-ws-btn');
-    if (wsBtn) wsBtn.classList.remove('active');
     if (analysisData) {
-      document.getElementById('empty-state').style.display = 'none';
-      document.getElementById('role-views').style.display = 'block';
+      // Fully render the role dashboard while it's visible (so Chart.js gets real
+      // dimensions), then fall through to switch to the requested section.
+      // showRoleView() sets workspaceOpen=false, hides the workspace, and ends on
+      // 'overview' — its internal switchSection('overview') call no-ops this branch
+      // because workspaceOpen is already false by then (no recursion).
+      updateTopNav('analytics');
+      showRoleView();
     } else {
       // No data loaded — nothing to show in a section; fall back to empty state.
+      workspaceOpen = false;
+      const wv = document.getElementById('workspace-view');
+      if (wv) wv.style.display = 'none';
+      const wsBtn = document.getElementById('sb-ws-btn');
+      if (wsBtn) wsBtn.classList.remove('active');
       document.getElementById('role-views').style.display = 'none';
       document.getElementById('empty-state').style.display = 'block';
+      updateTopNav('analytics');
+      return;
     }
-    updateTopNav('analytics');
   }
 
   // Find the active role view
@@ -3595,10 +3602,128 @@ function buildSampleTimeline(){
   return {points,commentary};
 }
 
+// ── Sample-mode role dashboard ────────────────────────────────
+// The preview/empty-account state has no analysisData, so the KPI Panel,
+// Open POs, Top SKUs and other operations panels (and switchSection nav)
+// have nothing to render. These builders synthesise a full /api/analysis +
+// roleData payload from the in-memory SAMPLE_WS / SAMPLE_CATEGORIES so the
+// entire role dashboard works in sample mode.
+function buildSampleAnalysis(){
+  const f = SAMPLE_WS.files.find(x=>x.id==='s1') || SAMPLE_WS.files[0];
+  const cats = SAMPLE_CATEGORIES;
+  // Flatten SKUs across categories, tagging each with its category.
+  const tops=[], slows=[];
+  cats.forEach(c=>{
+    (c.top_sellers||[]).forEach(s=>tops.push(Object.assign({category:c.category}, s)));
+    (c.slow_movers||[]).forEach(s=>slows.push(Object.assign({category:c.category}, s)));
+  });
+  const best_sellers = tops.slice().sort((a,b)=>b.revenue-a.revenue).map(s=>({
+    sku:s.sku, name:s.name, category:s.category, revenue:s.revenue, units:s.units,
+    sell_through:s.sell_through, margin_pct:s.margin_pct, stock:s.stock
+  }));
+  // Reorder alerts: strong sell-through lines running low on cover.
+  const reorder_alerts = tops.filter(s=>s.sell_through>=70)
+    .sort((a,b)=>b.sell_through-a.sell_through)
+    .map(s=>{
+      const cover = Math.max(1, Math.round((100-s.sell_through)/8));
+      return { sku:s.sku, name:s.name, category:s.category, revenue:s.revenue,
+        stock:s.stock, sell_through:s.sell_through, cover_weeks:cover,
+        urgency: s.sell_through>=78 ? 'high' : 'medium' };
+    });
+  // Markdown risk: weak sell-through, ageing stock.
+  const markdown_risk = slows.filter(s=>s.sell_through<45)
+    .sort((a,b)=>a.sell_through-b.sell_through)
+    .map(s=>{
+      const depth = s.sell_through<25 ? 30 : s.sell_through<35 ? 25 : 20;
+      return { sku:s.sku, name:s.name, category:s.category, revenue:s.revenue,
+        sell_through:s.sell_through, recommended_depth:depth,
+        severity: s.sell_through<25 ? 'high' : 'medium' };
+    });
+  const category_scorecard = cats.map(c=>({
+    category:c.category, revenue:c.revenue, units:c.units, sku_count:c.sku_count,
+    health:c.health, avg_sell_through:c.sell_through, avg_margin_pct:c.margin
+  }));
+  const totalUnits = cats.reduce((s,c)=>s+c.units,0);
+  const weekly_trend = SAMPLE_WS.files
+    .filter(x=>!x.trashed && x.revenue>0)
+    .sort((a,b)=>new Date(a.upload_date)-new Date(b.upload_date))
+    .map(x=>({ week:x.display_name.replace(' Trading Report',''), revenue:x.revenue }));
+  return {
+    meta:{ sku_count: cats.reduce((s,c)=>s+c.sku_count,0), analysed_at:f.analysed_date },
+    kpis:{
+      total_revenue:f.revenue, total_units:totalUnits,
+      gross_profit: Math.round(f.revenue*(f.margin/100)),
+      avg_sell_through:f.sell_through, avg_margin_pct:f.margin,
+      gross_margin_pct:f.margin, margin_available:true, margin_source:'sample',
+      avg_cover_weeks:6.2, reorder_count:reorder_alerts.length,
+      markdown_risk_count:markdown_risk.length, critical_oos_count:2
+    },
+    weekly_trend, best_sellers, reorder_alerts, markdown_risk, category_scorecard,
+    channel_split:[]
+  };
+}
+function buildSampleRoleData(){
+  const f = SAMPLE_WS.files.find(x=>x.id==='s1') || SAMPLE_WS.files[0];
+  const cats = SAMPLE_CATEGORIES;
+  const bottom_sellers = cats.flatMap(c=>(c.slow_movers||[]).map(s=>({
+    sku:s.sku, name:s.name, category:c.category, revenue:s.revenue,
+    units:s.units, sell_through:s.sell_through, margin_pct:s.margin_pct, stock:s.stock
+  }))).sort((a,b)=>a.units-b.units);
+  const sparkline = SAMPLE_WS.files.filter(x=>!x.trashed && x.revenue>0)
+    .sort((a,b)=>new Date(a.upload_date)-new Date(b.upload_date)).map(x=>x.revenue);
+  const totalUnits = cats.reduce((s,c)=>s+c.units,0);
+  return {
+    health_score:f.health_score,
+    total_stock_value:f.stock_value, total_stock_units:totalUnits,
+    weekly_sparkline:sparkline,
+    open_po_count:reorderCountFromCats(cats), open_po_value:124000,
+    missing_data_count:0, data_quality_pct:97,
+    plan_data:{}, vs_plan:{ revenue_pct:106 },
+    cash_trapped:88000,
+    executive_summary:f.exec_summary,
+    bottom_sellers,
+    top_risks:[
+      'Outerwear sell-through at 31% vs 55% plan — £88k of capital trapped in slow stock heading into clearance.',
+      'Two Footwear lines trending toward stockout within 4 weeks at current sales rate.',
+      'Markdown dependency rising in Outerwear, now the clearest drag on blended margin.'
+    ],
+    top_opportunities:[
+      'SS26 Linen Dresses at 78% sell-through with 3 weeks cover — pull intake forward to capture full-price demand (+£62k).',
+      'Knitwear momentum building at 69% sell-through — secure replenishment early and feature in Thursday campaign (+£18k).',
+      'Accessories carry the strongest margin at 67% — protect pricing and grow hero-line share.'
+    ],
+    ai_actions:[
+      {rank:1, priority:'high', type:'Reorder', sku:'DR-118 · SS26 Linen Midi Dress',
+       description:'81% sell-through with cover running low — place a top-up order before the supplier cutoff on Friday to avoid lost full-price sales.',
+       revenue_impact:62000, margin_impact:8, confidence:88},
+      {rank:2, priority:'high', type:'Markdown', sku:'OW-077 · Padded Parka',
+       description:'19% sell-through with 340 units sitting — trigger a 30% markdown to release trapped capital before the clearance window closes.',
+       revenue_impact:-12000, margin_impact:-6, confidence:82},
+      {rank:3, priority:'medium', type:'Reorder', sku:'KN-061 · Merino Crew Jumper',
+       description:'76% sell-through and building momentum — secure replenishment now to hold availability through peak.',
+       revenue_impact:18000, margin_impact:3, confidence:79},
+      {rank:4, priority:'medium', type:'Review', sku:'FW-019 · Suede Loafer',
+       description:'39% sell-through is the weakest Footwear line — review pricing or feature placement before committing to markdown.',
+       revenue_impact:-3000, margin_impact:-2, confidence:71}
+    ]
+  };
+}
+function reorderCountFromCats(cats){
+  let n=0; cats.forEach(c=>(c.top_sellers||[]).forEach(s=>{ if(s.sell_through>=70) n++; })); return n;
+}
+
 function viewSampleDataset(){
   sampleMode = true;
   document.getElementById('ws-sample-banner').classList.add('show');
   updateSampleToggle();
+  // Populate the full role dashboard so KPI Panel / Open POs / Top SKUs / Overview
+  // and the sidebar switchSection nav all work in sample mode (the preview DB is
+  // empty, so without this analysisData stays null and the operations panels and
+  // the toggle-back-from-workspace nav have nothing to render).
+  // Preserve any real analysis so exiting sample mode restores it.
+  if(!_samplePrevSaved){ _samplePrevAnalysis = analysisData; _samplePrevRole = roleData; _samplePrevSaved = true; }
+  analysisData = buildSampleAnalysis();
+  roleData = buildSampleRoleData();
   // Make sure the Data Workspace is actually visible (hides empty-state / role-views).
   // Previously this was skipped, so clicking "Try Sample Data" from the empty
   // state appeared to do nothing.
@@ -3611,6 +3736,8 @@ function exitSampleMode(){
   document.getElementById('ws-sample-banner').classList.remove('show');
   updateSampleToggle();
   closeDetailPanel();
+  // Restore whatever real analysis state existed before sample mode was entered.
+  if(_samplePrevSaved){ analysisData = _samplePrevAnalysis; roleData = _samplePrevRole; _samplePrevSaved = false; _samplePrevAnalysis = null; _samplePrevRole = null; }
   wsLoadFiles(); refreshDatasetSwitcher();
 }
 function toggleSampleMode(){ if(sampleMode) exitSampleMode(); else viewSampleDataset(); }
