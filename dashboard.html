@@ -1810,10 +1810,17 @@ async function loadUser() {
     document.getElementById('sb-name').textContent   = user.full_name || user.email;
     document.getElementById('sb-plan').textContent   = (user.plan||'trial').charAt(0).toUpperCase()+(user.plan||'trial').slice(1);
     currentRole = user.role || 'AM';
+    onbUserKey = user.id || user.email || '';
+    // If the backend already knows this account is onboarded, respect it.
+    if (user.onboarded === true) { try { localStorage.setItem(onbKey(), '1'); } catch(e){} }
     document.getElementById('role-switcher').value = currentRole;
     updateRoleStyling();
   } catch(e){console.error(e)}
 }
+// Per-account onboarding flag so a different account in the same browser
+// still sees the welcome flow.
+let onbUserKey = '';
+function onbKey(){ return 'aeroa_onboarded_' + (onbUserKey || 'anon'); }
 
 async function loadRoleData() {
   try {
@@ -1887,7 +1894,7 @@ let onbAnswers = {role:'', categories:[], challenges:[]};
 
 function maybeStartOnboarding(){
   if(sampleMode) return;
-  if(localStorage.getItem('aeroa_onboarded')==='1') return;
+  if(localStorage.getItem(onbKey())==='1') return;
   onbIdx = 0; onbAnswers = {role:'', categories:[], challenges:[]};
   renderOnbStep();
   document.getElementById('onb-overlay').classList.add('open');
@@ -1935,7 +1942,7 @@ function onbNext(){
 }
 
 async function finishOnboarding(){
-  localStorage.setItem('aeroa_onboarded','1');
+  localStorage.setItem(onbKey(),'1');
   document.getElementById('onb-overlay').classList.remove('open');
   // Personalise: switch role view to match their answer.
   const roleMap = {'Assistant Merchandiser':'MA','Merchandiser':'Merchandiser','Freelancer':'Merchandiser','Consultant':'Director'};
@@ -1952,7 +1959,7 @@ async function finishOnboarding(){
 }
 
 function skipOnboarding(){
-  localStorage.setItem('aeroa_onboarded','1');
+  localStorage.setItem(onbKey(),'1');
   document.getElementById('onb-overlay').classList.remove('open');
 }
 
