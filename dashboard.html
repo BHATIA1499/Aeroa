@@ -670,6 +670,33 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .upg-card .uc-btn:hover{transform:translateY(-1px)}
 .upg-note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:18px}
 
+/* ── Onboarding ── */
+.onb-overlay{position:fixed;inset:0;background:rgba(20,24,20,.6);backdrop-filter:blur(5px);z-index:1100;
+  display:none;align-items:center;justify-content:center;padding:24px}
+.onb-overlay.open{display:flex;animation:upgFade .25s ease}
+.onb-modal{background:var(--bg,#fff);border:1px solid var(--glass-border);border-radius:22px;max-width:600px;width:100%;
+  max-height:92vh;overflow-y:auto;box-shadow:0 26px 80px rgba(0,0,0,.32);padding:32px;animation:upgRise .3s cubic-bezier(.2,.7,.3,1)}
+.onb-step-dots{display:flex;gap:6px;margin-bottom:18px}
+.onb-dot{width:24px;height:4px;border-radius:4px;background:var(--border)}
+.onb-dot.active{background:var(--mint-d)}
+.onb-eyebrow{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mint-d);margin-bottom:6px}
+.onb-q{font-family:var(--serif);font-size:21px;font-weight:800;color:var(--text);margin-bottom:4px}
+.onb-hint{font-size:13px;color:var(--text2);margin-bottom:20px}
+.onb-opts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.onb-opt{display:flex;align-items:center;gap:10px;text-align:left;font-family:var(--body);font-size:14px;font-weight:600;
+  color:var(--text);background:var(--glass);border:1.5px solid var(--glass-border);border-radius:13px;padding:14px 16px;
+  cursor:pointer;transition:all .14s ease}
+.onb-opt:hover{border-color:var(--mint-d);transform:translateY(-2px)}
+.onb-opt.sel{border-color:var(--mint-d);background:rgba(125,170,117,.12);box-shadow:0 6px 18px rgba(125,170,117,.16)}
+.onb-opt .oo-ic{font-size:18px}
+.onb-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.onb-skip{background:none;border:none;font-size:13px;color:var(--text3);cursor:pointer}
+.onb-next{font-family:var(--body);font-size:14px;font-weight:700;color:#fff;background:var(--text);border:none;
+  border-radius:11px;padding:12px 24px;cursor:pointer;transition:transform .12s ease,opacity .12s}
+.onb-next:hover{transform:translateY(-1px)}
+.onb-next:disabled{opacity:.4;cursor:not-allowed;transform:none}
+@media(max-width:560px){.onb-opts{grid-template-columns:1fr}}
+
 /* ── Premium feature lock ── */
 .premium-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;text-transform:uppercase;
   letter-spacing:.04em;color:var(--mint-d);background:rgba(125,170,117,.14);padding:2px 8px;border-radius:20px;vertical-align:middle}
@@ -1709,17 +1736,21 @@ document.addEventListener('click', (ev) => {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUser();
   loadTrialState();
+  let hasAnalysis = false;
   try {
     const res = await fetch('/api/analysis', {credentials:'include'});
     if (res.ok) {
       const data = await res.json();
       if (data && data.kpis) {
         analysisData = data;
+        hasAnalysis = true;
         await loadRoleData();
         showRoleView();
       }
     }
   } catch {}
+  // First-run onboarding for users who haven't analysed anything yet.
+  if(!hasAnalysis) maybeStartOnboarding();
   // Populate the Data Workspace dataset switcher (non-blocking)
   refreshDatasetSwitcher();
 });
@@ -1792,6 +1823,94 @@ function renderTrialBanner(){
 function dismissTrialBanner(){
   localStorage.setItem('aeroa_trial_banner_dismissed','1');
   const el=document.getElementById('trial-banner'); if(el) el.style.display='none';
+}
+
+// ── Onboarding (first-run role / category / challenge picker) ──
+const ONB_STEPS = [
+  { key:'role', multi:false, q:'What best describes your role?',
+    hint:'We tailor your dashboard and Copilot to how you work.',
+    opts:[{v:'Assistant Merchandiser',ic:'📋'},{v:'Merchandiser',ic:'📊'},
+          {v:'Freelancer',ic:'💼'},{v:'Consultant',ic:'🎯'}] },
+  { key:'categories', multi:true, q:'Which categories do you work across?',
+    hint:'Pick all that apply — this shapes your examples and benchmarks.',
+    opts:[{v:'Fashion',ic:'👗'},{v:'Home',ic:'🛋️'},{v:'Beauty',ic:'💄'},{v:'Accessories',ic:'👜'}] },
+  { key:'challenges', multi:true, q:'What do you want Aeroa to help with most?',
+    hint:'Choose your top priorities — we surface these first.',
+    opts:[{v:'Understanding reports',ic:'🔍'},{v:'Finding stock issues',ic:'📦'},
+          {v:'Markdown decisions',ic:'🏷️'},{v:'Reordering',ic:'🔄'}] },
+];
+let onbIdx = 0;
+let onbAnswers = {role:'', categories:[], challenges:[]};
+
+function maybeStartOnboarding(){
+  if(sampleMode) return;
+  if(localStorage.getItem('aeroa_onboarded')==='1') return;
+  onbIdx = 0; onbAnswers = {role:'', categories:[], challenges:[]};
+  renderOnbStep();
+  document.getElementById('onb-overlay').classList.add('open');
+}
+
+function renderOnbStep(){
+  const step = ONB_STEPS[onbIdx];
+  document.getElementById('onb-q').textContent = step.q;
+  document.getElementById('onb-hint').textContent = step.hint;
+  document.getElementById('onb-dots').innerHTML =
+    ONB_STEPS.map((_,i)=>`<div class="onb-dot${i<=onbIdx?' active':''}"></div>`).join('');
+  const cur = onbAnswers[step.key];
+  document.getElementById('onb-opts').innerHTML = step.opts.map(o=>{
+    const sel = step.multi ? (cur||[]).includes(o.v) : cur===o.v;
+    return `<button class="onb-opt${sel?' sel':''}" onclick="onbPick('${step.key}','${o.v.replace(/'/g,"\\'")}',${step.multi})">
+      <span class="oo-ic">${o.ic}</span><span>${o.v}</span></button>`;
+  }).join('');
+  const isLast = onbIdx===ONB_STEPS.length-1;
+  document.getElementById('onb-next').textContent = isLast ? 'Finish' : 'Continue';
+  refreshOnbNext();
+}
+
+function onbPick(key, val, multi){
+  if(multi){
+    const arr = onbAnswers[key] || [];
+    const i = arr.indexOf(val);
+    if(i>=0) arr.splice(i,1); else arr.push(val);
+    onbAnswers[key] = arr;
+  } else {
+    onbAnswers[key] = val;
+  }
+  renderOnbStep();
+}
+
+function refreshOnbNext(){
+  const step = ONB_STEPS[onbIdx];
+  const cur = onbAnswers[step.key];
+  const ok = step.multi ? (cur && cur.length>0) : !!cur;
+  document.getElementById('onb-next').disabled = !ok;
+}
+
+function onbNext(){
+  if(onbIdx < ONB_STEPS.length-1){ onbIdx++; renderOnbStep(); return; }
+  finishOnboarding();
+}
+
+async function finishOnboarding(){
+  localStorage.setItem('aeroa_onboarded','1');
+  document.getElementById('onb-overlay').classList.remove('open');
+  // Personalise: switch role view to match their answer.
+  const roleMap = {'Assistant Merchandiser':'MA','Merchandiser':'Merchandiser','Freelancer':'Merchandiser','Consultant':'Director'};
+  const mapped = roleMap[onbAnswers.role] || 'AM';
+  try {
+    await fetch('/api/user/onboarding', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json', ...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},
+      body: JSON.stringify(onbAnswers)
+    });
+    if(typeof switchRole==='function'){ currentRole = mapped; document.getElementById('role-switcher').value = mapped; switchRole(mapped); }
+  } catch(e){ /* non-fatal */ }
+  showUploadToast('success','You’re all set','Upload a trading report or try the sample data to see Aeroa in action.',5000);
+}
+
+function skipOnboarding(){
+  localStorage.setItem('aeroa_onboarded','1');
+  document.getElementById('onb-overlay').classList.remove('open');
 }
 
 // ── Upgrade modal ──
@@ -4627,6 +4746,21 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
 </div>
 
 <!-- AI Chat Panel -->
+<!-- ONBOARDING MODAL -->
+<div class="onb-overlay" id="onb-overlay">
+  <div class="onb-modal">
+    <div class="onb-step-dots" id="onb-dots"></div>
+    <div class="onb-eyebrow">Welcome to Aeroa</div>
+    <div class="onb-q" id="onb-q"></div>
+    <div class="onb-hint" id="onb-hint"></div>
+    <div class="onb-opts" id="onb-opts"></div>
+    <div class="onb-actions">
+      <button class="onb-skip" onclick="skipOnboarding()">Skip for now</button>
+      <button class="onb-next" id="onb-next" onclick="onbNext()" disabled>Continue</button>
+    </div>
+  </div>
+</div>
+
 <!-- UPGRADE MODAL -->
 <div class="upg-overlay" id="upg-overlay" onclick="if(event.target===this)closeUpgrade()">
   <div class="upg-modal">

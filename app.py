@@ -1665,6 +1665,46 @@ def set_user_role(user):
     return jsonify({"ok": True, "role": role})
 
 
+@app.route("/api/user/onboarding", methods=["POST"])
+@require_auth
+def save_onboarding(user):
+    """Persist onboarding answers (role, categories, challenges). Role maps to the
+    existing profiles.role column; the rest is stored best-effort in an
+    `onboarding` JSON column if present (non-fatal if the column doesn't exist)."""
+    body = request.get_json(silent=True) or {}
+    role = (body.get("role") or "").strip()
+    categories = body.get("categories") or []
+    challenges = body.get("challenges") or []
+
+    role_map = {  # onboarding labels → internal role codes
+        "Assistant Merchandiser": "MA", "Merchandising Assistant": "MA",
+        "Merchandiser": "Merchandiser", "Freelancer": "Merchandiser",
+        "Consultant": "Director",
+    }
+    internal_role = role_map.get(role, session.get("user_role", "AM"))
+    session["user_role"] = internal_role
+    session["onboarding"] = {"role": role, "categories": categories, "challenges": challenges}
+
+    try:
+        get_user_db().table("profiles").update({
+            "role": internal_role,
+            "onboarding": {"role": role, "categories": categories, "challenges": challenges},
+            "onboarded": True,
+        }).eq("id", user["id"]).execute()
+        session.pop("user_profile", None)
+    except Exception as e:
+        # Most likely the optional columns aren't in the schema yet — that's fine,
+        # the frontend also remembers completion locally.
+        app.logger.info(f"Onboarding persist (non-fatal): {e}")
+        try:
+            get_user_db().table("profiles").update({"role": internal_role}).eq("id", user["id"]).execute()
+            session.pop("user_profile", None)
+        except Exception:
+            pass
+
+    return jsonify({"ok": True, "role": internal_role})
+
+
 # ═══════════════════════════════════════════════════════════════
 # PROTECTED APP ROUTES
 # ═══════════════════════════════════════════════════════════════
