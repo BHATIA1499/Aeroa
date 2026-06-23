@@ -922,6 +922,16 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-export-s{font-size:12.5px;color:var(--text3);margin-top:3px}
 .ws-export-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px 24px 26px}
 @media(max-width:560px){.ws-export-grid{grid-template-columns:1fr}}
+/* Featured "Monday Trading Pack" export hero */
+.ws-exp-hero{grid-column:1 / -1;display:flex;gap:15px;align-items:center;cursor:pointer;text-align:left;
+  background:linear-gradient(120deg,rgba(125,170,117,0.14),rgba(184,196,232,0.14));
+  border:1px solid var(--mint-d);border-radius:15px;padding:17px 19px;transition:all .15s;width:100%}
+.ws-exp-hero:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(80,110,70,.16)}
+.ws-exp-hero .eh-ic{font-size:30px;flex-shrink:0}
+.ws-exp-hero .eh-t{font-family:var(--serif);font-size:16px;font-weight:800;color:var(--text);margin-bottom:3px}
+.ws-exp-hero .eh-d{font-size:12px;color:var(--text2);line-height:1.45}
+.ws-exp-hero .eh-badge{margin-left:auto;flex-shrink:0;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  color:#3A7032;background:rgba(125,170,117,.18);border-radius:20px;padding:5px 11px}
 .ws-exp-card{display:flex;gap:13px;align-items:flex-start;background:var(--glass);border:1px solid var(--glass-border);border-radius:13px;padding:15px;cursor:pointer;transition:all .15s;text-align:left}
 .ws-exp-card:hover{border-color:var(--mint-d);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.1)}
 .ws-exp-card .ec-ic{font-size:24px;flex-shrink:0}
@@ -4215,7 +4225,16 @@ function openExportCentre(id){
   exportTargetId = id || currentUploadId || (sampleMode?SAMPLE_WS.current_upload_id:null);
   const f = findWsFile(exportTargetId);
   document.getElementById('ws-export-sub').textContent = f ? `From “${f.display_name}” · ${fmtDate(f.upload_date)}` : 'Presentation-ready outputs from your analysis';
-  document.getElementById('ws-export-grid').innerHTML = EXPORT_OPTS.map(o=>`
+  const hero = `
+    <button class="ws-exp-hero" onclick="doExport('pptx','Monday Trading Pack')">
+      <div class="eh-ic">📅</div>
+      <div>
+        <div class="eh-t">Generate Monday Trading Pack</div>
+        <div class="eh-d">Your full trading review in one click — KPIs, category performance, markdown &amp; reorder actions, ready for the Monday meeting.</div>
+      </div>
+      <span class="eh-badge">★ Recommended</span>
+    </button>`;
+  document.getElementById('ws-export-grid').innerHTML = hero + EXPORT_OPTS.map(o=>`
     <button class="ws-exp-card" onclick="doExport('${o.ep}','${escapeHtml(o.t)}')">
       <div class="ec-ic">${o.ic}</div>
       <div><div class="ec-t">${o.t}</div><div class="ec-d">${o.d}</div><span class="ec-fmt">${o.fmt}</span></div>
