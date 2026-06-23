@@ -2112,6 +2112,26 @@ function renderEmptyChart(canvasId, message) {
 }
 
 function switchSection(sectionName) {
+  // If we're currently in the Data Workspace (or Command Centre), a sidebar
+  // operation click should bring us back to the role dashboard first — otherwise
+  // the workspace stays on top and nothing appears to happen.
+  if (workspaceOpen) {
+    workspaceOpen = false;
+    const wv = document.getElementById('workspace-view');
+    if (wv) wv.style.display = 'none';
+    const wsBtn = document.getElementById('sb-ws-btn');
+    if (wsBtn) wsBtn.classList.remove('active');
+    if (analysisData) {
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('role-views').style.display = 'block';
+    } else {
+      // No data loaded — nothing to show in a section; fall back to empty state.
+      document.getElementById('role-views').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'block';
+    }
+    updateTopNav('analytics');
+  }
+
   // Find the active role view
   const viewMap = {MA:'view-ma', AM:'view-am', Merchandiser:'view-merch', Director:'view-dir'};
   const view = document.getElementById(viewMap[currentRole]);
@@ -3572,6 +3592,10 @@ function viewSampleDataset(){
   sampleMode = true;
   document.getElementById('ws-sample-banner').classList.add('show');
   updateSampleToggle();
+  // Make sure the Data Workspace is actually visible (hides empty-state / role-views).
+  // Previously this was skipped, so clicking "Try Sample Data" from the empty
+  // state appeared to do nothing.
+  openWorkspace();
   wsMode('analysis');
   wsView='active'; wsActiveTag=''; wsTab('library'); wsLoadFiles(); refreshDatasetSwitcher();
 }
