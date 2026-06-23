@@ -627,6 +627,61 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .ws-cmp-commentary li.warn::before{background:#E0975A}
 .ws-cmp-commentary li.bad::before{background:#E05A4A}
 
+/* ── Trial banner ── */
+#trial-banner{display:flex;align-items:center;gap:14px;padding:11px 22px;font-size:13px;font-weight:600;
+  border-bottom:1px solid var(--glass-border)}
+#trial-banner.live{background:linear-gradient(90deg,rgba(125,170,117,.16),rgba(184,196,232,.16));color:var(--text)}
+#trial-banner.soon{background:linear-gradient(90deg,rgba(224,151,90,.18),rgba(224,151,90,.06));color:var(--text)}
+#trial-banner.ended{background:linear-gradient(90deg,rgba(224,90,74,.2),rgba(224,90,74,.06));color:var(--text)}
+#trial-banner .tb-ic{font-size:15px}
+#trial-banner .tb-msg{flex:1}
+#trial-banner .tb-cta{font-family:var(--body);font-size:12.5px;font-weight:700;color:#fff;background:var(--text);
+  border:none;border-radius:9px;padding:7px 15px;cursor:pointer;white-space:nowrap;transition:transform .12s ease,box-shadow .12s ease}
+#trial-banner .tb-cta:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+#trial-banner .tb-x{background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:2px 6px}
+
+/* ── Upgrade modal ── */
+.upg-overlay{position:fixed;inset:0;background:rgba(20,24,20,.55);backdrop-filter:blur(4px);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:24px;animation:upgFade .2s ease}
+.upg-overlay.open{display:flex}
+@keyframes upgFade{from{opacity:0}to{opacity:1}}
+.upg-modal{background:var(--bg,#fff);border:1px solid var(--glass-border);border-radius:20px;max-width:880px;width:100%;
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.3);padding:30px;animation:upgRise .25s cubic-bezier(.2,.7,.3,1)}
+@keyframes upgRise{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.upg-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.upg-title{font-family:var(--serif);font-size:22px;font-weight:800;color:var(--text)}
+.upg-sub{font-size:13.5px;color:var(--text2);margin-bottom:22px;max-width:560px;line-height:1.5}
+.upg-x{background:none;border:none;font-size:20px;color:var(--text3);cursor:pointer;line-height:1}
+.upg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.upg-card{border:1.5px solid var(--glass-border);border-radius:15px;padding:20px;display:flex;flex-direction:column;gap:6px;
+  background:var(--glass);transition:border-color .15s ease,transform .15s ease}
+.upg-card:hover{transform:translateY(-3px)}
+.upg-card.best{border-color:var(--mint-d);box-shadow:0 8px 28px rgba(125,170,117,.18)}
+.upg-card .uc-best{align-self:flex-start;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--mint-d);background:rgba(125,170,117,.14);padding:3px 9px;border-radius:20px;margin-bottom:2px}
+.upg-card .uc-name{font-family:var(--serif);font-size:17px;font-weight:800;color:var(--text)}
+.upg-card .uc-price{font-size:20px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+.upg-card .uc-blurb{font-size:12px;color:var(--text3);margin-bottom:8px;min-height:32px}
+.upg-card .uc-feat{font-size:12.5px;color:var(--text2);display:flex;gap:7px;align-items:flex-start}
+.upg-card .uc-feat::before{content:'✓';color:var(--mint-d);font-weight:800}
+.upg-card .uc-btn{margin-top:12px;font-family:var(--body);font-size:13px;font-weight:700;color:#fff;background:var(--text);
+  border:none;border-radius:10px;padding:11px;cursor:pointer;transition:transform .12s ease}
+.upg-card.best .uc-btn{background:var(--mint-d)}
+.upg-card .uc-btn:hover{transform:translateY(-1px)}
+.upg-note{font-size:11.5px;color:var(--text3);text-align:center;margin-top:18px}
+
+/* ── Premium feature lock ── */
+.premium-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--mint-d);background:rgba(125,170,117,.14);padding:2px 8px;border-radius:20px;vertical-align:middle}
+.premium-lock{position:relative;border:1px dashed var(--glass-border);border-radius:14px;padding:26px 22px;text-align:center;
+  background:linear-gradient(135deg,rgba(125,170,117,.05),rgba(184,196,232,.05))}
+.premium-lock .pl-ic{font-size:24px;margin-bottom:8px}
+.premium-lock .pl-t{font-size:14.5px;font-weight:800;color:var(--text);margin-bottom:4px}
+.premium-lock .pl-s{font-size:12.5px;color:var(--text2);max-width:360px;margin:0 auto 14px;line-height:1.5}
+.premium-lock .pl-btn{font-family:var(--body);font-size:12.5px;font-weight:700;color:#fff;background:var(--mint-d);
+  border:none;border-radius:9px;padding:9px 17px;cursor:pointer;transition:transform .12s ease}
+.premium-lock .pl-btn:hover{transform:translateY(-1px)}
+
 /* compare entity drill-down (SKU / category search) */
 .ws-cmp-entity-head{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:var(--shadow)}
 .ws-cmp-seg{display:inline-flex;background:var(--glass-2,rgba(0,0,0,.04));border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:14px}
@@ -954,6 +1009,8 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
 <!-- MAIN -->
 <div id="main">
+  <!-- TRIAL / UPGRADE BANNER (populated by renderTrialBanner) -->
+  <div id="trial-banner" style="display:none"></div>
   <!-- TOPBAR -->
   <div id="topbar">
     <div class="topbar-left">
@@ -1651,6 +1708,7 @@ document.addEventListener('click', (ev) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadUser();
+  loadTrialState();
   try {
     const res = await fetch('/api/analysis', {credentials:'include'});
     if (res.ok) {
@@ -1689,6 +1747,101 @@ async function loadRoleData() {
     if (res.ok) { roleData = await res.json(); }
   } catch {}
 }
+
+// ── Trial / subscription state (display layer; server enforces hard limits) ──
+let TRIAL = {plan:'trial', is_paid:false, expired:false, days_left:null, premium_unlocked:false};
+let BILLING_PLANS = null;
+
+async function loadTrialState(){
+  if(sampleMode){  // demo: show a friendly live-trial banner
+    TRIAL = {plan:'trial', is_paid:false, expired:false, days_left:14, premium_unlocked:false};
+    BILLING_PLANS = SAMPLE_BILLING_PLANS;
+    renderTrialBanner(); return;
+  }
+  try {
+    const res = await fetch('/api/billing/plans', {credentials:'include'});
+    if(res.ok){ const d = await res.json(); TRIAL = d.state || TRIAL; BILLING_PLANS = d.plans || null; }
+  } catch(e){ /* non-fatal */ }
+  renderTrialBanner();
+}
+
+function renderTrialBanner(){
+  const el = document.getElementById('trial-banner'); if(!el) return;
+  if(localStorage.getItem('aeroa_trial_banner_dismissed')==='1' && !TRIAL.expired){ el.style.display='none'; return; }
+  if(TRIAL.is_paid){ el.style.display='none'; return; }
+
+  if(TRIAL.expired){
+    el.className='ended'; el.style.display='flex';
+    el.innerHTML = `<span class="tb-ic">⏳</span>
+      <span class="tb-msg">Your Aeroa free trial has ended. Upgrade to continue analysing trading data — your saved analyses stay available.</span>
+      <button class="tb-cta" onclick="openUpgrade('trial-ended')">Upgrade to continue</button>`;
+    return;
+  }
+  const d = TRIAL.days_left;
+  const soon = (d!=null && d<=3);
+  el.className = soon ? 'soon' : 'live'; el.style.display='flex';
+  const left = (d==null) ? 'Your free trial is active'
+             : (d===0 ? 'Your free trial ends today'
+                      : `${d} day${d===1?'':'s'} left in your free trial`);
+  el.innerHTML = `<span class="tb-ic">${soon?'⏳':'✨'}</span>
+    <span class="tb-msg">${left} — full access to analysis, Command Centre and Copilot.</span>
+    <button class="tb-cta" onclick="openUpgrade('trial-banner')">See plans</button>
+    <button class="tb-x" title="Dismiss" onclick="dismissTrialBanner()">✕</button>`;
+}
+
+function dismissTrialBanner(){
+  localStorage.setItem('aeroa_trial_banner_dismissed','1');
+  const el=document.getElementById('trial-banner'); if(el) el.style.display='none';
+}
+
+// ── Upgrade modal ──
+function openUpgrade(source){
+  const grid = document.getElementById('upg-grid');
+  const plans = BILLING_PLANS || SAMPLE_BILLING_PLANS;
+  const order = ['starter','growth','studio'];
+  grid.innerHTML = order.filter(k=>plans[k]).map(k=>{
+    const p = plans[k];
+    return `<div class="upg-card${p.best?' best':''}">
+      ${p.best?'<span class="uc-best">Most popular</span>':''}
+      <div class="uc-name">${escapeHtml(p.name)}</div>
+      <div class="uc-price">${escapeHtml(p.price)}</div>
+      <div class="uc-blurb">${escapeHtml(p.blurb||'')}</div>
+      <div class="uc-feat">${escapeHtml(p.skus)}</div>
+      <div class="uc-feat">${escapeHtml(p.ai)}</div>
+      <div class="uc-feat">SKU &amp; category intelligence</div>
+      <div class="uc-feat">All export formats</div>
+      <button class="uc-btn" onclick="startCheckout('${k}')">Choose ${escapeHtml(p.name)}</button>
+    </div>`;
+  }).join('');
+  const sub = document.getElementById('upg-sub');
+  if(source==='trial-ended') sub.textContent = 'Your trial has ended. Pick a plan to keep analysing your trading data — it takes under a minute.';
+  else if(source && source.startsWith('lock:')) sub.textContent = 'This is a premium feature. Upgrade to unlock SKU & category intelligence and unlimited Copilot.';
+  else sub.textContent = 'Keep analysing your trading data, unlock SKU & category intelligence, and run unlimited Copilot questions.';
+  document.getElementById('upg-overlay').classList.add('open');
+}
+function closeUpgrade(){ document.getElementById('upg-overlay').classList.remove('open'); }
+
+async function startCheckout(plan){
+  if(sampleMode){ showUploadToast('info','Sample mode','Sign up and start your free trial to upgrade — this is a preview.',5000); return; }
+  showUploadToast('loading','Opening secure checkout…','Redirecting you to Stripe…',4000);
+  try {
+    const res = await fetch('/api/billing/checkout', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json', ...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},
+      body: JSON.stringify({plan})
+    });
+    const d = await res.json();
+    if(res.ok && d.url){ window.location.href = d.url; }
+    else { showUploadToast('error','Could not start checkout', d.error || 'Please try again.', 7000); }
+  } catch(e){ showUploadToast('error','Checkout error', e.message, 7000); }
+}
+
+// Sample/fallback plan copy mirrors backend BILLING_PLANS for preview mode.
+const SAMPLE_BILLING_PLANS = {
+  starter:{name:'Starter',price:'£29/mo',skus:'200 SKUs / upload',ai:'50 Copilot questions / mo',blurb:'For solo merchandisers getting started.'},
+  growth:{name:'Growth',price:'£79/mo',skus:'Unlimited SKUs',ai:'Unlimited Copilot',blurb:'For busy merchandisers and freelancers across clients.'},
+  studio:{name:'Studio',price:'£149/mo',skus:'Unlimited SKUs',ai:'Unlimited Copilot',blurb:'For consultants and small teams.',best:true}
+};
 
 // ── Role switching ────────────────────────────────────────────
 async function switchRole(role) {
@@ -3903,6 +4056,7 @@ function openHealthBreakdown(){
 function closeHealthBreakdown(){ document.getElementById('hb-overlay').classList.remove('open'); }
 function doExport(ep, label){
   if(sampleMode){ showUploadToast('info','Sample mode','“'+label+'” export is available once you upload your own data.',5000); closeExportCentre(); return; }
+  if(TRIAL.expired){ closeExportCentre(); openUpgrade('lock:export'); return; }
   showUploadToast('loading','Preparing export…','Building “'+label+'” — this can take a moment.',4000);
   closeExportCentre();
   const q = exportTargetId ? ('?upload_id='+exportTargetId) : '';
@@ -4459,6 +4613,21 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
 </div>
 
 <!-- AI Chat Panel -->
+<!-- UPGRADE MODAL -->
+<div class="upg-overlay" id="upg-overlay" onclick="if(event.target===this)closeUpgrade()">
+  <div class="upg-modal">
+    <div class="upg-head">
+      <div>
+        <div class="upg-title" id="upg-title">Upgrade your Aeroa plan</div>
+      </div>
+      <button class="upg-x" onclick="closeUpgrade()">✕</button>
+    </div>
+    <div class="upg-sub" id="upg-sub">Keep analysing your trading data, unlock SKU &amp; category intelligence, and run unlimited Copilot questions.</div>
+    <div class="upg-grid" id="upg-grid"></div>
+    <div class="upg-note">Secure checkout via Stripe · cancel anytime · your trading data stays private to you.</div>
+  </div>
+</div>
+
 <div id="ai-chat-panel">
   <div id="ai-chat-header">
     <div class="chat-header-dot"></div>

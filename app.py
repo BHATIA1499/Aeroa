@@ -2927,6 +2927,95 @@ Return ONLY a JSON array, no markdown."""
 
 
 # ═══════════════════════════════════════════════════════════════
+# BILLING — plan info + Stripe Checkout
+# ═══════════════════════════════════════════════════════════════
+
+# Display metadata for the upgrade modal. Hard limits live in PLAN_LIMITS; this
+# is purely the marketing copy shown to the user.
+BILLING_PLANS = {
+    "starter": {"name": "Starter", "price": "£29/mo",
+                "skus": "200 SKUs / upload", "ai": "50 Copilot questions / mo",
+                "blurb": "For solo merchandisers getting started."},
+    "growth":  {"name": "Growth",  "price": "£79/mo",
+                "skus": "Unlimited SKUs", "ai": "Unlimited Copilot",
+                "blurb": "For busy merchandisers and freelancers across clients."},
+    "studio":  {"name": "Studio",  "price": "£149/mo",
+                "skus": "Unlimited SKUs", "ai": "Unlimited Copilot",
+                "blurb": "For consultants and small teams.", "best": True},
+}
+
+
+def _trial_state(user):
+    """Compute trial/subscription state for the frontend (display only — hard
+    limits are still enforced server-side in check_plan_limit / upload / chat)."""
+    plan = (user or {}).get("plan", "trial")
+    trial_ends = (user or {}).get("trial_ends")
+    is_paid = plan in ("starter", "growth", "studio")
+    days_left, expired = None, False
+    if trial_ends and not is_paid:
+        try:
+            end = datetime.fromisoformat(str(trial_ends).replace("Z", "+00:00"))
+            now = datetime.now(end.tzinfo) if end.tzinfo else datetime.utcnow()
+            days_left = max(0, (end - now).days + (1 if (end - now).seconds else 0))
+            expired = end <= now
+        except Exception:
+            days_left = None
+    return {
+        "plan": plan,
+        "is_paid": is_paid,
+        "trial_ends": trial_ends,
+        "days_left": days_left,
+        "expired": bool(expired and not is_paid),
+        "premium_unlocked": is_paid,
+    }
+
+
+@app.route("/api/billing/plans")
+@require_auth
+def billing_plans(user):
+    """Plan catalogue + the caller's current trial/subscription state."""
+    return jsonify({"plans": BILLING_PLANS, "state": _trial_state(user)})
+
+
+@app.route("/api/billing/checkout", methods=["POST"])
+@require_auth
+def billing_checkout(user):
+    """Create a Stripe Checkout Session for the chosen plan and return its URL.
+    The user completes payment on Stripe's hosted page; the webhook upgrades the
+    profile. We never handle card details ourselves."""
+    if not stripe.api_key:
+        return jsonify({"error": "Billing is not configured yet. Please contact support to upgrade."}), 503
+    body = request.get_json(silent=True) or {}
+    plan = (body.get("plan") or "").strip().lower()
+    price_env = {"starter": "STRIPE_PRICE_STARTER",
+                 "growth":  "STRIPE_PRICE_GROWTH",
+                 "studio":  "STRIPE_PRICE_STUDIO"}.get(plan)
+    price_id = os.environ.get(price_env, "") if price_env else ""
+    if not price_id:
+        return jsonify({"error": "That plan isn't available for self-serve checkout yet."}), 400
+    base = request.host_url.rstrip("/")
+    try:
+        kwargs = {
+            "mode": "subscription",
+            "line_items": [{"price": price_id, "quantity": 1}],
+            "success_url": f"{base}/dashboard?upgraded=1",
+            "cancel_url": f"{base}/dashboard?upgrade_cancelled=1",
+            "client_reference_id": user["id"],
+            "allow_promotion_codes": True,
+        }
+        cust = user.get("stripe_customer_id")
+        if cust:
+            kwargs["customer"] = cust
+        elif user.get("email"):
+            kwargs["customer_email"] = user["email"]
+        sess = stripe.checkout.Session.create(**kwargs)
+        return jsonify({"url": sess.url})
+    except Exception as e:
+        app.logger.error(f"checkout error: {e}")
+        return jsonify({"error": "Could not start checkout. Please try again."}), 500
+
+
+# ═══════════════════════════════════════════════════════════════
 # STRIPE WEBHOOKS
 # ═══════════════════════════════════════════════════════════════
 
