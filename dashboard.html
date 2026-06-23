@@ -2120,6 +2120,13 @@ function renderEmptyChart(canvasId, message) {
 }
 
 function switchSection(sectionName) {
+  // Empty account with nothing loaded: a sidebar operation click would otherwise
+  // bounce to the upload screen and appear broken. Auto-load the demo dataset so
+  // the operations panel actually shows something (the sample banner flags it as
+  // demo data, and "Exit Sample Data" / "Upload data" remain available).
+  if (!analysisData && !sampleMode) {
+    viewSampleDataset(); // populates analysisData/roleData and opens the workspace
+  }
   // If we're currently in the Data Workspace (or Command Centre), a sidebar
   // operation click should bring us back to the role dashboard first — otherwise
   // the workspace stays on top and nothing appears to happen.
@@ -2193,6 +2200,9 @@ function updateRoleStyling() {
 
 function showRoleView() {
   if (!analysisData) return;
+  // Reset the topbar title back to the role view (openWorkspace set it to
+  // "Data Workspace"); otherwise the header stays stale when toggling back.
+  document.getElementById('topbar-title').textContent = ROLE_TITLES[currentRole] || 'Dashboard';
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('role-views').style.display = 'block';
   // Leaving the Data Workspace if it was open
