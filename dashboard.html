@@ -114,6 +114,29 @@ body{font-family:var(--body);background:var(--bg-grad);background-attachment:fix
 .empty-sample-sub{font-size:12px;color:var(--text2);line-height:1.5;font-weight:300}
 .upload-progress{font-size:13px;color:var(--mint-d);margin-top:12px;display:none}
 
+/* ── ANALYSIS LOADER OVERLAY ── */
+#analysis-loader{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;
+  background:rgba(247,245,240,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#analysis-loader.show{display:flex;animation:alFade .35s ease}
+@keyframes alFade{from{opacity:0}to{opacity:1}}
+.al-card{position:relative;width:min(420px,90vw);padding:38px 34px;text-align:center;
+  background:rgba(255,255,255,0.7);border:1px solid var(--glass-border,rgba(0,0,0,.06));border-radius:22px;
+  box-shadow:0 24px 70px rgba(40,50,40,0.18)}
+.al-orbit{position:relative;width:84px;height:84px;margin:0 auto 22px}
+.al-orbit .al-ring{position:absolute;inset:0;border-radius:50%;border:2.5px solid transparent;
+  border-top-color:var(--mint-d);animation:alSpin 1.1s linear infinite}
+.al-orbit .al-ring.r2{inset:12px;border-top-color:#B8C4E8;animation-duration:1.6s;animation-direction:reverse}
+.al-orbit .al-ring.r3{inset:24px;border-top-color:#F4C0A8;animation-duration:2.1s}
+.al-orbit .al-core{position:absolute;inset:32px;border-radius:50%;background:var(--mint-d);opacity:.18;animation:alPulse 1.6s ease-in-out infinite}
+@keyframes alSpin{to{transform:rotate(360deg)}}
+@keyframes alPulse{0%,100%{transform:scale(.85);opacity:.16}50%{transform:scale(1.12);opacity:.32}}
+.al-title{font-family:var(--serif);font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px}
+.al-step{font-size:13px;color:var(--text2);min-height:18px;transition:opacity .25s;line-height:1.5}
+.al-bar{height:4px;border-radius:3px;margin-top:20px;background:rgba(0,0,0,0.06);overflow:hidden}
+.al-bar-fill{height:100%;width:0%;border-radius:3px;
+  background:linear-gradient(90deg,var(--mint-d),#B8C4E8);transition:width .6s ease}
+@media(prefers-reduced-motion:reduce){.al-ring,.al-core{animation:none}}
+
 /* ── UPLOAD TOAST ── */
 #upload-toast{
   position:fixed;top:68px;right:20px;z-index:9999;
@@ -190,6 +213,16 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 /* ── ROLE VIEWS ── */
 .role-view{display:none;opacity:0;transition:opacity 0.3s}
 .role-view.active{display:block;opacity:1}
+/* Staggered entrance for KPI cards when a role view becomes active */
+.role-view.active .kpi-grid > .kpi{animation:kpiRise .5s cubic-bezier(.22,1,.36,1) both}
+.role-view.active .kpi-grid > .kpi:nth-child(1){animation-delay:.02s}
+.role-view.active .kpi-grid > .kpi:nth-child(2){animation-delay:.07s}
+.role-view.active .kpi-grid > .kpi:nth-child(3){animation-delay:.12s}
+.role-view.active .kpi-grid > .kpi:nth-child(4){animation-delay:.17s}
+.role-view.active .kpi-grid > .kpi:nth-child(5){animation-delay:.22s}
+.role-view.active .kpi-grid > .kpi:nth-child(6){animation-delay:.27s}
+@keyframes kpiRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.role-view.active .kpi-grid > .kpi{animation:none}}
 
 /* ── ROLE SECTIONS (show/hide nav) ── */
 .role-section{display:none}
@@ -2424,13 +2457,13 @@ function renderAM() {
   // Populate KPI accordion
   const mdCount = (analysisData.markdown_risk||[]).length;
   const roCount = (analysisData.reorder_alerts||[]).length;
-  document.getElementById('am-kpi-revenue').textContent  = fmtCurr(totalRev);
+  countUp('am-kpi-revenue', totalRev, fmtCurr);
   document.getElementById('am-kpi-margin2').textContent  = mgText(blendMg, mgOk);
-  document.getElementById('am-kpi-md').textContent       = mdCount;
+  countUp('am-kpi-md', mdCount, v => Math.round(v).toString(), 600);
   document.getElementById('am-kpi-md-sub').textContent   = mdCount > 0 ? `${mdCount} SKU${mdCount>1?'s':''} at risk` : 'No markdown risk';
-  document.getElementById('am-kpi-ro').textContent       = roCount;
+  countUp('am-kpi-ro', roCount, v => Math.round(v).toString(), 600);
 
-  document.getElementById('am-st').textContent     = avgST.toFixed(1)+'%';
+  countUp('am-st', avgST, v => v.toFixed(1)+'%');
   document.getElementById('am-cover').textContent  = avgCv.toFixed(1)+'w';
   document.getElementById('am-margin').textContent = mgText(avgMg, mgOk);
   document.getElementById('am-turn').textContent   = stockTurn+'x';
@@ -2671,9 +2704,9 @@ function renderMerch() {
   const otbBudget = totalRev*0.15;
   const otbPct = otbBudget > 0 ? Math.round(openPoVal/otbBudget*100) : 73;
 
-  document.getElementById('mc-rev').textContent    = fmtCurr(totalRev);
+  countUp('mc-rev', totalRev, fmtCurr);
   document.getElementById('mc-margin').textContent = mgText(k.gross_margin_pct||0, k.margin_available !== false);
-  document.getElementById('mc-st').textContent     = avgST.toFixed(1)+'%';
+  countUp('mc-st', avgST, v => v.toFixed(1)+'%');
   document.getElementById('mc-otb').textContent    = otbPct+'%';
   document.getElementById('mc-fmargin').textContent= (avgMg*1.02).toFixed(1)+'%';
 
@@ -2869,14 +2902,14 @@ function renderDirector() {
   const meta = analysisData.meta || {};
 
   // KPI accordion
-  document.getElementById('dir-kpi-revenue').textContent = fmtCurr(k.total_revenue||0);
+  countUp('dir-kpi-revenue', k.total_revenue||0, fmtCurr);
   document.getElementById('dir-kpi-margin').textContent  = mgText(k.gross_margin_pct||0, k.margin_available !== false);
-  document.getElementById('dir-kpi-st').textContent      = (k.avg_sell_through||0).toFixed(1)+'%';
-  document.getElementById('dir-kpi-health').textContent  = rd.health_score||'—';
+  countUp('dir-kpi-st', k.avg_sell_through||0, v => v.toFixed(1)+'%');
+  if(rd.health_score) countUp('dir-kpi-health', rd.health_score, v => Math.round(v).toString()); else document.getElementById('dir-kpi-health').textContent = '—';
 
   const health = rd.health_score||0;
   const healthDesc = health>=75?'STRONG':health>=55?'HEALTHY':health>=35?'AT RISK':'CRITICAL';
-  document.getElementById('dir-health-num').textContent = health;
+  if(health) countUp('dir-health-num', health, v => Math.round(v).toString()); else document.getElementById('dir-health-num').textContent = health;
   const descEl = document.getElementById('dir-health-desc');
   descEl.textContent = healthDesc;
   descEl.className = `health-descriptor health-${healthDesc.replace(' ','-')}-text`;
@@ -3054,6 +3087,44 @@ function handleFileSelect(inp){ if(inp.files[0]) doUpload(inp.files[0]); }
 
 // ── Upload Toast helpers ──────────────────────────────────────
 let _toastTimer = null;
+// ── Analysis loader: premium full-screen "assistant is working" overlay ──
+let _alTimer = null, _alStep = 0;
+const AL_STEPS = [
+  'Reading your trading data…',
+  'Calculating sell-through & margin…',
+  'Spotting markdown and reorder signals…',
+  'Ranking your best and worst performers…',
+  'Writing up your insights…'
+];
+function showAnalysisLoader() {
+  const ov = document.getElementById('analysis-loader');
+  if (!ov) return;
+  _alStep = 0;
+  const stepEl = document.getElementById('al-step');
+  const barEl  = document.getElementById('al-bar-fill');
+  ov.classList.add('show');
+  if (stepEl) stepEl.textContent = AL_STEPS[0];
+  if (barEl)  barEl.style.width = '12%';
+  if (_alTimer) clearInterval(_alTimer);
+  _alTimer = setInterval(() => {
+    _alStep = Math.min(_alStep + 1, AL_STEPS.length - 1);
+    if (stepEl) {
+      stepEl.style.opacity = '0';
+      setTimeout(() => { stepEl.textContent = AL_STEPS[_alStep]; stepEl.style.opacity = '1'; }, 200);
+    }
+    if (barEl) barEl.style.width = (12 + (_alStep / (AL_STEPS.length - 1)) * 80) + '%';
+    if (_alStep >= AL_STEPS.length - 1) { clearInterval(_alTimer); _alTimer = null; }
+  }, 850);
+}
+function hideAnalysisLoader() {
+  const ov = document.getElementById('analysis-loader');
+  if (!ov) return;
+  const barEl = document.getElementById('al-bar-fill');
+  if (barEl) barEl.style.width = '100%';
+  if (_alTimer) { clearInterval(_alTimer); _alTimer = null; }
+  setTimeout(() => ov.classList.remove('show'), 300);
+}
+
 function showUploadToast(type, title, msg, autoDismiss) {
   const toast = document.getElementById('upload-toast');
   const icon  = document.getElementById('upload-toast-icon');
@@ -3115,7 +3186,8 @@ async function doUpload(file) {
       return;
     }
 
-    showUploadToast('loading', 'Analysing your data…', 'Building insights for your team…');
+    hideUploadToast();
+    showAnalysisLoader();
 
     // Load analysis + role data
     const aRes = await fetch(`/api/analysis${data.upload_id?'?upload_id='+data.upload_id:''}`, {credentials:'include'});
@@ -3125,8 +3197,10 @@ async function doUpload(file) {
     showRoleView();
     refreshDatasetSwitcher();
 
+    hideAnalysisLoader();
     showUploadToast('success', 'Data loaded!', `${file.name} — saved to your Data Workspace.`, 4000);
   } catch(err) {
+    hideAnalysisLoader();
     showUploadToast('error', 'Upload error', err.message || 'Something went wrong. Please try again.', 10000);
   }
 }
@@ -4618,6 +4692,32 @@ function fmtNum(n){ return Math.round(n||0).toLocaleString('en-GB'); }
 function fmtCurr(n){ n=n||0; if(n>=1e6) return '£'+(n/1e6).toFixed(2)+'M'; if(n>=1e3) return '£'+(n/1e3).toFixed(1)+'K'; return '£'+Math.round(n).toLocaleString('en-GB'); }
 function fmtK(n){ n=n||0; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n).toString(); }
 
+/* ── Count-up animation: animates an element's number from 0 → target ──
+   Additive, premium feel. Respects prefers-reduced-motion (snaps to final).
+   fmt(v) formats the interpolated value; el can be id string or node. */
+function countUp(el, target, fmt, dur){
+  if(typeof el === 'string') el = document.getElementById(el);
+  if(!el) return;
+  target = (typeof target === 'number' && isFinite(target)) ? target : 0;
+  fmt = fmt || (v => Math.round(v).toLocaleString('en-GB'));
+  // Reduced-motion or trivial: set final value immediately
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = fmt(target); return; }
+  dur = dur || 900;
+  const start = performance.now();
+  const from = 0;
+  // cancel any in-flight animation on this element
+  if(el._cuRAF) cancelAnimationFrame(el._cuRAF);
+  function frame(now){
+    let p = Math.min(1, (now - start) / dur);
+    // easeOutExpo for a smooth, decelerating settle
+    const e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+    el.textContent = fmt(from + (target - from) * e);
+    if(p < 1){ el._cuRAF = requestAnimationFrame(frame); }
+    else { el._cuRAF = null; el.textContent = fmt(target); }
+  }
+  el._cuRAF = requestAnimationFrame(frame);
+}
+
 /* ── Pure SVG chart helpers (no library needed) ── */
 function svgEmpty(el){el.innerHTML='<div class="chart-empty"><div class="chart-empty-icon">📊</div><div>No data available</div></div>';}
 
@@ -4733,6 +4833,21 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
     <circle cx="16" cy="10" r="1" fill="white" stroke="none"/>
   </svg>
 </button>
+
+<!-- Analysis Loader Overlay -->
+<div id="analysis-loader" role="status" aria-live="polite">
+  <div class="al-card">
+    <div class="al-orbit">
+      <div class="al-ring"></div>
+      <div class="al-ring r2"></div>
+      <div class="al-ring r3"></div>
+      <div class="al-core"></div>
+    </div>
+    <div class="al-title">Your merchandising assistant is working</div>
+    <div class="al-step" id="al-step">Reading your trading data…</div>
+    <div class="al-bar"><div class="al-bar-fill" id="al-bar-fill"></div></div>
+  </div>
+</div>
 
 <!-- Upload Toast -->
 <div id="upload-toast">
