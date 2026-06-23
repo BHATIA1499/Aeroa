@@ -1567,7 +1567,7 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
         <!-- Drill-down: compare a single SKU or category across the two periods -->
         <div id="ws-cmp-entity" style="display:none;margin-top:26px">
           <div class="ws-cmp-entity-head">
-            <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px">Track a specific SKU or category</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px">Track a specific SKU or category <span class="premium-badge" id="cmp-premium-badge" style="display:none">✦ Premium</span></div>
             <div class="ws-sub" style="margin-bottom:12px">Search a product or category to see exactly how it moved between the two periods — did last week's action deliver?</div>
             <div class="ws-cmp-seg">
               <button class="ws-cmp-seg-btn active" data-etype="sku" onclick="cmpSetType('sku')">By SKU / Product</button>
@@ -1820,6 +1820,16 @@ function openUpgrade(source){
   document.getElementById('upg-overlay').classList.add('open');
 }
 function closeUpgrade(){ document.getElementById('upg-overlay').classList.remove('open'); }
+
+// Premium gate for deep-dive features. Returns true if the user may proceed.
+// Open during active trial and for paid plans; locked only once the trial has
+// expired — so nothing currently working is taken away mid-trial.
+function requirePremium(feature){
+  if(sampleMode) return true;
+  if(TRIAL.premium_unlocked || !TRIAL.expired) return true;
+  openUpgrade('lock:'+feature);
+  return false;
+}
 
 async function startCheckout(plan){
   if(sampleMode){ showUploadToast('info','Sample mode','Sign up and start your free trial to upgrade — this is a preview.',5000); return; }
@@ -3888,6 +3898,7 @@ function renderCategoryPerformance(cats){
     </div>`;
 }
 async function openCategoryDetail(category){
+  if(!requirePremium('category')) return;
   const ov = document.getElementById('cat-overlay');
   document.getElementById('cat-body').innerHTML = '<div class="cat-loading">Loading '+escapeHtml(category)+'…</div>';
   ov.classList.add('open');
@@ -4167,6 +4178,8 @@ async function loadCompareEntities(a,b){
   const hasAny = cmpEntities && ((cmpEntities.skus||[]).length || (cmpEntities.categories||[]).length);
   if(!hasAny){ wrap.style.display='none'; return; }
   wrap.style.display='block';
+  const pbadge = document.getElementById('cmp-premium-badge');
+  if(pbadge) pbadge.style.display = (!sampleMode && !TRIAL.premium_unlocked) ? 'inline-flex' : 'none';
   cmpSelectedKey = null;
   cmpType = (cmpEntities.skus||[]).length ? 'sku' : 'category';
   document.querySelectorAll('.ws-cmp-seg-btn').forEach(btn=>btn.classList.toggle('active', btn.dataset.etype===cmpType));
@@ -4219,6 +4232,7 @@ function cmpSearch(q){
 }
 
 function cmpSelectEntity(encKey){
+  if(!requirePremium('sku')){ document.getElementById('ws-cmp-search-list').classList.remove('open'); return; }
   const key = decodeURIComponent(encKey);
   const pool = (cmpType==='sku' ? cmpEntities.skus : cmpEntities.categories) || [];
   const e = pool.find(x=>x.key===key);
