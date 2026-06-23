@@ -4225,7 +4225,7 @@ function toggleChat() {
   if (chatOpen) document.getElementById('ai-chat-input').focus();
 }
 
-// Open the Aeroa Trading Assistant pre-loaded with a question and send it.
+// Open Aeroa Copilot pre-loaded with a question and send it.
 function askAeroa(prompt){
   if(!chatOpen) toggleChat();
   const input = document.getElementById('ai-chat-input');
@@ -4438,7 +4438,7 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
 </style>
 
 <!-- Floating AI Chat Button -->
-<button id="ai-chat-fab" onclick="toggleChat()" title="AI Assistant">
+<button id="ai-chat-fab" onclick="toggleChat()" title="Aeroa Copilot">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     <circle cx="12" cy="10" r="1" fill="white" stroke="none"/>
@@ -4463,32 +4463,31 @@ function fmtK(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n
   <div id="ai-chat-header">
     <div class="chat-header-dot"></div>
     <div>
-      <div class="chat-header-title">Aeroa Trading Assistant</div>
-      <div class="chat-header-sub">I understand your trading data</div>
+      <div class="chat-header-title">Aeroa Copilot</div>
+      <div class="chat-header-sub">Your senior merchandiser, on call</div>
     </div>
     <button class="chat-close-btn" onclick="toggleChat()">✕</button>
   </div>
   <div id="ai-chat-msgs">
-    <div class="chat-msg chat-assistant chat-welcome">Hi, I understand your trading data. Ask me anything about:
+    <div class="chat-msg chat-assistant chat-welcome">I'm your merchandising copilot — I've read your trading data and I'll talk you through what's working, what's at risk, and what to do next. Ask me anything about:
       <ul class="chat-welcome-list">
         <li>markdown opportunities</li>
-        <li>stock risks</li>
-        <li>reorder decisions</li>
+        <li>stock risks &amp; reorders</li>
         <li>margin protection</li>
-        <li>category performance</li>
-        <li>trading strategy</li>
+        <li>category &amp; SKU performance</li>
+        <li>your Monday trading review</li>
       </ul>
     </div>
     <div id="ai-chat-suggest">
-      <button class="chat-suggest-chip" onclick="askAeroa('Show me my biggest risks')">Show me my biggest risks</button>
-      <button class="chat-suggest-chip" onclick="askAeroa('Find my markdown candidates')">Find my markdown candidates</button>
-      <button class="chat-suggest-chip" onclick="askAeroa('Explain my revenue performance')">Explain my revenue performance</button>
-      <button class="chat-suggest-chip" onclick="askAeroa('Prepare my Monday trading summary')">Prepare my Monday trading summary</button>
-      <button class="chat-suggest-chip" onclick="askAeroa('Which SKUs need attention?')">Which SKUs need attention?</button>
+      <button class="chat-suggest-chip" onclick="askAeroa('What needs my attention today?')">What needs my attention today?</button>
+      <button class="chat-suggest-chip" onclick="askAeroa('Why did revenue drop?')">Why did revenue drop?</button>
+      <button class="chat-suggest-chip" onclick="askAeroa('Which products need markdown?')">Which products need markdown?</button>
+      <button class="chat-suggest-chip" onclick="askAeroa('Should I reorder anything?')">Should I reorder anything?</button>
+      <button class="chat-suggest-chip" onclick="askAeroa('Prepare my Monday trading review')">Prepare my Monday trading review</button>
     </div>
   </div>
   <div id="ai-chat-footer">
-    <textarea id="ai-chat-input" placeholder="Ask about your data…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+    <textarea id="ai-chat-input" placeholder="Ask your copilot anything…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
     <button id="ai-chat-send" onclick="sendChat()">Send</button>
   </div>
 </div>
