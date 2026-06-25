@@ -391,7 +391,11 @@ h2 .hl2 { color: var(--blush-d); }
               radial-gradient(ellipse at 10% 70%, rgba(255,200,220,0.25) 0%, transparent 50%);
 }
 .feat-inner { max-width: 1048px; margin: 0 auto; }
-.feat-header { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; align-items: start; margin-bottom: 48px; }
+.feat-header { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; align-items: center; margin-bottom: 48px; }
+.feat-header-right { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+/* Let the intro paragraph fill the wide right column instead of leaving a gap.
+   Local override only — the global .sec-sub (460px) is unchanged elsewhere. */
+.feat-header-right .sec-sub { max-width: 640px; margin-top: 0; font-size: 18px; }
 .feat-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
 .feat-card { padding: 28px 24px; position: relative; overflow: hidden; }
 .feat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.3s; }
@@ -1129,10 +1133,10 @@ footer { background: #1A1A26; padding: 56px 48px 32px; border-top: 1px solid rgb
       <div>
         <div class="section-label">Features</div>
         <h2>Why<br>Aeroa?</h2>
-        <p class="sec-sub">Upload your trading data and instantly receive merchandising recommendations, forecasting insights, stock risks, replenishment opportunities, and executive-level trading summaries.</p>
       </div>
-      <div style="display:flex;align-items:flex-end">
-        <a href="/signup" class="btn btn-mint" style="align-self:flex-end">Get started free →</a>
+      <div class="feat-header-right">
+        <p class="sec-sub">Upload your trading data and instantly receive merchandising recommendations, forecasting insights, stock risks, replenishment opportunities, and executive-level trading summaries.</p>
+        <a href="/signup" class="btn btn-mint">Get started free →</a>
       </div>
     </div>
     <div class="feat-cards sr d1">
