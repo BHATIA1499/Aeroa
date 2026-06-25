@@ -55,11 +55,16 @@ from security.audit        import (AuditLogger, USER_LOGIN, USER_LOGOUT, AUTH_FA
                                    AI_QUERY, DATA_EXPORT, ROLE_CHANGE, USER_CREATED,
                                    RATE_LIMITED, PERMISSION_DENIED, SETTINGS_CHANGED)
 from security.rbac         import require_permission, has_permission, require_company_ownership, VALID_ROLES
-from security.rate_limiter import create_limiter
+from security.rate_limiter import create_limiter, auth_limit
 from security.file_pipeline import SecureFilePipeline
 from security.ai_privacy   import prepare_for_ai, private_mode_notice
 from security.headers      import apply_security_headers, generate_csrf_token, get_csrf_token
 from security.validators   import sanitise, sanitise_raw, validate_email, validate_password, safe_filename
+from security.auth_schemas import (SignupSchema, LoginSchema, ForgotPasswordSchema,
+                                   ResetPasswordSchema, VerifyEmailSchema)
+from security.lockout      import lockout, MAX_FAILS
+from pydantic              import ValidationError
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
@@ -1438,17 +1443,24 @@ def test_ai():
 # ═══════════════════════════════════════════════════════════════
 
 @app.route("/auth/signup", methods=["POST"])
+@auth_limit()  # brute-force / abuse protection: 10/min per IP
 def auth_signup():
-    body = request.get_json(silent=True) or {}
-    email    = (body.get("email") or "").strip().lower()
-    password = (body.get("password") or "").strip()
-    name     = (body.get("full_name") or "").strip()
+    # Server-side validation (format + length + strength), independent of the
+    # frontend. Sanitisation reuses security.validators under the hood.
+    try:
+        data = SignupSchema.model_validate(request.get_json(silent=True) or {})
+    except ValidationError:
+        # Generic message — never disclose which field failed.
+        audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                  metadata={"stage": "signup_validation"})
+        return jsonify({"error": "Please enter a valid email and a password with "
+                                 "at least 8 characters, one uppercase letter and one number."}), 400
+    email, password, name = data.email, data.password, data.full_name
 
-    if not email or not password:
-        return jsonify({"error": "Email and password are required"}), 400
-    if len(password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters"}), 400
-
+    # The "verify" response below is returned IDENTICALLY whether or not the
+    # email is already registered, so signup cannot be used to enumerate accounts.
+    _generic_verify = jsonify({"ok": True, "verify": True,
+                               "message": "Check your email for a 6-digit verification code"})
     try:
         # Use sign_up (not admin.create_user) so Supabase sends the OTP verification email
         res = supabase.auth.sign_up({
@@ -1459,53 +1471,87 @@ def auth_signup():
             },
         })
         if not res.user:
-            return jsonify({"error": "Signup failed — please try again"}), 400
+            # Do not reveal failure detail — keep the response uniform.
+            return _generic_verify
 
-        # Supabase returns an identities list — if empty, the email is already registered
-        identities = getattr(res.user, "identities", None)
-        if identities is not None and len(identities) == 0:
-            return jsonify({"error": "An account with this email already exists. Please log in."}), 409
-
-        return jsonify({"ok": True, "verify": True, "message": "Check your email for a 6-digit verification code"})
+        # Empty identities => email already registered. Return the SAME generic
+        # response instead of confirming existence (anti-enumeration).
+        return _generic_verify
     except Exception as e:
-        msg = str(e)
-        if "already registered" in msg.lower() or "already been registered" in msg.lower() or "duplicate" in msg.lower():
-            return jsonify({"error": "An account with this email already exists. Please log in."}), 409
+        msg = str(e).lower()
+        if "already registered" in msg or "already been registered" in msg or "duplicate" in msg:
+            # Already exists — stay uniform, do not confirm.
+            return _generic_verify
         app.logger.error(f"Signup error: {e}", exc_info=True)
         return jsonify({"error": "Signup failed — please try again"}), 500
 
 
 @app.route("/auth/login", methods=["POST"])
+@auth_limit()  # brute-force protection: 10/min per IP
 def auth_login():
-    body = request.get_json(silent=True) or {}
-    email    = (body.get("email") or "").strip().lower()
-    password = (body.get("password") or "").strip()
+    def _deny():
+        # ONE generic response for invalid format, wrong credentials, AND lockout.
+        # An attacker must not be able to tell these cases apart.
+        return jsonify({"error": "Incorrect email or password"}), 401
 
-    if not email or not password:
-        return jsonify({"error": "Email and password are required"}), 400
+    # Server-side validation, independent of the frontend.
+    try:
+        data = LoginSchema.model_validate(request.get_json(silent=True) or {})
+    except ValidationError:
+        audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                  metadata={"stage": "login_validation"})
+        return _deny()
+    email, password = data.email, data.password
+
+    # Per-account lockout, layered on the per-IP rate limit. A locked account
+    # returns the SAME message as a wrong password — the lockout is never disclosed.
+    locked, _retry = lockout.status(email)
+    if locked:
+        time.sleep(min(lockout.delay_for_current(email), 5.0))  # match failure timing
+        audit.log(AUTH_FAILED, request=request, status="BLOCKED",
+                  metadata={"email": email, "reason": "locked"})
+        return _deny()
 
     try:
         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if res.user and res.session:
-            meta = res.user.user_metadata or {}
-            session["user_id"]         = res.user.id
-            session["user_email"]      = email
-            session["user_name"]       = meta.get("full_name", email.split("@")[0])
-            session["user_plan"]       = "trial"
-            session["access_token"]    = res.session.access_token
-            session["refresh_token"]   = res.session.refresh_token
-            csrf_token = generate_csrf_token()
-            audit.log(USER_LOGIN, request=request, user_id=res.user.id,
-                      company_id=session.get("company_id"),
-                      metadata={"email": email})
-            return jsonify({"ok": True, "redirect": "/dashboard", "csrf_token": csrf_token})
-        return jsonify({"error": "Invalid email or password"}), 401
     except Exception as e:
         msg = str(e).lower()
         if "invalid" in msg or "credentials" in msg:
-            return jsonify({"error": "Invalid email or password"}), 401
-        app.logger.error(f"Login error: {e}", exc_info=True)
-        return jsonify({"error": "Login failed — please try again"}), 500
+            res = None  # bad creds -> fall through to the failure path
+        else:
+            app.logger.error(f"Login error: {e}", exc_info=True)
+            return jsonify({"error": "Login failed — please try again"}), 500
+
+    if res and getattr(res, "user", None) and getattr(res, "session", None):
+        lockout.record_success(email)  # clear the failed-attempt counter
+        meta = res.user.user_metadata or {}
+        session["user_id"]         = res.user.id
+        session["user_email"]      = email
+        session["user_name"]       = meta.get("full_name", email.split("@")[0])
+        session["user_plan"]       = "trial"
+        session["access_token"]    = res.session.access_token
+        session["refresh_token"]   = res.session.refresh_token
+        csrf_token = generate_csrf_token()
+        audit.log(USER_LOGIN, request=request, user_id=res.user.id,
+                  company_id=session.get("company_id"),
+                  metadata={"email": email})
+        return jsonify({"ok": True, "redirect": "/dashboard", "csrf_token": csrf_token})
+
+    # ── Failed attempt: count it, apply progressive delay, maybe lock ─────────
+    fails, just_locked = lockout.record_failure(email)
+    if just_locked:
+        # Best-effort recovery email via Supabase's existing reset flow. It reads
+        # "reset your password" (NOT "account locked"), so it gives the real user
+        # a reset link without disclosing the lockout to an attacker.
+        try:
+            supabase.auth.reset_password_for_email(
+                email, {"redirect_to": "https://aeroa-ai.up.railway.app/reset-password"})
+        except Exception:
+            pass
+    time.sleep(min(lockout.delay_for_current(email), 5.0))  # progressive delay
+    audit.log(AUTH_FAILED, request=request, status="FAILURE",
+              metadata={"email": email, "fails": fails, "locked": just_locked})
+    return _deny()
 
 
 @app.route("/auth/logout", methods=["POST"])
@@ -1518,19 +1564,28 @@ def auth_logout():
 
 
 @app.route("/auth/forgot-password", methods=["POST"])
+@auth_limit()  # abuse / enumeration protection: 10/min per IP
 def auth_forgot_password():
-    body = request.get_json(silent=True) or {}
-    email = sanitise_raw(body.get("email", ""), "email").lower()
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
+    # ONE generic response whether or not the email is registered — this is the
+    # only thing the endpoint may ever say, so it can't be used to enumerate.
+    _generic = jsonify({"ok": True,
+                        "message": "If that email is registered, you'll receive a reset link"})
+    try:
+        data = ForgotPasswordSchema.model_validate(request.get_json(silent=True) or {})
+    except ValidationError:
+        audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                  metadata={"stage": "forgot_password_validation"})
+        # Still return the uniform message: a malformed email must not look
+        # different from an unregistered one.
+        return _generic
+    email = data.email
     try:
         redirect_url = "https://aeroa-ai.up.railway.app/reset-password"
         supabase.auth.reset_password_for_email(email, {"redirect_to": redirect_url})
-        return jsonify({"ok": True, "message": "Password reset email sent — check your inbox"})
     except Exception as e:
         app.logger.error(f"Forgot password error: {e}")
-        # Always return ok to avoid email enumeration
-        return jsonify({"ok": True, "message": "If that email exists, a reset link has been sent"})
+    # Always the same response — never disclose whether the email exists.
+    return _generic
 
 
 @app.route("/reset-password")
@@ -1539,15 +1594,20 @@ def reset_password_page():
 
 
 @app.route("/auth/reset-password", methods=["POST"])
+@auth_limit()  # abuse protection: 10/min per IP
 def do_reset_password():
-    body = request.get_json(silent=True) or {}
-    access_token  = (body.get("access_token") or "").strip()
-    refresh_token = (body.get("refresh_token") or "").strip()
-    new_password  = (body.get("password") or "").strip()
-    if not access_token or not new_password:
-        return jsonify({"error": "Missing token or password"}), 400
-    if len(new_password) < 8:
-        return jsonify({"error": "Password must be at least 8 characters"}), 400
+    # Server-side validation: token presence + password STRENGTH (this is a new
+    # password, so the full strength policy applies — unlike login).
+    try:
+        data = ResetPasswordSchema.model_validate(request.get_json(silent=True) or {})
+    except ValidationError:
+        audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                  metadata={"stage": "reset_password_validation"})
+        return jsonify({"error": "Please choose a password with at least 8 characters, "
+                                 "one uppercase letter and one number."}), 400
+    access_token  = data.access_token
+    refresh_token = data.refresh_token
+    new_password  = data.password
     try:
         supabase.auth.set_session(access_token, refresh_token)
         supabase.auth.update_user({"password": new_password})
@@ -1558,13 +1618,19 @@ def do_reset_password():
 
 
 @app.route("/auth/verify-email", methods=["POST"])
+@auth_limit()  # OTP brute-force protection: 10/min per IP
 def auth_verify_email():
-    body = request.get_json(silent=True) or {}
-    email = (body.get("email") or "").strip().lower()
-    token = (body.get("token") or "").strip()
-    name  = (body.get("full_name") or "").strip()
-    if not email or not token:
-        return jsonify({"error": "Email and verification code are required"}), 400
+    # Server-side validation: email format + short numeric token. Caps the OTP
+    # length so the code can't be used as a brute-force oracle with junk input.
+    try:
+        data = VerifyEmailSchema.model_validate(request.get_json(silent=True) or {})
+    except ValidationError:
+        audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                  metadata={"stage": "verify_email_validation"})
+        return jsonify({"error": "Invalid or expired code — please try again"}), 400
+    email = data.email
+    token = data.token
+    name  = data.full_name
     try:
         # Try "signup" type first (Supabase v2 sends OTP with type=signup for new accounts)
         res = None

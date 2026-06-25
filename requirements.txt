@@ -36,3 +36,9 @@ APScheduler>=3.10.0
 # ── SECURITY — Input sanitisation ──────────────────────────────────────────────
 # HTML escaping (belt-and-suspenders alongside stdlib html.escape)
 bleach>=6.1.0
+
+# ── SECURITY — Server-side request validation ──────────────────────────────────
+# Pydantic v2 schemas validate auth payloads (format + length + strength) on the
+# server regardless of client-side checks (security/auth_schemas.py). Already
+# present transitively via anthropic; pinned here as a direct dependency.
+pydantic>=2.0.0
