@@ -3039,13 +3039,13 @@ Return ONLY a JSON array, no markdown."""
 # Display metadata for the upgrade modal. Hard limits live in PLAN_LIMITS; this
 # is purely the marketing copy shown to the user.
 BILLING_PLANS = {
-    "starter": {"name": "Starter", "price": "£29/mo",
+    "starter": {"name": "Starter", "price": "£49/mo",
                 "skus": "200 SKUs / upload", "ai": "50 Copilot questions / mo",
                 "blurb": "For solo merchandisers getting started."},
-    "growth":  {"name": "Growth",  "price": "£79/mo",
+    "growth":  {"name": "Growth",  "price": "£149/mo",
                 "skus": "Unlimited SKUs", "ai": "Unlimited Copilot",
                 "blurb": "For busy merchandisers and freelancers across clients."},
-    "studio":  {"name": "Studio",  "price": "£149/mo",
+    "studio":  {"name": "Studio",  "price": "£349/mo",
                 "skus": "Unlimited SKUs", "ai": "Unlimited Copilot",
                 "blurb": "For consultants and small teams.", "best": True},
 }
