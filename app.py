@@ -1,3 +1,4 @@
+# auto-deploy sanity check: 2026-06-25 (no-op comment, safe to remove)
 """
 Aeroa — Flask backend (Phase 1: Auth + Supabase)
 ========================================================
