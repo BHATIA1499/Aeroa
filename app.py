@@ -3227,12 +3227,16 @@ def stripe_webhook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-    # Idempotency check
+    # Idempotency: skip only if we've already *successfully* processed this
+    # event. A row that exists but is still processed=false means a prior
+    # attempt failed part-way, so we must allow it to be retried.
     try:
-        existing = supabase.table("stripe_events").select("id").eq("id", event["id"]).execute()
-        if existing.data:
+        existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
+        if existing.data and existing.data[0].get("processed"):
             return jsonify({"ok": True})
-        supabase.table("stripe_events").insert({"id": event["id"], "type": event["type"]}).execute()
+        supabase.table("stripe_events").upsert(
+            {"id": event["id"], "type": event["type"], "processed": False}
+        ).execute()
     except Exception:
         pass
 
@@ -3298,7 +3302,10 @@ def stripe_webhook():
         except Exception as e:
             app.logger.error(f"Webhook subscription error: {e}")
 
-    supabase.table("stripe_events").update({"processed": True}).eq("id", event["id"]).execute()
+    try:
+        supabase.table("stripe_events").update({"processed": True}).eq("id", event["id"]).execute()
+    except Exception as e:
+        app.logger.error(f"stripe_events mark processed error: {e}")
     return jsonify({"ok": True})
 
 
