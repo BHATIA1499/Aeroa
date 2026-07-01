@@ -72,6 +72,15 @@ load_dotenv()
 
 # ── App setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", static_url_path="/static")
+
+# Behind Railway's TLS-terminating proxy, Flask sees the request as http and the
+# internal host. Trust the proxy's X-Forwarded-Proto / -Host so request.host_url,
+# url_for(_external=True), and OAuth redirect_to values are built with the correct
+# https scheme and public hostname. Without this, redirect_to becomes http://…,
+# fails Supabase's https-only allow-list, and OAuth falls back to the Site URL.
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(32))
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
