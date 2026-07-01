@@ -41,6 +41,7 @@ from datetime import datetime, timezone
 import pandas as pd
 from flask import (Flask, request, jsonify, session,
                    Response, send_from_directory, redirect, url_for)
+from urllib.parse import quote
 from flask_cors import CORS
 from dotenv import load_dotenv
 import anthropic
@@ -71,6 +72,15 @@ load_dotenv()
 
 # ── App setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder="static", static_url_path="/static")
+
+# Behind Railway's TLS-terminating proxy, Flask sees the request as http and the
+# internal host. Trust the proxy's X-Forwarded-Proto / -Host so request.host_url,
+# url_for(_external=True), and OAuth redirect_to values are built with the correct
+# https scheme and public hostname. Without this, redirect_to becomes http://…,
+# fails Supabase's https-only allow-list, and OAuth falls back to the Site URL.
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", os.urandom(32))
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
@@ -1552,6 +1562,88 @@ def auth_login():
     audit.log(AUTH_FAILED, request=request, status="FAILURE",
               metadata={"email": email, "fails": fails, "locked": just_locked})
     return _deny()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Google OAuth (Supabase social login)
+# ─────────────────────────────────────────────────────────────────────────────
+# Flow (backend-driven, no secrets in the browser):
+#   1. /auth/google         -> 302 to Supabase's hosted authorize endpoint
+#   2. Supabase <-> Google   -> redirects back to /auth/callback with the
+#                               session tokens in the URL *hash* (implicit flow)
+#   3. /auth/callback        -> tiny JS page reads the hash and POSTs the tokens
+#   4. /auth/oauth-session   -> validates the token, sets the Flask session,
+#                               upserts the profile (mirrors /auth/verify-email)
+# The Supabase Google provider must be enabled and {base}/auth/callback must be
+# in Supabase's allow-listed redirect URLs (dashboard config).
+
+@app.route("/auth/google")
+def auth_google():
+    """Kick off Google sign-in by redirecting to Supabase's authorize endpoint."""
+    if not SUPABASE_URL:
+        return redirect("/login?error=oauth_unavailable")
+    base = request.host_url.rstrip("/")
+    redirect_to = quote(f"{base}/auth/callback", safe="")
+    authorize_url = (f"{SUPABASE_URL}/auth/v1/authorize"
+                     f"?provider=google&redirect_to={redirect_to}")
+    audit.log(USER_LOGIN, request=request, status="PENDING",
+              metadata={"provider": "google", "stage": "authorize"})
+    return redirect(authorize_url, code=302)
+
+
+@app.route("/auth/callback")
+def auth_callback():
+    """Serve the small page that reads OAuth tokens from the URL hash."""
+    return send_from_directory(".", "oauth-callback.html")
+
+
+@app.route("/auth/oauth-session", methods=["POST"])
+@auth_limit()  # abuse protection: 10/min per IP
+def auth_oauth_session():
+    """Validate Supabase OAuth tokens and establish the Flask session."""
+    body = request.get_json(silent=True) or {}
+    access_token  = (body.get("access_token") or "").strip()
+    refresh_token = (body.get("refresh_token") or "").strip()
+    if not access_token:
+        return jsonify({"error": "Sign-in failed. Please try again."}), 400
+    try:
+        # get_user(jwt) validates the token WITHOUT mutating the shared client.
+        ures = supabase.auth.get_user(access_token)
+        user = getattr(ures, "user", None)
+        if not user or not getattr(user, "id", None):
+            audit.log(AUTH_FAILED, request=request, status="FAILURE",
+                      metadata={"provider": "google", "stage": "token_validate"})
+            return jsonify({"error": "Sign-in failed. Please try again."}), 401
+
+        email = (getattr(user, "email", "") or "").lower()
+        meta  = getattr(user, "user_metadata", None) or {}
+        name  = (meta.get("full_name") or meta.get("name")
+                 or (email.split("@")[0] if email else "there"))
+        trial_ends = (datetime.now(timezone.utc) + timedelta(days=14)).isoformat()
+
+        # Create or update the profile (non-fatal — session still works without it).
+        try:
+            get_user_db().table("profiles").upsert({
+                "id": user.id, "email": email, "full_name": name,
+                "plan": "trial", "trial_ends": trial_ends,
+            }).execute()
+        except Exception:
+            pass
+
+        session["user_id"]         = user.id
+        session["user_email"]      = email
+        session["user_name"]       = name
+        session["user_plan"]       = "trial"
+        session["user_trial_ends"] = trial_ends
+        session["access_token"]    = access_token
+        session["refresh_token"]   = refresh_token
+        csrf_token = generate_csrf_token()
+        audit.log(USER_LOGIN, request=request, user_id=user.id,
+                  metadata={"email": email, "provider": "google"})
+        return jsonify({"ok": True, "redirect": "/dashboard", "csrf_token": csrf_token})
+    except Exception as e:
+        app.logger.error(f"OAuth session error: {e}")
+        return jsonify({"error": "Sign-in failed. Please try again."}), 400
 
 
 @app.route("/auth/logout", methods=["POST"])

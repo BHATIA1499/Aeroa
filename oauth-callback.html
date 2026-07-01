@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signing you in… — Aeroa</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23A8C5A0'/><circle cx='16' cy='16' r='6' fill='%23F4C0A8'/></svg>">
+<style>
+/* System-font only + inline CSS so this page paints instantly and can never
+   hang on an external resource. */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(150deg,#EBF1FF 0%,#FFE8F4 38%,#E5F2EA 68%,#EDE8FF 100%);
+  background-attachment:fixed;-webkit-font-smoothing:antialiased;padding:24px;color:#1E1E2A;
+}
+.card{
+  background:rgba(255,255,255,0.88);backdrop-filter:blur(24px);
+  border-radius:24px;padding:40px 44px;width:100%;max-width:380px;text-align:center;
+  box-shadow:0 8px 40px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.95);
+}
+.spinner{
+  width:38px;height:38px;margin:0 auto 22px;border-radius:50%;
+  border:3.5px solid rgba(168,197,160,0.30);border-top-color:#7DAA75;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:18px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px}
+p{font-size:14px;color:#8A8A9A;line-height:1.55}
+.err{display:none;color:#B02020}
+.err a{color:#7DAA75;font-weight:700;text-decoration:none}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:0s}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner" id="spin"></div>
+  <h1 id="title">Signing you in…</h1>
+  <p id="msg">Just a moment while we finish setting up your session.</p>
+  <p class="err" id="err"></p>
+</div>
+<script>
+(function () {
+  function fail(text) {
+    document.getElementById('spin').style.display = 'none';
+    document.getElementById('title').textContent = 'Sign-in failed';
+    document.getElementById('msg').style.display = 'none';
+    var e = document.getElementById('err');
+    e.innerHTML = (text || 'Something went wrong.') + ' <a href="/login">Back to log in</a>';
+    e.style.display = 'block';
+  }
+
+  // Tokens (or an error) arrive in the URL hash from Supabase's implicit flow.
+  var hash = {};
+  try {
+    location.hash.replace('#', '').split('&').forEach(function (p) {
+      if (!p) return;
+      var kv = p.split('=');
+      hash[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+    });
+  } catch (_) {}
+
+  if (hash.error || hash.error_description) {
+    return fail(hash.error_description || 'Google sign-in was cancelled.');
+  }
+  var accessToken  = hash.access_token  || '';
+  var refreshToken = hash.refresh_token || '';
+  if (!accessToken) {
+    return fail('No sign-in token was returned.');
+  }
+
+  // Clear the tokens from the address bar immediately (don't leave them in history).
+  try { history.replaceState(null, '', location.pathname); } catch (_) {}
+
+  fetch('/auth/oauth-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: accessToken, refresh_token: refreshToken })
+  })
+  .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+  .then(function (res) {
+    if (res.ok && res.d && res.d.ok) {
+      window.location.href = res.d.redirect || '/dashboard';
+    } else {
+      fail((res.d && res.d.error) || 'Sign-in failed. Please try again.');
+    }
+  })
+  .catch(function () { fail('Connection error. Please try again.'); });
+})();
+</script>
+</body>
+</html>

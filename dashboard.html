@@ -722,6 +722,11 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 .onb-opt:hover{border-color:var(--mint-d);transform:translateY(-2px)}
 .onb-opt.sel{border-color:var(--mint-d);background:rgba(125,170,117,.12);box-shadow:0 6px 18px rgba(125,170,117,.16)}
 .onb-opt .oo-ic{font-size:18px}
+.onb-other-input{grid-column:1/-1;width:100%;font-family:var(--body);font-size:14px;color:var(--text);
+  padding:12px 14px;border:1.6px solid var(--mint-d);border-radius:12px;outline:none;background:rgba(125,170,117,.06);
+  transition:border-color .15s,box-shadow .15s;margin-top:2px}
+.onb-other-input::placeholder{color:var(--text3)}
+.onb-other-input:focus{box-shadow:0 0 0 4px rgba(125,170,117,.15)}
 .onb-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
 .onb-skip{background:none;border:none;font-size:13px;color:var(--text3);cursor:pointer}
 .onb-next{font-family:var(--body);font-size:14px;font-weight:700;color:#fff;background:var(--text);border:none;
@@ -1129,6 +1134,14 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
 
     <!-- ROLE VIEWS -->
     <div id="role-views" style="display:none">
+
+      <!-- Sample-data notice on the main dashboard (mirrors the Data Workspace banner
+           so users always know the figures below are demo data, not their own). -->
+      <div class="ws-sample-banner" id="dash-sample-banner">
+        <span class="sb-ic">🧪</span>
+        <span class="sb-txt"><b>You're viewing sample data</b> — these figures come from a demo dataset so you can explore every feature. Upload your own trading file to see insights from your real numbers.</span>
+        <button class="sb-exit" onclick="document.getElementById('file-input').click()">Upload my data</button>
+      </div>
 
       <!-- ══════════════ MA VIEW ══════════════ -->
       <div class="role-view" id="view-ma">
@@ -1880,23 +1893,23 @@ function dismissTrialBanner(){
 const ONB_STEPS = [
   { key:'role', multi:false, q:'What best describes your role?',
     hint:'We tailor your dashboard and Copilot to how you work.',
-    opts:[{v:'Assistant Merchandiser',ic:'📋'},{v:'Merchandiser',ic:'📊'},
-          {v:'Freelancer',ic:'💼'},{v:'Consultant',ic:'🎯'}] },
+    opts:[{v:'Merchandising Assistant',ic:'📋'},{v:'Assistant Merchandiser',ic:'📑'},
+          {v:'Merchandiser',ic:'📊'},{v:'Freelancer',ic:'💼'},{v:'Consultant',ic:'🎯'}] },
   { key:'categories', multi:true, q:'Which categories do you work across?',
     hint:'Pick all that apply — this shapes your examples and benchmarks.',
-    opts:[{v:'Fashion',ic:'👗'},{v:'Home',ic:'🛋️'},{v:'Beauty',ic:'💄'},{v:'Accessories',ic:'👜'}] },
+    opts:[{v:'Fashion',ic:'👗'},{v:'Home',ic:'🛋️'},{v:'Beauty',ic:'💄'},{v:'Accessories',ic:'👜'},{v:'Other',ic:'✏️'}] },
   { key:'challenges', multi:true, q:'What do you want Aeroa to help with most?',
     hint:'Choose your top priorities — we surface these first.',
     opts:[{v:'Understanding reports',ic:'🔍'},{v:'Finding stock issues',ic:'📦'},
           {v:'Markdown decisions',ic:'🏷️'},{v:'Reordering',ic:'🔄'}] },
 ];
 let onbIdx = 0;
-let onbAnswers = {role:'', categories:[], challenges:[]};
+let onbAnswers = {role:'', categories:[], categoriesOther:'', challenges:[]};
 
 function maybeStartOnboarding(){
   if(sampleMode) return;
   if(localStorage.getItem(onbKey())==='1') return;
-  onbIdx = 0; onbAnswers = {role:'', categories:[], challenges:[]};
+  onbIdx = 0; onbAnswers = {role:'', categories:[], categoriesOther:'', challenges:[]};
   renderOnbStep();
   document.getElementById('onb-overlay').classList.add('open');
 }
@@ -1908,11 +1921,22 @@ function renderOnbStep(){
   document.getElementById('onb-dots').innerHTML =
     ONB_STEPS.map((_,i)=>`<div class="onb-dot${i<=onbIdx?' active':''}"></div>`).join('');
   const cur = onbAnswers[step.key];
-  document.getElementById('onb-opts').innerHTML = step.opts.map(o=>{
+  let optsHtml = step.opts.map(o=>{
     const sel = step.multi ? (cur||[]).includes(o.v) : cur===o.v;
     return `<button class="onb-opt${sel?' sel':''}" onclick="onbPick('${step.key}','${o.v.replace(/'/g,"\\'")}',${step.multi})">
       <span class="oo-ic">${o.ic}</span><span>${o.v}</span></button>`;
   }).join('');
+  // When "Other" is selected on the categories step, reveal a free-text field
+  // so the user can name a category outside the preset four.
+  if(step.key==='categories' && (cur||[]).includes('Other')){
+    const v = (onbAnswers.categoriesOther||'').replace(/"/g,'&quot;');
+    optsHtml += `<input type="text" class="onb-other-input" id="onb-other-input" maxlength="40"
+      placeholder="Which category do you work with?" value="${v}"
+      oninput="onbOtherInput(this.value)">`;
+  }
+  document.getElementById('onb-opts').innerHTML = optsHtml;
+  const oi = document.getElementById('onb-other-input');
+  if(oi){ oi.focus(); oi.setSelectionRange(oi.value.length, oi.value.length); }
   const isLast = onbIdx===ONB_STEPS.length-1;
   document.getElementById('onb-next').textContent = isLast ? 'Finish' : 'Continue';
   refreshOnbNext();
@@ -1930,10 +1954,21 @@ function onbPick(key, val, multi){
   renderOnbStep();
 }
 
+// Free-text handler for the "Other" category. Doesn't re-render (that would
+// steal focus mid-typing) — just stores the value and refreshes the CTA state.
+function onbOtherInput(v){
+  onbAnswers.categoriesOther = v;
+  refreshOnbNext();
+}
+
 function refreshOnbNext(){
   const step = ONB_STEPS[onbIdx];
   const cur = onbAnswers[step.key];
-  const ok = step.multi ? (cur && cur.length>0) : !!cur;
+  let ok = step.multi ? (cur && cur.length>0) : !!cur;
+  // If "Other" is picked on categories, require a non-empty custom category.
+  if(ok && step.key==='categories' && (cur||[]).includes('Other')){
+    ok = !!(onbAnswers.categoriesOther||'').trim();
+  }
   document.getElementById('onb-next').disabled = !ok;
 }
 
@@ -1946,13 +1981,17 @@ async function finishOnboarding(){
   localStorage.setItem(onbKey(),'1');
   document.getElementById('onb-overlay').classList.remove('open');
   // Personalise: switch role view to match their answer.
-  const roleMap = {'Assistant Merchandiser':'MA','Merchandiser':'Merchandiser','Freelancer':'Merchandiser','Consultant':'Director'};
+  const roleMap = {'Merchandising Assistant':'MA','Assistant Merchandiser':'AM','Merchandiser':'Merchandiser','Freelancer':'Merchandiser','Consultant':'Director'};
   const mapped = roleMap[onbAnswers.role] || 'AM';
+  // Replace the "Other" placeholder with the user's typed category before saving.
+  const payload = {...onbAnswers};
+  const other = (onbAnswers.categoriesOther||'').trim();
+  payload.categories = (onbAnswers.categories||[]).map(c => c==='Other' ? (other||'Other') : c);
   try {
     await fetch('/api/user/onboarding', {
       method:'POST', credentials:'include',
       headers:{'Content-Type':'application/json', ...(csrfToken?{'X-CSRF-Token':csrfToken}:{})},
-      body: JSON.stringify(onbAnswers)
+      body: JSON.stringify(payload)
     });
     if(typeof switchRole==='function'){ currentRole = mapped; document.getElementById('role-switcher').value = mapped; switchRole(mapped); }
   } catch(e){ /* non-fatal */ }
@@ -3725,6 +3764,7 @@ function reorderCountFromCats(cats){
 function viewSampleDataset(){
   sampleMode = true;
   document.getElementById('ws-sample-banner').classList.add('show');
+  document.getElementById('dash-sample-banner').classList.add('show');
   updateSampleToggle();
   // Populate the full role dashboard so KPI Panel / Open POs / Top SKUs / Overview
   // and the sidebar switchSection nav all work in sample mode (the preview DB is
@@ -3744,6 +3784,7 @@ function viewSampleDataset(){
 function exitSampleMode(){
   sampleMode = false;
   document.getElementById('ws-sample-banner').classList.remove('show');
+  document.getElementById('dash-sample-banner').classList.remove('show');
   updateSampleToggle();
   closeDetailPanel();
   // Restore whatever real analysis state existed before sample mode was entered.
