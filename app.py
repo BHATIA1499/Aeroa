@@ -3227,13 +3227,25 @@ def stripe_webhook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+    try:
+        return _process_stripe_event(event)
+    except Exception as e:
+        import traceback as _tb
+        tb = _tb.format_exc()
+        app.logger.error(f"stripe_webhook fatal [v3]: {e}\n{tb}")
+        # TEMP DEBUG: surface the error in Stripe's response body. Return 200 so
+        # Stripe stops retrying while we read it. Revert once diagnosed.
+        return jsonify({"debug_v": "v3", "error": str(e), "trace": tb[-1500:]}), 200
+
+
+def _process_stripe_event(event):
     # Idempotency: skip only if we've already *successfully* processed this
     # event. A row that exists but is still processed=false means a prior
     # attempt failed part-way, so we must allow it to be retried.
     try:
         existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
         if existing.data and existing.data[0].get("processed"):
-            return jsonify({"ok": True})
+            return jsonify({"ok": True, "v": "v3", "skip": "already_processed"})
         supabase.table("stripe_events").upsert(
             {"id": event["id"], "type": event["type"], "processed": False}
         ).execute()
@@ -3306,7 +3318,7 @@ def stripe_webhook():
         supabase.table("stripe_events").update({"processed": True}).eq("id", event["id"]).execute()
     except Exception as e:
         app.logger.error(f"stripe_events mark processed error: {e}")
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "v": "v3"})
 
 
 # ═══════════════════════════════════════════════════════════════
