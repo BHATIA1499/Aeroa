@@ -1,5 +1,5 @@
 """
-Aeroa Security Package
+Skuvvy Security Package
 ==============================
 Enterprise-grade security layer for fashion retail data protection.
 
