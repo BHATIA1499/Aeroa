@@ -1,7 +1,7 @@
 """
 AI Privacy & Data Masking
 ==========================
-Controls what data leaves Aeroa servers when calling Claude.
+Controls what data leaves Skuvvy servers when calling Claude.
 
 Two modes
 ---------
@@ -26,7 +26,7 @@ Both modes are compatible with:
 
 Anthropic API — no-training commitment
 ---------------------------------------
-Aeroa uses the Anthropic API via the Messages API endpoint.
+Skuvvy uses the Anthropic API via the Messages API endpoint.
 Per Anthropic's commercial API terms, data sent to this endpoint is
 NOT used to train models.  This is enforced by the API agreement, not
 by technical means on our side.
