@@ -3248,16 +3248,42 @@ def stripe_webhook():
     if etype == "checkout.session.completed":
         customer_id = data.get("customer")
         sub_id      = data.get("subscription")
-        email       = data.get("customer_details", {}).get("email", "")
-        price_id    = data.get("line_items", {}).get("data", [{}])[0].get("price", {}).get("id", "")
-        plan        = PRICE_TO_PLAN.get(price_id, "starter")
+        email       = (data.get("customer_details") or {}).get("email", "") or ""
+        ref_id      = data.get("client_reference_id")
 
+        # Stripe does NOT include line_items in the event payload by default,
+        # so fetch the purchased price explicitly to know which plan was bought.
+        price_id = ""
         try:
-            supabase.table("profiles").update({
-                "plan": plan,
-                "stripe_customer_id": customer_id,
-                "stripe_subscription_id": sub_id,
-            }).eq("email", email.lower()).execute()
+            items = stripe.checkout.Session.list_line_items(data["id"], limit=1)
+            if items and items.data:
+                price_id = items.data[0].price.id
+        except Exception as e:
+            app.logger.error(f"line_items fetch error: {e}")
+        # Fallback: read the price off the subscription itself.
+        if not price_id and sub_id:
+            try:
+                sub = stripe.Subscription.retrieve(sub_id)
+                price_id = sub["items"]["data"][0]["price"]["id"]
+            except Exception as e:
+                app.logger.error(f"subscription fetch error: {e}")
+
+        plan = PRICE_TO_PLAN.get(price_id, "starter")
+
+        update = {
+            "plan": plan,
+            "stripe_customer_id": customer_id,
+            "stripe_subscription_id": sub_id,
+        }
+        # Prefer the reliable client_reference_id (the user's profile id);
+        # fall back to email only if it's missing.
+        try:
+            if ref_id:
+                supabase.table("profiles").update(update).eq("id", ref_id).execute()
+            elif email:
+                supabase.table("profiles").update(update).eq("email", email.lower()).execute()
+            else:
+                app.logger.error("Webhook: no client_reference_id or email to match profile")
         except Exception as e:
             app.logger.error(f"Webhook profile update error: {e}")
 
