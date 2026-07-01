@@ -1412,6 +1412,11 @@ def _build_role_analysis(analysis):
 # PUBLIC ROUTES
 # ═══════════════════════════════════════════════════════════════
 
+@app.route("/__build")
+def __build_marker():
+    """Temporary deploy-freshness probe."""
+    return jsonify({"build": "v3-webhook-debug"})
+
 @app.route("/")
 def index():
     return send_from_directory(".", "aeroa_fixed.html")
