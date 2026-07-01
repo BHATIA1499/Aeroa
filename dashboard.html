@@ -76,9 +76,6 @@ body{font-family:var(--body);background:var(--bg-grad);background-attachment:fix
   box-shadow:0 4px 16px rgba(125,170,117,0.30);color:white;border:none;border-radius:7px;
   font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
 .upload-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(125,170,117,0.40)}
-.notif-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:white;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.15s}
-.notif-btn:hover{background:rgba(168,197,160,0.1)}
 
 /* ── CONTENT ── */
 #content{flex:1;padding:24px;scroll-behavior:smooth}
@@ -1097,7 +1094,6 @@ tr:hover td{background:rgba(168,197,160,0.05);transition:background 0.1s}
         <span class="ds-label">Dataset</span>
         <select id="ds-select" onchange="switchDataset(this.value)" title="Switch active dataset"></select>
       </div>
-      <button class="notif-btn" title="Notifications">🔔</button>
       <button class="upload-btn" onclick="document.getElementById('file-input').click()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Upload data
