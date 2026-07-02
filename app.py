@@ -3259,7 +3259,10 @@ def billing_checkout(user):
         return jsonify({"url": sess.url})
     except Exception as e:
         app.logger.error(f"checkout error: {e}")
-        return jsonify({"error": "Could not start checkout. Please try again."}), 500
+        # TEMP DIAGNOSTIC: surface the real Stripe error to the client so we can
+        # diagnose the live go-live failure. Revert to the generic message after.
+        return jsonify({"error": "Could not start checkout. Please try again.",
+                        "_diag": str(e)}), 500
 
 
 # ═══════════════════════════════════════════════════════════════
