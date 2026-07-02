@@ -3260,14 +3260,17 @@ def _process_stripe_event(event):
     # event. A row that exists but is still processed=false means a prior
     # attempt failed part-way, so we must allow it to be retried.
     try:
-        existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
-        if existing.data and existing.data[0].get("processed"):
-            return jsonify({"ok": True, "v": "v3", "skip": "already_processed"})
+        # TEMP DEBUG: idempotency skip disabled so every resend reprocesses.
+        # existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
+        # if existing.data and existing.data[0].get("processed"):
+        #     return jsonify({"ok": True, "v": "v3", "skip": "already_processed"})
         supabase.table("stripe_events").upsert(
             {"id": event["id"], "type": event["type"], "processed": False}
         ).execute()
     except Exception:
         pass
+
+    _diag = {}
 
     etype = event["type"]
     data  = event["data"]["object"]
@@ -3308,16 +3311,30 @@ def _process_stripe_event(event):
             "stripe_customer_id": customer_id,
             "stripe_subscription_id": sub_id,
         }
+        _diag = {
+            "ref_id": ref_id, "email": email, "price_id": price_id,
+            "plan": plan, "price_env": {
+                "starter": os.environ.get("STRIPE_PRICE_STARTER", "")[:14],
+                "growth":  os.environ.get("STRIPE_PRICE_GROWTH", "")[:14],
+                "studio":  os.environ.get("STRIPE_PRICE_STUDIO", "")[:14],
+            },
+        }
         # Prefer the reliable client_reference_id (the user's profile id);
         # fall back to email only if it's missing.
         try:
             if ref_id:
-                supabase.table("profiles").update(update).eq("id", ref_id).execute()
+                res = supabase.table("profiles").update(update).eq("id", ref_id).execute()
+                _diag["matched_by"] = "id"
+                _diag["rows_updated"] = len(res.data or [])
             elif email:
-                supabase.table("profiles").update(update).eq("email", email.lower()).execute()
+                res = supabase.table("profiles").update(update).eq("email", email.lower()).execute()
+                _diag["matched_by"] = "email"
+                _diag["rows_updated"] = len(res.data or [])
             else:
+                _diag["matched_by"] = "none"
                 app.logger.error("Webhook: no client_reference_id or email to match profile")
         except Exception as e:
+            _diag["update_error"] = str(e)
             app.logger.error(f"Webhook profile update error: {e}")
 
     elif etype in ("customer.subscription.updated", "customer.subscription.deleted"):
@@ -3335,7 +3352,7 @@ def _process_stripe_event(event):
         supabase.table("stripe_events").update({"processed": True}).eq("id", event["id"]).execute()
     except Exception as e:
         app.logger.error(f"stripe_events mark processed error: {e}")
-    return jsonify({"ok": True, "v": "v3"})
+    return jsonify({"ok": True, "v": "v3", "diag": _diag})
 
 
 # ═══════════════════════════════════════════════════════════════
