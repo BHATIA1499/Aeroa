@@ -137,6 +137,55 @@ def get_user_db() -> Client:
 # Bounds how stale plan/trial state can be after an out-of-band change.
 PROFILE_CACHE_TTL = 60  # seconds
 
+TRIAL_DAYS = 14
+
+
+def ensure_profile(user_id, email, full_name):
+    """Fetch-or-create a profile WITHOUT clobbering billing fields.
+
+    Every login used to `upsert` plan="trial" + trial_ends=now+14, which meant
+    the free trial silently renewed on every sign-in (so it never expired) and,
+    worse, a paying customer was reset back to "trial" the next time they logged
+    in. This seeds those fields ONLY when the profile is first created; for a
+    returning user it leaves plan/trial_ends exactly as stored and just refreshes
+    the lightweight email/name. Returns (plan, trial_ends) reflecting what's
+    actually persisted so the session mirrors reality.
+    """
+    db = get_user_db()
+    # Existing user → never touch plan/trial_ends.
+    try:
+        existing = db.table("profiles").select("plan,trial_ends") \
+            .eq("id", user_id).single().execute()
+        if existing.data:
+            try:
+                db.table("profiles").update(
+                    {"email": email, "full_name": full_name}
+                ).eq("id", user_id).execute()
+            except Exception:
+                pass
+            return existing.data.get("plan", "trial"), existing.data.get("trial_ends")
+    except Exception:
+        # .single() with 0 rows raises — treat as "new user" below.
+        pass
+    # New user → seed a fresh trial.
+    trial_ends = (datetime.now(timezone.utc) + timedelta(days=TRIAL_DAYS)).isoformat()
+    try:
+        db.table("profiles").insert({
+            "id": user_id, "email": email, "full_name": full_name,
+            "plan": "trial", "trial_ends": trial_ends,
+        }).execute()
+    except Exception:
+        # Insert conflict (row appeared concurrently, or select had a transient
+        # error) → re-read and honour whatever is stored rather than overwrite.
+        try:
+            r = db.table("profiles").select("plan,trial_ends") \
+                .eq("id", user_id).single().execute()
+            if r.data:
+                return r.data.get("plan", "trial"), r.data.get("trial_ends")
+        except Exception:
+            pass
+    return "trial", trial_ends
+
 
 def get_current_user():
     """Return profile dict from Supabase, or None."""
@@ -1633,21 +1682,15 @@ def auth_oauth_session():
         meta  = getattr(user, "user_metadata", None) or {}
         name  = (meta.get("full_name") or meta.get("name")
                  or (email.split("@")[0] if email else "there"))
-        trial_ends = (datetime.now(timezone.utc) + timedelta(days=14)).isoformat()
-
-        # Create or update the profile (non-fatal — session still works without it).
-        try:
-            get_user_db().table("profiles").upsert({
-                "id": user.id, "email": email, "full_name": name,
-                "plan": "trial", "trial_ends": trial_ends,
-            }).execute()
-        except Exception:
-            pass
+        # Fetch-or-create WITHOUT resetting plan/trial_ends for returning users
+        # (previously an upsert reset both on every login → trials never expired
+        # and paid customers were downgraded to "trial" on their next sign-in).
+        plan, trial_ends = ensure_profile(user.id, email, name)
 
         session["user_id"]         = user.id
         session["user_email"]      = email
         session["user_name"]       = name
-        session["user_plan"]       = "trial"
+        session["user_plan"]       = plan
         session["user_trial_ends"] = trial_ends
         session["access_token"]    = access_token
         session["refresh_token"]   = refresh_token
@@ -1751,23 +1794,15 @@ def auth_verify_email():
                 continue
 
         if res and res.user and res.session:
-            from datetime import timezone
-            trial_ends = (datetime.now(timezone.utc) + __import__('datetime').timedelta(days=14)).isoformat()
-            # Create or update profile in DB
-            try:
-                get_user_db().table("profiles").upsert({
-                    "id": res.user.id,
-                    "email": email,
-                    "full_name": name or email.split("@")[0],
-                    "plan": "trial",
-                    "trial_ends": trial_ends,
-                }).execute()
-            except Exception:
-                pass
+            # Fetch-or-create WITHOUT resetting plan/trial_ends for returning
+            # users (see ensure_profile — prevents the trial renewing on every
+            # login and prevents downgrading paid customers back to "trial").
+            _name = name or email.split("@")[0]
+            plan, trial_ends = ensure_profile(res.user.id, email, _name)
             session["user_id"]         = res.user.id
             session["user_email"]      = email
-            session["user_name"]       = name or email.split("@")[0]
-            session["user_plan"]       = "trial"
+            session["user_name"]       = _name
+            session["user_plan"]       = plan
             session["user_trial_ends"] = trial_ends
             session["access_token"]    = res.session.access_token
             session["refresh_token"]   = res.session.refresh_token
