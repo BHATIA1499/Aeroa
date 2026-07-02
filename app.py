@@ -133,24 +133,38 @@ def get_user_db() -> Client:
     return client
 
 
+# How long a session-cached profile is trusted before re-reading from the DB.
+# Bounds how stale plan/trial state can be after an out-of-band change.
+PROFILE_CACHE_TTL = 60  # seconds
+
+
 def get_current_user():
     """Return profile dict from Supabase, or None."""
     uid = session.get("user_id")
     if not uid:
         return None
     # Use session-cached profile for every request — avoids a DB round-trip
-    # and survives if PostgREST grants haven't been applied yet.
+    # and survives if PostgREST grants haven't been applied yet. Cache is
+    # given a short TTL so out-of-band changes (e.g. a Stripe webhook flipping
+    # plan trial→growth) reflect automatically within PROFILE_CACHE_TTL seconds
+    # instead of being pinned to the login-time snapshot for the whole session.
     cached = session.get("user_profile")
-    if cached and cached.get("id") == uid:
+    cached_at = session.get("user_profile_ts", 0)
+    if (cached and cached.get("id") == uid
+            and (time.time() - cached_at) < PROFILE_CACHE_TTL):
         return cached
     try:
         db = get_user_db()
         res = db.table("profiles").select("*").eq("id", uid).single().execute()
         if res.data:
             session["user_profile"] = res.data
+            session["user_profile_ts"] = time.time()
             return res.data
     except Exception:
         pass
+    # DB read failed but we have a (stale) cached copy — better than nothing.
+    if cached and cached.get("id") == uid:
+        return cached
     # Graceful fallback: construct minimal profile from session
     return {
         "id": uid,
