@@ -98,8 +98,11 @@ SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+# .strip() guards against a stray trailing newline/space in the pasted value —
+# an unstripped key produces an invalid Authorization header ("Bearer sk_...\n")
+# and every Stripe call fails with an InvalidHeader network error.
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
 
 # ── Security middleware ────────────────────────────────────────────────────────
 apply_security_headers(app)
@@ -3237,7 +3240,7 @@ def billing_checkout(user):
     price_env = {"starter": "STRIPE_PRICE_STARTER",
                  "growth":  "STRIPE_PRICE_GROWTH",
                  "studio":  "STRIPE_PRICE_STUDIO"}.get(plan)
-    price_id = os.environ.get(price_env, "") if price_env else ""
+    price_id = os.environ.get(price_env, "").strip() if price_env else ""
     if not price_id:
         return jsonify({"error": "That plan isn't available for self-serve checkout yet."}), 400
     base = request.host_url.rstrip("/")
@@ -3259,10 +3262,7 @@ def billing_checkout(user):
         return jsonify({"url": sess.url})
     except Exception as e:
         app.logger.error(f"checkout error: {e}")
-        # TEMP DIAGNOSTIC: surface the real Stripe error to the client so we can
-        # diagnose the live go-live failure. Revert to the generic message after.
-        return jsonify({"error": "Could not start checkout. Please try again.",
-                        "_diag": str(e)}), 500
+        return jsonify({"error": "Could not start checkout. Please try again."}), 500
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3318,9 +3318,9 @@ def _process_stripe_event(event):
     data  = event["data"]["object"]
 
     PRICE_TO_PLAN = {
-        os.environ.get("STRIPE_PRICE_STARTER", ""): "starter",
-        os.environ.get("STRIPE_PRICE_GROWTH",  ""): "growth",
-        os.environ.get("STRIPE_PRICE_STUDIO",  ""): "studio",
+        os.environ.get("STRIPE_PRICE_STARTER", "").strip(): "starter",
+        os.environ.get("STRIPE_PRICE_GROWTH",  "").strip(): "growth",
+        os.environ.get("STRIPE_PRICE_STUDIO",  "").strip(): "studio",
     }
 
     if etype == "checkout.session.completed":
