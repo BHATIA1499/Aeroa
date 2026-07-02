@@ -3227,34 +3227,40 @@ def stripe_webhook():
     payload = request.get_data()
     sig     = request.headers.get("Stripe-Signature", "")
 
+    # Verify the signature against the raw bytes, then parse the raw JSON
+    # ourselves. The webhook payload is already plain JSON, so json.loads gives
+    # a fully-nested plain dict — avoiding StripeObject quirks where .get() is
+    # misread as a field lookup (KeyError('get')).
     try:
-        event = stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
+        stripe.Webhook.construct_event(payload, sig, STRIPE_WEBHOOK_SECRET)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+    try:
+        event = json.loads(payload)
+    except Exception as e:
+        return jsonify({"error": f"payload parse: {e}"}), 400
 
     try:
         return _process_stripe_event(event)
     except Exception as e:
         import traceback as _tb
         tb = _tb.format_exc()
-        app.logger.error(f"stripe_webhook fatal [v3]: {e}\n{tb}")
-        # TEMP DEBUG: surface the error in Stripe's response body. Return 200 so
-        # Stripe stops retrying while we read it. Revert once diagnosed.
-        return jsonify({"debug_v": "v3", "error": str(e), "trace": tb[-1500:]}), 200
+        app.logger.error(f"stripe_webhook fatal [v4]: {e}\n{tb}")
+        # TEMP DEBUG: also persist the error to the DB row so it can be read
+        # server-side (Stripe's UI resend has been unreliable). Return 200.
+        try:
+            supabase.table("stripe_events").upsert(
+                {"id": event.get("id", "unknown"),
+                 "type": f"ERR:{str(e)[:120]}", "processed": False}
+            ).execute()
+        except Exception:
+            pass
+        return jsonify({"debug_v": "v4", "error": str(e), "trace": tb[-1500:]}), 200
 
 
 def _process_stripe_event(event):
-    # Stripe's SDK returns StripeObject instances, which in this library version
-    # do NOT support dict.get() — attribute-style access to a missing key like
-    # `.get(...)` is misread as a field lookup and raises KeyError('get').
-    # Convert to a plain, recursively-nested dict so .get() works throughout.
-    try:
-        event = event.to_dict_recursive()
-    except Exception:
-        try:
-            event = dict(event)
-        except Exception:
-            pass
+    # `event` is already a plain nested dict (parsed via json.loads above).
 
     # Idempotency: skip only if we've already *successfully* processed this
     # event. A row that exists but is still processed=false means a prior
