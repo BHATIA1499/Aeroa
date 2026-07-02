@@ -3244,6 +3244,18 @@ def stripe_webhook():
 
 
 def _process_stripe_event(event):
+    # Stripe's SDK returns StripeObject instances, which in this library version
+    # do NOT support dict.get() — attribute-style access to a missing key like
+    # `.get(...)` is misread as a field lookup and raises KeyError('get').
+    # Convert to a plain, recursively-nested dict so .get() works throughout.
+    try:
+        event = event.to_dict_recursive()
+    except Exception:
+        try:
+            event = dict(event)
+        except Exception:
+            pass
+
     # Idempotency: skip only if we've already *successfully* processed this
     # event. A row that exists but is still processed=false means a prior
     # attempt failed part-way, so we must allow it to be retried.
