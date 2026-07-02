@@ -1412,11 +1412,6 @@ def _build_role_analysis(analysis):
 # PUBLIC ROUTES
 # ═══════════════════════════════════════════════════════════════
 
-@app.route("/__build")
-def __build_marker():
-    """Temporary deploy-freshness probe."""
-    return jsonify({"build": "v3-webhook-debug"})
-
 @app.route("/")
 def index():
     return send_from_directory(".", "aeroa_fixed.html")
@@ -3245,38 +3240,27 @@ def stripe_webhook():
         return _process_stripe_event(event)
     except Exception as e:
         import traceback as _tb
-        tb = _tb.format_exc()
-        app.logger.error(f"stripe_webhook fatal [v4]: {e}\n{tb}")
-        # TEMP DEBUG: also persist the error to the DB row so it can be read
-        # server-side (Stripe's UI resend has been unreliable). Return 200.
-        try:
-            supabase.table("stripe_events").upsert(
-                {"id": event.get("id", "unknown"),
-                 "type": f"ERR:{str(e)[:120]}", "processed": False}
-            ).execute()
-        except Exception:
-            pass
-        return jsonify({"debug_v": "v4", "error": str(e), "trace": tb[-1500:]}), 200
+        app.logger.error(f"stripe_webhook error: {e}\n{_tb.format_exc()}")
+        # Return 500 so Stripe retries; the handler is idempotent.
+        return jsonify({"error": "internal"}), 500
 
 
 def _process_stripe_event(event):
-    # `event` is already a plain nested dict (parsed via json.loads above).
+    # `event` is a plain nested dict (parsed via json.loads in the caller), so
+    # dict.get() works throughout — avoiding StripeObject .get() quirks.
 
     # Idempotency: skip only if we've already *successfully* processed this
     # event. A row that exists but is still processed=false means a prior
     # attempt failed part-way, so we must allow it to be retried.
     try:
-        # TEMP DEBUG: idempotency skip disabled so every resend reprocesses.
-        # existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
-        # if existing.data and existing.data[0].get("processed"):
-        #     return jsonify({"ok": True, "v": "v3", "skip": "already_processed"})
+        existing = supabase.table("stripe_events").select("processed").eq("id", event["id"]).execute()
+        if existing.data and existing.data[0].get("processed"):
+            return jsonify({"ok": True})
         supabase.table("stripe_events").upsert(
             {"id": event["id"], "type": event["type"], "processed": False}
         ).execute()
     except Exception:
         pass
-
-    _diag = {}
 
     etype = event["type"]
     data  = event["data"]["object"]
@@ -3317,30 +3301,16 @@ def _process_stripe_event(event):
             "stripe_customer_id": customer_id,
             "stripe_subscription_id": sub_id,
         }
-        _diag = {
-            "ref_id": ref_id, "email": email, "price_id": price_id,
-            "plan": plan, "price_env": {
-                "starter": os.environ.get("STRIPE_PRICE_STARTER", "")[:14],
-                "growth":  os.environ.get("STRIPE_PRICE_GROWTH", "")[:14],
-                "studio":  os.environ.get("STRIPE_PRICE_STUDIO", "")[:14],
-            },
-        }
         # Prefer the reliable client_reference_id (the user's profile id);
         # fall back to email only if it's missing.
         try:
             if ref_id:
-                res = supabase.table("profiles").update(update).eq("id", ref_id).execute()
-                _diag["matched_by"] = "id"
-                _diag["rows_updated"] = len(res.data or [])
+                supabase.table("profiles").update(update).eq("id", ref_id).execute()
             elif email:
-                res = supabase.table("profiles").update(update).eq("email", email.lower()).execute()
-                _diag["matched_by"] = "email"
-                _diag["rows_updated"] = len(res.data or [])
+                supabase.table("profiles").update(update).eq("email", email.lower()).execute()
             else:
-                _diag["matched_by"] = "none"
                 app.logger.error("Webhook: no client_reference_id or email to match profile")
         except Exception as e:
-            _diag["update_error"] = str(e)
             app.logger.error(f"Webhook profile update error: {e}")
 
     elif etype in ("customer.subscription.updated", "customer.subscription.deleted"):
@@ -3358,7 +3328,7 @@ def _process_stripe_event(event):
         supabase.table("stripe_events").update({"processed": True}).eq("id", event["id"]).execute()
     except Exception as e:
         app.logger.error(f"stripe_events mark processed error: {e}")
-    return jsonify({"ok": True, "v": "v3", "diag": _diag})
+    return jsonify({"ok": True})
 
 
 # ═══════════════════════════════════════════════════════════════
