@@ -1494,6 +1494,18 @@ def signup_page():
         return redirect("/dashboard")
     return send_from_directory(".", "signup.html")
 
+@app.route("/privacy")
+def privacy_page():
+    return send_from_directory(".", "privacy.html")
+
+@app.route("/terms")
+def terms_page():
+    return send_from_directory(".", "terms.html")
+
+@app.route("/cookies")
+def cookies_page():
+    return send_from_directory(".", "cookies.html")
+
 @app.route("/health")
 def health():
     key = os.environ.get("ANTHROPIC_API_KEY", "")
